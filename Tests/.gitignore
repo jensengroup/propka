@@ -1,0 +1,7 @@
+
+# Compiled python files
+*.pka
+*.out
+*.propka_input
+
+
