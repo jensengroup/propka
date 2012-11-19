@@ -43,7 +43,7 @@ not located in '/usr/bin/python3', run the script
 
 ## Testing (for developers)
 
-Please run 'Tests/runtest.py/' after changes before pushing commits.
+Please run `Tests/runtest.py/` after changes before pushing commits.
 
 ## References / Citations
 
