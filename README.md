@@ -15,7 +15,7 @@ in publications:
 * Olsson, Mats HM, Chresten R. Søndergaard, Michal Rostkowski, and Jan H. Jensen. "PROPKA3: consistent treatment of internal and surface residues in empirical pKa predictions." Journal of Chemical Theory and Computation 7, no. 2 (2011): 525-537.
 
 See [propka.ki.ku.dk](http://propka.ki.ku.dk/) for the PROPKA web server,
-using the [tutorial](http://propka.ki.ku.dk/~luca/wiki/index.php/PROPKA_3.1_Tutorial)
+using the [tutorial](http://propka.ki.ku.dk/~luca/wiki/index.php/PROPKA_3.1_Tutorial).
 
 ## Installation
 
@@ -43,7 +43,7 @@ not located in '/usr/bin/python3', run the script
 
 ## Testing (for developers)
 
-Please run 'Tests/runtest.py/ after changes before pushing commits.
+Please run 'Tests/runtest.py/' after changes before pushing commits.
 
 ## References / Citations
 
