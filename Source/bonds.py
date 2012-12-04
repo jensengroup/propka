@@ -1,3 +1,4 @@
+from __future__ import division
 import pickle,sys,os,math,Source.calculations
 
 
@@ -350,9 +351,9 @@ class bondmaker:
         #print('z range: [%6.2f;%6.2f] %6.2f'%(zmin,zmax,zlen))
         
         # how many boxes do we need in each dimension?
-        self.no_box_x = max(1, math.ceil(xlen/box_size))
-        self.no_box_y = max(1, math.ceil(ylen/box_size))
-        self.no_box_z = max(1, math.ceil(zlen/box_size))
+        self.no_box_x = max(1, int(math.ceil(xlen/box_size)))
+        self.no_box_y = max(1, int(math.ceil(ylen/box_size)))
+        self.no_box_z = max(1, int(math.ceil(zlen/box_size)))
 
         #print('No. box x: %6.2f'%self.no_box_x)
         #print('No. box y: %6.2f'%self.no_box_y)

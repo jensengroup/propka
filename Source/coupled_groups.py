@@ -1,4 +1,5 @@
 
+from __future__ import division
 import math, Source.output, Source.group, Source.lib, itertools
 
 

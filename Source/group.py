@@ -2,6 +2,7 @@
 # Class for storing groups important for propka calculations
 #
 
+from __future__ import division
 import Source.ligand, Source.determinant, Source.ligand_pka_values, math, Source.protonate
 
 my_protonator = Source.protonate.Protonate(verbose=False)

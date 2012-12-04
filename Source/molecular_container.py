@@ -3,7 +3,7 @@
 # Molecular container for storing all contents of pdb files 
 #
 #
-
+from __future__ import division
 import os, Source.pdb, sys, Source.version, Source.output, Source.conformation_container, Source.group, Source.lib
 
 class Molecular_container:

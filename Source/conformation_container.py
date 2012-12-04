@@ -2,6 +2,7 @@
 # Container for molecular conformations
 #
 
+from __future__ import division
 import Source.group, Source.determinants, Source.determinant, Source.ligand, Source.output, Source.coupled_groups, functools
 
 class Conformation_container:
