@@ -364,12 +364,11 @@ def radial_volume_desolvation(parameters, group):
         # desolvation
         if sq_dist < parameters.desolv_cutoff_squared:
             # use a default relative volume of 1.0 if the volume of the element is not found in parameters
-            dv = 1.0
-            if atom.element in parameters.VanDerWaalsVolume.keys():
-                dv = parameters.VanDerWaalsVolume[atom.element]
             # insert check for methyl groups
             if atom.element == 'C' and atom.name not in ['CA','C']:
                 dv = parameters.VanDerWaalsVolume['C4']
+            else:
+                dv = parameters.VanDerWaalsVolume.get(atom.element, 1.0)
 
             dv_inc = dv/max(min_distance_4th, sq_dist*sq_dist)
 #            dv_inc = dv/(sq_dist*sq_dist) - dv/(parameters.desolv_cutoff_squared*parameters.desolv_cutoff_squared)

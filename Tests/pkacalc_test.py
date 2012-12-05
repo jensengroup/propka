@@ -7,7 +7,7 @@ import unittest
 
 # Setting this up as a direct translation of the original runtest.py script
 # that will be run as part of 'python setup.py test'. This takes on the
-# order of 30s to run.
+# order of 10s to run.
 
 class SystemTest(unittest.TestCase):
     """

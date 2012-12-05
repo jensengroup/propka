@@ -390,18 +390,11 @@ class Conformation_container:
 
     def top_up(self, other):
         """ Tops up self with all atoms found in other but not in self """
+        my_residue_labels = { a.residue_label for a in self.atoms }
         for atom in other.atoms:
-            if not self.have_atom(atom):
+            if not atom.residue_label in my_residue_labels:
                 self.copy_atom(atom)
         return
-
-    def have_atom(self, atom):
-        res = False
-        for a in self.atoms:
-            if a.residue_label == atom.residue_label:
-                res = True
-                break
-        return res
 
     def find_group(self, group):
         for g in self.groups:
