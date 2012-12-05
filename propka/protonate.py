@@ -47,7 +47,9 @@ class Protonate:
                                   'As':5,
                                   'Se':6,
                                   'Br':7,
-                                  'Kr':8}
+                                  'Kr':8,
+                                  'I':7,
+                                }
 
 
 
