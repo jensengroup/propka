@@ -351,6 +351,8 @@ class bondmaker:
         #print('z range: [%6.2f;%6.2f] %6.2f'%(zmin,zmax,zlen))
         
         # how many boxes do we need in each dimension?
+        # NOTE: math.ceil() returns an int in python3 and a float in python2,
+        # so we need to cast it to int for range() to work.
         self.no_box_x = max(1, int(math.ceil(xlen/box_size)))
         self.no_box_y = max(1, int(math.ceil(ylen/box_size)))
         self.no_box_z = max(1, int(math.ceil(zlen/box_size)))
