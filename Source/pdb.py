@@ -1,3 +1,7 @@
+
+from __future__ import division
+from __future__ import print_function
+
 import string, sys, copy, Source.lib
 from Source.atom import Atom
 from Source.conformation_container import Conformation_container

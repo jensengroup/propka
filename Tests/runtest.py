@@ -2,6 +2,9 @@
 
 """ Run test for test pdbs """
 
+from __future__ import division
+from __future__ import print_function
+
 from subprocess import call
 import os, re
 import sys

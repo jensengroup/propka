@@ -1,3 +1,7 @@
+
+from __future__ import division
+from __future__ import print_function
+
 import math, time
 import Source.lib as lib
 from Source.determinant import Determinant
