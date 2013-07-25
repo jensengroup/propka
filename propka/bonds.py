@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import pickle,sys,os,math,propka.calculations
 
+import pkg_resources
 
 class bondmaker:
     def __init__(self):
@@ -26,8 +27,7 @@ class bondmaker:
         self.max_sq_distance = max(list(self.distances_squared.values())+[self.default_dist_squared])
 
         # protein bonding data
-        path = os.path.split(__file__)[0]
-        self.data_file_name = os.path.join(path,'protein_bonds.dat')
+        self.data_file_name = pkg_resources.resource_filename(__name__, 'protein_bonds.dat')
 
         data = open(self.data_file_name,'rb')
         self.protein_bonds = pickle.load(data)

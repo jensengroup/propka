@@ -6,6 +6,7 @@ import math
 import propka.lib as lib
 import sys, os
 
+import pkg_resources
 
 # names and types of all key words in configuration file
 matrices =            ['interaction_matrix']
@@ -57,8 +58,7 @@ class Parameters:
     def read_parameters(self, file):
         # try to locate the parameters file
         try:
-            path = os.path.dirname(__file__)
-            ifile = os.path.join(path,'../'+file)
+            ifile = pkg_resources.resource_filename(__name__, file)
             input = lib.open_file_for_reading(ifile)
         except:
             input = lib.open_file_for_reading(file)

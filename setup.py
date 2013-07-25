@@ -47,5 +47,5 @@ using the tutorial http://propka.ki.ku.dk/~luca/wiki/index.php/PROPKA_3.1_Tutori
             'propka31 = propka.run:main',
             ],
         },
-      zip_safe=False,
+      zip_safe=True,
 )

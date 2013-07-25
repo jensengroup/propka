@@ -1,26 +1,27 @@
-#!/usr/bin/python
-
 from __future__ import division
 from __future__ import print_function
 
 import string, sys, copy, math, os
 
+import pkg_resources
 
 #
 # file I/O
 #
 def open_file_for_reading(filename):
-    if not os.path.isfile(filename):
+    try:
+        f = open(filename,'r')
+    except:
         raise Exception('Cannot find file %s' %filename)
-    
-    return open(filename,'r')
+    return f
 
 def open_file_for_writing(filename):
-    res = open(filename,'w')
-    if not res:
+    try:
+        res = open(filename,'w')
+    except:
         raise Exception('Could not open %s'%filename)
     return res
-    
+
 #
 # bookkeeping etc.
 #
@@ -46,7 +47,7 @@ def make_molecule(atom, atoms):
         if ba in atoms:
             atoms.remove(ba)
             res_atoms.extend(make_molecule(ba, atoms))
-         
+
     return res_atoms
 
 
@@ -64,7 +65,7 @@ def generate_combinations(interactions):
     res.remove([])
 
     return res
-    
+
 
 def make_combination(combis, interaction):
     res = []
@@ -88,37 +89,37 @@ def loadOptions():
     parser = OptionParser(usage)
 
     # loading the parser
-    parser.add_option("-f", "--file", action="append", dest="filenames", 
+    parser.add_option("-f", "--file", action="append", dest="filenames",
            help="read data from <filename>, i.e. <filename> is added to arguments")
-    parser.add_option("-r", "--reference", dest="reference", default="neutral", 
+    parser.add_option("-r", "--reference", dest="reference", default="neutral",
            help="setting which reference to use for stability calculations [neutral/low-pH]")
-    parser.add_option("-c", "--chain", action="append", dest="chains", 
+    parser.add_option("-c", "--chain", action="append", dest="chains",
            help="creating the protein with only a specified chain, note, chains without ID are labeled 'A' [all]")
-    parser.add_option("-t", "--thermophile", action="append", dest="thermophiles", 
+    parser.add_option("-t", "--thermophile", action="append", dest="thermophiles",
            help="defining a thermophile filename; usually used in 'alignment-mutations'")
-    parser.add_option("-a", "--alignment", action="append", dest="alignment", 
+    parser.add_option("-a", "--alignment", action="append", dest="alignment",
            help="alignment file connecting <filename> and <thermophile> [<thermophile>.pir]")
-    parser.add_option("-m", "--mutation", action="append", dest="mutations", 
+    parser.add_option("-m", "--mutation", action="append", dest="mutations",
            help="specifying mutation labels which is used to modify <filename> according to, e.g. N25R/N181D")
-    parser.add_option("-v", "--version", dest="version_label", default="Jan15", 
+    parser.add_option("-v", "--version", dest="version_label", default="Jan15",
            help="specifying the sub-version of propka [Jan15/Dec19]")
-    parser.add_option("-p", "--parameters",dest="parameters", default="propka.cfg",
-                      help="set the parameter file")
-    parser.add_option("-z", "--verbose", dest="verbose", action="store_true", default=True, 
+    parser.add_option("-p", "--parameters",dest="parameters", default=pkg_resources.resource_filename(__name__, "propka.cfg"),
+                      help="set the parameter file [%default]")
+    parser.add_option("-z", "--verbose", dest="verbose", action="store_true", default=True,
            help="sleep during calculations")
     parser.add_option("-q", "--quiet", dest="verbose", action="store_false",
            help="sleep during calculations")
-    parser.add_option("-s", "--silent",  dest="verbose", action="store_false", 
+    parser.add_option("-s", "--silent",  dest="verbose", action="store_false",
            help="not activated yet")
-    parser.add_option("--verbosity",  dest="verbosity", action="store_const", 
+    parser.add_option("--verbosity",  dest="verbosity", action="store_const",
            help="level of printout - not activated yet")
-    parser.add_option("-o", "--pH", dest="pH", type="float", default=7.0, 
+    parser.add_option("-o", "--pH", dest="pH", type="float", default=7.0,
            help="setting pH-value used in e.g. stability calculations [7.0]")
     parser.add_option("-w", "--window", dest="window", nargs=3, type="float", default=(0.0, 14.0, 1.0),
            help="setting the pH-window to show e.g. stability profiles [0.0, 14.0, 1.0]")
     parser.add_option("-g", "--grid",   dest="grid",   nargs=3, type="float", default=(0.0, 14.0, 0.1),
            help="setting the pH-grid to calculate e.g. stability related properties [0.0, 14.0, 0.1]")
-    parser.add_option("--mutator", dest="mutator", 
+    parser.add_option("--mutator", dest="mutator",
            help="setting approach for mutating <filename> [alignment/scwrl/jackal]")
     parser.add_option("--mutator-option", dest="mutator_options", action="append",
            help="setting property for mutator [e.g. type=\"side-chain\"]")
@@ -159,7 +160,7 @@ def makeTidyAtomLabel(name,element):
     """
     Returns a 'tidier' atom label for printing the new pdbfile
     """
-    
+
     if len(name)>4:# if longer than 4, just truncate the name
         label=name[0:4]
     elif len(name)==4:# if lenght is 4, otherwise use the name as it is
