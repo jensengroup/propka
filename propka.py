@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python
 
 import string,re,sys,os,math
 import Source.lib, Source.molecular_container 
