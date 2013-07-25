@@ -18,7 +18,7 @@ for pdb in pdbs:
   print('RUNNING '+pdb)
 
   # Run pka calculation
-  call([sys.executable, '../propka.py','pdb/'+pdb+'.pdb'], stdout = open(pdb+'.out', 'w+'))
+  call([sys.executable, '../scripts/propka31.py','pdb/'+pdb+'.pdb'], stdout = open(pdb+'.out', 'w+'))
 
   # Test pka predictiona
   result = open('results/'+pdb+'.dat','r')
