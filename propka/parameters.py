@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import print_function
 
 import math
-import Source.lib as lib
+import propka.lib as lib
 import sys, os
 
 
@@ -49,8 +49,8 @@ class Parameters:
         #self.print_interaction_parameters_latex()
         #####self.print_interactions_latex()
         #sys.exit(0)
-        
-        
+
+
         return
 
 
@@ -98,7 +98,7 @@ class Parameters:
         elif len(words)==3 and words[0] in string_dictionaries:
             self.parse_to_string_dictionary(words)
 
-            
+
         #print(words)
 
         return
@@ -230,25 +230,25 @@ class Parameters:
         print("""
 Titratable:
 CG  ARG
-C2N ARG 
+C2N ARG
 N30 N+/LYS
 N31 N+/LYS
 N32 N+/LYS
-N33 N+/LYS 
+N33 N+/LYS
 NAR HIS
 OCO COO
 OP  TYR/SER?
-SH  CYS 
+SH  CYS
 
 Non-titratable:
 NP1 AMD?
 OH  ROH
 O3  ?
-CL  
-F   
-NAM 
-N1  
-O2 
+CL
+F
+NAM
+N1
+O2
 """)
         return
 
@@ -287,7 +287,7 @@ O2
             'N1' :[],
             'O2' :[]}
 
-   
+
         s = """
 \\begin{longtable}{lllll}
 \\caption{Ligand interaction parameters. For interactions not listed, the default value of %s is applied.}
@@ -300,11 +300,11 @@ Group1 & Group2 & Interaction & c1 &c2 \\\\
 
 \\multicolumn{5}{l}{\\emph{continued from the previous page}}\\\\
 \\toprule
-Group1 & Group2 & Interaction & c1 &c2 \\\\ 
+Group1 & Group2 & Interaction & c1 &c2 \\\\
 \\midrule
 \\endhead
 
-\\midrule 
+\\midrule
 \\multicolumn{5}{r}{\\emph{continued on the next page}}\\\\
 \\endfoot
 
@@ -336,7 +336,7 @@ Group1 & Group2 & Interaction & c1 &c2 \\\\
         agroups = ['COO', 'HIS', 'CYS', 'TYR', 'SER', 'N+', 'LYS', 'AMD', 'ARG', 'TRP', 'ROH', 'CG', 'C2N', 'N30', 'N31', 'N32', 'N33', 'NAR', 'OCO', 'NP1', 'OH', 'O3', 'CL', 'F', 'NAM', 'N1', 'O2', 'OP', 'SH']
         lgroups = ['CG', 'C2N', 'N30', 'N31', 'N32', 'N33', 'NAR', 'OCO', 'NP1', 'OH', 'O3', 'CL', 'F', 'NAM', 'N1', 'O2', 'OP', 'SH']
 
-   
+
         s = """
 \\begin{longtable}{%s}
 \\caption{Ligand interaction parameters. For interactions not listed, the default value of %s is applied.}
@@ -349,11 +349,11 @@ Group1 & Group2 & Interaction & c1 &c2 \\\\
 
 \\multicolumn{5}{l}{\\emph{continued from the previous page}}\\\\
 \\toprule
-Group1 & Group2 & Interaction & c1 &c2 \\\\ 
+Group1 & Group2 & Interaction & c1 &c2 \\\\
 \\midrule
 \\endhead
 
-\\midrule 
+\\midrule
 \\multicolumn{5}{r}{\\emph{continued on the next page}}\\\\
 \\endfoot
 
@@ -403,14 +403,14 @@ class Interaction_matrix:
                 self.dictionary[group][new_group] = self.value
                 self.dictionary[new_group][group] = self.value
 
-        
+
         return
 
     def get_value(self, item1, item2):
         try:
             return self.dictionary[item1][item2]
         except:
-            return None 
+            return None
 
     def __getitem__(self, group):
         if group not in self.dictionary.keys():
@@ -434,7 +434,7 @@ class Interaction_matrix:
 
         return s
 #         ks = ['COO', 'SER', 'ARG', 'LYS', 'HIS', 'AMD', 'CYS', 'TRP','ROH','TYR','N+','CG', 'C2N', 'N30', 'N31', 'N32', 'N33', 'NAR', 'OCO', 'NP1', 'OH', 'O3', 'CL', 'F', 'NAM', 'N1', 'O2', 'OP', 'SH']
- 
+
 #         p = ''
 #         n=0
 #         for i in range(len(ks)):
@@ -446,7 +446,7 @@ class Interaction_matrix:
 
 #         print('total',n,len(ks))
 #         return p
-    
+
 
 
 class Pair_wise_matrix:
@@ -455,7 +455,7 @@ class Pair_wise_matrix:
         self.dictionary = {}
         self.default = [0.0, 0.0]
         return
-    
+
     def add(self,words):
         # assign the default value
         if len(words)==3 and words[0]=='default':
@@ -466,7 +466,7 @@ class Pair_wise_matrix:
         g1 = words[0]
         g2 = words[1]
         v = [float(words[2]), float(words[3])]
-        
+
         self.insert(g1,g2,v)
         self.insert(g2,g1,v)
 
@@ -486,7 +486,7 @@ class Pair_wise_matrix:
         return
 
     def get_value(self, item1, item2):
-        
+
         try:
             return self.dictionary[item1][item2]
         except:
@@ -508,7 +508,7 @@ class Pair_wise_matrix:
                 s += '%s %s %s\n'%(k1,k2,self[k1][k2])
 
         return s
-    
+
 
 
 

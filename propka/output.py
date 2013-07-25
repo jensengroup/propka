@@ -3,7 +3,8 @@ from __future__ import division
 from __future__ import print_function
 
 import sys
-import Source.lib
+
+import propka.lib
 
 
 def printHeader():
@@ -21,7 +22,7 @@ def writePDB(protein, file=None, filename=None, include_hydrogens=False, options
     """
     Write the residue to the new pdbfile
     """
-    
+
     if file == None:
       # opening file if not given
       if filename == None:
@@ -128,7 +129,7 @@ def getDeterminantSection(protein, conformation, parameters):
     # printing determinants
     for chain in protein.conformations[conformation].chains:
         for residue_type in parameters.write_out_order:
-            groups = [g for g in protein.conformations[conformation].groups if g.atom.chainID == chain] 
+            groups = [g for g in protein.conformations[conformation].groups if g.atom.chainID == chain]
             for group in groups:
                 if group.residue_type == residue_type:
                     str += "%s" % ( group.getDeterminantString(parameters.remove_penalised_group) )
@@ -162,8 +163,8 @@ def getFoldingProfileSection(protein, conformation='AVR', direction="folding", r
     str += "\n"
     str += "Free energy of %9s (kcal/mol) as a function of pH (using %s reference)\n" % (direction, reference)
 
-    profile, [pH_opt, dG_opt], [dG_min, dG_max], [pH_min, pH_max] = protein.getFoldingProfile(conformation=conformation, 
-                                                                                 reference=reference, 
+    profile, [pH_opt, dG_opt], [dG_min, dG_max], [pH_min, pH_max] = protein.getFoldingProfile(conformation=conformation,
+                                                                                 reference=reference,
                                                                                  direction=direction, grid=[0., 14., 0.1], options=options)
     if profile == None:
       str += "Could not determine folding profile\n"
@@ -187,7 +188,7 @@ def getFoldingProfileSection(protein, conformation='AVR', direction="folding", r
       str += "Could not determine the pH-range where the free energy is negative\n\n"
     else:
       str += "The free energy is negative in the range %4.1lf - %4.1lf\n\n" % (pH_min, pH_max)
-     
+
 
     return str
 
@@ -213,7 +214,7 @@ def getChargeProfileSection(protein, conformation='AVR', options=None):
       str += "Could not determine the pI\n\n"
     else:
       str += "The pI is %5.2lf (folded) and %5.2lf (unfolded)\n" % (pI_pro, pI_mod)
-     
+
 
     return str
 
@@ -304,8 +305,8 @@ def getReferencesHeader():
     str += "   Journal of Chemical Theory and Computation, 7(2):525-537 (2011)\n"
     str += "   \n"
     str += "   Improved Treatment of Ligands and Coupling Effects in Empirical Calculation\n"
-    str += "    and Rationalization of pKa Values\n" 
-    str += "   Chresten R. Sondergaard, Mats H.M. Olsson, Michal Rostkowski, and Jan H. Jensen\n" 
+    str += "    and Rationalization of pKa Values\n"
+    str += "   Chresten R. Sondergaard, Mats H.M. Olsson, Michal Rostkowski, and Jan H. Jensen\n"
     str += "   Journal of Chemical Theory and Computation, (2011)\n"
     str += "   \n"
     str += "-------------------------------------------------------------------------------------------------------\n"
@@ -361,13 +362,13 @@ def getTheLine():
 
 # Interaction maps
 def make_interaction_map(name, list, interaction):
-    """ Print out an interaction map named 'name' of the groups in 'list' 
+    """ Print out an interaction map named 'name' of the groups in 'list'
     based on the function 'interaction' """
-    
+
     # return an empty string, if the list is empty
     if len(list)==0:
         return ''
-    
+
     # for long list, use condensed formatting
     if len(list)>10:
         res = 'Condensed form:\n'
@@ -381,7 +382,7 @@ def make_interaction_map(name, list, interaction):
     res = '%s\n%12s'%(name,'')
     for g in list:
         res += '%9s | '%g.label
-    
+
     # do the map
     for g1 in list:
         res += '\n%-12s'%(g1.label)
@@ -390,6 +391,6 @@ def make_interaction_map(name, list, interaction):
             if interaction(g1, g2):
                 tag = '    X     '
             res += '%10s| '%tag
-    
+
     return res
-        
+

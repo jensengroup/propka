@@ -2,12 +2,13 @@
 
 from __future__ import division
 from __future__ import print_function
-from Source.vector_algebra import *
-import Source.bonds, Source.pdb, Source.atom
+
+from propka.vector_algebra import *
+import propka.bonds, propka.pdb, propka.atom
 
 class Protonate:
     """ Protonates atoms using VSEPR theory """
-    
+
     def __init__(self, verbose=False):
         self.verbose=verbose
 
@@ -58,9 +59,9 @@ class Protonate:
                                 'HIS-ND1':1.0,
                                 'LYS-NZ':1.0,
                                 'N+':1.0,
-                                'C-':-1.0} 
+                                'C-':-1.0}
 
-        
+
         self.sybyl_charges = {'N.pl3':+1,
                               'N.3':+1,
                               'N.4':+1,
@@ -94,17 +95,17 @@ class Protonate:
         self.display('----- Protonation started -----')
         # Remove all currently present hydrogen atoms
         self.remove_all_hydrogen_atoms(molecules)
-             
+
         # protonate all atoms
         for name in molecules.conformation_names:
             non_H_atoms = molecules.conformations[name].get_non_hydrogen_atoms()
 
             for atom in non_H_atoms:
                 self.protonate_atom(atom)
-            
+
             # fix hydrogen names
             #self.set_proton_names(non_H_atoms)
-                    
+
         return
 
 
@@ -112,7 +113,7 @@ class Protonate:
         for name in molecular_container.conformation_names:
             molecular_container.conformations[name].atoms = molecular_container.conformations[name].get_non_hydrogen_atoms()
         return
-    
+
 
     def set_charge(self, atom):
         # atom is a protein atom
@@ -150,11 +151,11 @@ class Protonate:
         for heavy_atom in heavy_atoms:
             i = 1
             for bonded in heavy_atom.bonded_atoms:
-                
+
                 if bonded.element == 'H':
                     bonded.name+='%d'%i
                     i+=1
-                        
+
 
         return
 
@@ -162,7 +163,7 @@ class Protonate:
     def set_number_of_protons_to_add(self, atom):
         self.display('*'*10)
         self.display('Setting number of protons to add for',atom)
-        atom.number_of_protons_to_add  = 8 
+        atom.number_of_protons_to_add  = 8
         self.display('                  %4d'%8)
         atom.number_of_protons_to_add -= self.valence_electrons[atom.element]
         self.display('Valence eletrons: %4d'%-self.valence_electrons[atom.element])
@@ -179,7 +180,7 @@ class Protonate:
         return
 
     def set_steric_number_and_lone_pairs(self, atom):
-        
+
         # If we already did this, there is no reason to do it again
         if atom.steric_number_and_lone_pairs_set:
             return
@@ -197,10 +198,10 @@ class Protonate:
 
 
         atom.steric_number = 0
-        
+
         self.display('%65s: %4d'%('Valence electrons',self.valence_electrons[atom.element]))
         atom.steric_number += self.valence_electrons[atom.element]
-        
+
         self.display('%65s: %4d'%('Number of bonds',len(atom.bonded_atoms)))
         atom.steric_number += len(atom.bonded_atoms)
 
@@ -218,7 +219,7 @@ class Protonate:
 
         self.display('%65s: %4.1f'%('Charge(-)',atom.charge))
         atom.steric_number -= atom.charge
-        
+
         atom.steric_number = math.floor(atom.steric_number/2.0)
 
         atom.number_of_lone_pairs = atom.steric_number - len(atom.bonded_atoms) - atom.number_of_protons_to_add
@@ -242,9 +243,9 @@ class Protonate:
 
         return
 
-    
+
     def trigonal(self, atom):
-        self.display('TRIGONAL - %d bonded atoms'%(len(atom.bonded_atoms))) 
+        self.display('TRIGONAL - %d bonded atoms'%(len(atom.bonded_atoms)))
         rot_angle = math.radians(120.0)
 
         c = vector(atom1 = atom)
@@ -252,13 +253,13 @@ class Protonate:
         # 0 bonds
         if len(atom.bonded_atoms) == 0:
             pass
-            
+
         # 1 bond
         if len(atom.bonded_atoms) == 1 and atom.number_of_protons_to_add > 0:
             # Add another atom with the right angle to the first one
             a = vector(atom1 = atom, atom2 = atom.bonded_atoms[0])
             # use plane of bonded trigonal atom - e.g. arg
-            
+
             self.set_steric_number_and_lone_pairs(atom.bonded_atoms[0])
             if atom.bonded_atoms[0].steric_number == 3 and len(atom.bonded_atoms[0].bonded_atoms)>1:
                 # use other atoms bonded to the neighbour to establish the plane, if possible
@@ -267,21 +268,21 @@ class Protonate:
                     if atom.bonded_atoms[0].bonded_atoms[i] != atom:
                         other_atom_indices.append(i)
 
-                
+
                 v1 = vector(atom1 = atom, atom2 = atom.bonded_atoms[0])
-                v2 = vector(atom1 = atom.bonded_atoms[0], 
+                v2 = vector(atom1 = atom.bonded_atoms[0],
                             atom2 = atom.bonded_atoms[0].bonded_atoms[other_atom_indices[0]])
-              
+
                 axis = v1**v2
- 
+
                  # this is a trick to make sure that the order of atoms doesn't influence
                  # the final postions of added protons
                 if len(other_atom_indices)>1:
-                    v3 = vector(atom1 = atom.bonded_atoms[0], 
+                    v3 = vector(atom1 = atom.bonded_atoms[0],
                                 atom2 = atom.bonded_atoms[0].bonded_atoms[other_atom_indices[1]])
 
                     axis2 = v1**v3
-                    
+
                     if axis * axis2>0:
                         axis = axis+axis2
                     else:
@@ -296,12 +297,12 @@ class Protonate:
 
         # 2 bonds
         if len(atom.bonded_atoms) == 2 and atom.number_of_protons_to_add > 0:
-            # Add another atom with the right angle to the first two 
+            # Add another atom with the right angle to the first two
             a1 = vector(atom1 = atom, atom2 = atom.bonded_atoms[0]).rescale(1.0)
             a2 = vector(atom1 = atom, atom2 = atom.bonded_atoms[1]).rescale(1.0)
-        
-            new_a = -a1 - a2 
-            new_a = self.set_bond_distance(new_a, atom.element)            
+
+            new_a = -a1 - a2
+            new_a = self.set_bond_distance(new_a, atom.element)
             self.add_proton(atom, c+new_a)
 
 
@@ -309,20 +310,20 @@ class Protonate:
 
 
     def tetrahedral(self, atom):
-        self.display('TETRAHEDRAL - %d bonded atoms'%(len(atom.bonded_atoms))) 
+        self.display('TETRAHEDRAL - %d bonded atoms'%(len(atom.bonded_atoms)))
         rot_angle = math.radians(109.5)
 
         # sanity check
         # if atom.number_of_protons_to_add + len(atom.bonded_atoms) != 4:
-        # self.display 'Error: Attempting tetrahedral structure with %d bonds'%(atom.number_of_protons_to_add + 
+        # self.display 'Error: Attempting tetrahedral structure with %d bonds'%(atom.number_of_protons_to_add +
         #                                                                len(atom.bonded_atoms))
-        
+
         c = vector(atom1 = atom)
 
         # 0 bonds
         if len(atom.bonded_atoms) == 0:
             pass
-                  
+
         # 1 bond
         if len(atom.bonded_atoms) == 1 and atom.number_of_protons_to_add > 0:
             # Add another atom with the right angle to the first one
@@ -334,7 +335,7 @@ class Protonate:
 
         # 2 bonds
         if len(atom.bonded_atoms) == 2 and atom.number_of_protons_to_add > 0:
-            # Add another atom with the right angle to the first two             
+            # Add another atom with the right angle to the first two
             a1 = vector(atom1 = atom, atom2 = atom.bonded_atoms[0]).rescale(1.0)
             a2 = vector(atom1 = atom, atom2 = atom.bonded_atoms[1]).rescale(1.0)
 
@@ -353,16 +354,16 @@ class Protonate:
             new_a =  -a1-a2-a3
             new_a = self.set_bond_distance(new_a, atom.element)
             self.add_proton(atom, c+new_a)
-      
+
         return
 
 
     def add_proton(self, atom, position):
         # Create the new proton
-        new_H = Source.atom.Atom()
-        new_H.setProperty(numb    = None, 
-                          name    = 'H%s'%atom.name[1:], 
-                          resName = atom.resName, 
+        new_H = propka.atom.Atom()
+        new_H.setProperty(numb    = None,
+                          name    = 'H%s'%atom.name[1:],
+                          resName = atom.resName,
                           chainID = atom.chainID,
                           resNumb = atom.resNumb,
                           x       = round(position.x,3), # round of to three digimal points
@@ -383,19 +384,19 @@ class Protonate:
 
         atom.bonded_atoms.append(new_H)
         atom.number_of_protons_to_add -=1
-        atom.conformation_container.add_atom(new_H)        
+        atom.conformation_container.add_atom(new_H)
 
         # update names of all protons on this atom
-        new_H.residue_label = "%-3s%4d%2s" % (new_H.name,new_H.resNumb, new_H.chainID)        
+        new_H.residue_label = "%-3s%4d%2s" % (new_H.name,new_H.resNumb, new_H.chainID)
         no_protons = atom.count_bonded_elements('H')
         if no_protons > 1:
             i = 1
             for proton in atom.get_bonded_elements('H'):
                 proton.name = 'H%s%d'%(atom.name[1:],i)
-                proton.residue_label = "%-3s%4d%2s" % (proton.name,proton.resNumb, proton.chainID)        
+                proton.residue_label = "%-3s%4d%2s" % (proton.name,proton.resNumb, proton.chainID)
                 i+=1
 
-        
+
         self.display('added',new_H, 'to',atom)
         return
 
@@ -409,7 +410,7 @@ class Protonate:
         a = a.rescale(d)
 
         return a
-    
+
     def display(self,*text):
         if self.verbose:
             s = ''
@@ -431,11 +432,11 @@ if __name__ == '__main__':
         print('Error: Could not find \"%s\"'%filename)
         sys.exit(1)
 
-    
+
     p = Protonate()
     pdblist = pdb.readPDB(filename)
     my_protein = protein.Protein(pdblist,'test.pdb')
-    
+
     p.remove_all_hydrogen_atoms_from_protein(my_protein)
     my_protein.writePDB('before_protonation.pdb')
 

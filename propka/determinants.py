@@ -4,9 +4,9 @@ from __future__ import print_function
 
 import math, time
 
-import Source.iterative, Source.lib, Source.vector_algebra
-import Source.calculations
-from Source.determinant import Determinant
+import propka.iterative, propka.lib, propka.vector_algebra
+import propka.calculations
+from propka.determinant import Determinant
 
 
 def setDeterminants(propka_groups, version=None, options=None):
@@ -23,19 +23,19 @@ def setDeterminants(propka_groups, version=None, options=None):
             # do not calculate interactions for coupled groups
             if group2 in group1.covalently_coupled_groups:
                 break
-            
-            distance = Source.calculations.distance(group1, group2)
-            
+
+            distance = propka.calculations.distance(group1, group2)
+
             if distance < version.parameters.coulomb_cutoff2:
                 interaction_type = version.parameters.interaction_matrix.get_value(group1.type,group2.type)
                 if interaction_type == 'I':
-                    Source.iterative.addtoDeterminantList(group1, group2, distance, iterative_interactions, version=version)
+                    propka.iterative.addtoDeterminantList(group1, group2, distance, iterative_interactions, version=version)
                 elif interaction_type == 'N':
                     addDeterminants(group1, group2, distance, version)
 
- 
+
     # --- Iterative section ---#
-    Source.iterative.addDeterminants(iterative_interactions, version, options=options)
+    propka.iterative.addDeterminants(iterative_interactions, version, options=options)
 
 
 def addDeterminants(group1, group2, distance, version):
@@ -56,11 +56,11 @@ def addSidechainDeterminants(group1, group2, version=None):
     adding side-chain determinants/perturbations
     Note, resNumb1 > resNumb2
     """
-    
+
     hbond_interaction = version.hydrogen_bond_interaction(group1, group2)
 
     if hbond_interaction:
-        
+
         if group1.charge == group2.charge:
             # acid pair or base pair
             if group1.model_pka < group2.model_pka:
@@ -82,7 +82,7 @@ def addCoulombDeterminants(group1, group2, distance, version):
     """
     adding NonIterative Coulomb determinants/perturbations
     """
-    
+
     coulomb_interaction = version.electrostatic_interaction(group1, group2, distance)
 
     if coulomb_interaction:
@@ -108,7 +108,7 @@ def addCoulombAcidPair(object1, object2, value):
     Adding the Coulomb interaction (an acid pair):
     the higher pKa is raised
     """
-    
+
     if object1.model_pka > object2.model_pka:
         newDeterminant = Determinant(object2, value)
         object1.determinants['coulomb'].append(newDeterminant)
@@ -155,7 +155,7 @@ def setIonDeterminants(conformation_container, version):
     """
     for titratable_group in conformation_container.get_titratable_groups():
         for ion_group in conformation_container.get_ions():
-            squared_distance = Source.calculations.squared_distance(titratable_group, ion_group)
+            squared_distance = propka.calculations.squared_distance(titratable_group, ion_group)
             if squared_distance < version.parameters.coulomb_cutoff2_squared:
                 weight = version.calculatePairWeight(titratable_group.Nmass, ion_group.Nmass)
                 # the pKa of both acids and bases are shifted up by negative ions (and vice versa)
@@ -166,16 +166,16 @@ def setIonDeterminants(conformation_container, version):
     return
 
 def setBackBoneDeterminants(titratable_groups, backbone_groups, version):
-    
+
     for titratable_group in titratable_groups:
         # find out which backbone groups this titratable is interacting with
         for backbone_group in backbone_groups:
             # find the interacting atoms
             backbone_interaction_atoms = backbone_group.get_interaction_atoms(titratable_group)
             titratable_group_interaction_atoms = titratable_group.interaction_atoms_for_acids
-            
+
             # find the smallest distance
-            [backbone_atom, distance, titratable_atom] = Source.calculations.get_smallest_distance(backbone_interaction_atoms,
+            [backbone_atom, distance, titratable_atom] = propka.calculations.get_smallest_distance(backbone_interaction_atoms,
                                                                                                    titratable_group_interaction_atoms)
             # get the parameters
             parameters = version.get_backbone_hydrogen_bond_parameters(backbone_atom, titratable_atom)
@@ -190,7 +190,7 @@ def setBackBoneDeterminants(titratable_groups, backbone_groups, version):
                 # for BBC groups, the hydrogen is on the titratable group
                 #
                 #        Titra.
-                #       / 
+                #       /
                 #      H
                 #     .
                 #    O
@@ -201,7 +201,7 @@ def setBackBoneDeterminants(titratable_groups, backbone_groups, version):
                         if titratable_atom.element == 'H':
                             heavy_atom    = titratable_atom.bonded_atoms[0]
                             hydrogen_atom = titratable_atom
-                            [d1, f_angle, d2] = Source.calculations.AngleFactorX(atom1=heavy_atom,
+                            [d1, f_angle, d2] = propka.calculations.AngleFactorX(atom1=heavy_atom,
                                                                                  atom2=hydrogen_atom,
                                                                                  atom3=backbone_atom)
                         else:
@@ -222,7 +222,7 @@ def setBackBoneDeterminants(titratable_groups, backbone_groups, version):
                     if backbone_atom.element == 'H':
                         backbone_N = backbone_atom.bonded_atoms[0]
                         backbone_H = backbone_atom
-                        [d1, f_angle, d2] = Source.calculations.AngleFactorX(atom1=titratable_atom,
+                        [d1, f_angle, d2] = propka.calculations.AngleFactorX(atom1=titratable_atom,
                                                                              atom2=backbone_H,
                                                                              atom3=backbone_N)
                     else:
@@ -230,13 +230,13 @@ def setBackBoneDeterminants(titratable_groups, backbone_groups, version):
                         # the titratable atom than the hydrogen. In either case we set the angle factor
                         # to 0
                         f_angle = 0.0
-                    
-            
+
+
                 if f_angle > 0.001:
-                    value = titratable_group.charge * Source.calculations.HydrogenBondEnergy(distance, dpKa_max, [cutoff1,cutoff2], f_angle)
-                    
+                    value = titratable_group.charge * propka.calculations.HydrogenBondEnergy(distance, dpKa_max, [cutoff1,cutoff2], f_angle)
+
                     newDeterminant = Determinant(backbone_group, value)
                     titratable_group.determinants['backbone'].append(newDeterminant)
 
-        
+
     return

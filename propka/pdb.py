@@ -2,9 +2,11 @@
 from __future__ import division
 from __future__ import print_function
 
-import string, sys, copy, Source.lib
-from Source.atom import Atom
-from Source.conformation_container import Conformation_container
+import string, sys, copy
+
+import propka.lib
+from propka.atom import Atom
+from propka.conformation_container import Conformation_container
 
 expected_atom_numbers = {'ALA':5,
                          'ARG':11,
@@ -39,23 +41,23 @@ def read_pdb(pdb_file, parameters, molecule):
         conformations[name].add_atom(atom)
 
     # make a sorted list of conformation names
-    names = sorted(conformations.keys(), key=Source.lib.conformation_sorter)
- 
+    names = sorted(conformations.keys(), key=propka.lib.conformation_sorter)
+
     return [conformations, names]
 
 def protein_precheck(conformations, names):
-    
+
     for name in names:
         atoms = conformations[name].atoms
-        
+
         res_ids = []
         [res_ids.append(resid_from_atom(a)) for a in atoms if not res_ids.count(resid_from_atom(a))]
-        
+
         for res_id in res_ids:
             res_atoms = [a for a in atoms if resid_from_atom(a) == res_id and a.element != 'H']
             resname = res_atoms[0].resName
             residue_label = '%3s%5s'%(resname, res_id)
-            
+
             # ignore ligand residues
             if resname not in expected_atom_numbers:
                 continue
@@ -69,7 +71,7 @@ def protein_precheck(conformations, names):
             # check number of atoms in residue
             if len(res_atoms) != expected_atom_numbers[resname]:
                 print('Warning: Unexpected number (%d) of atoms in residue %s in conformation %s'%(len(res_atoms),residue_label, name))
-            
+
     return
 
 def resid_from_atom(a):
@@ -78,7 +80,7 @@ def resid_from_atom(a):
 
 def get_atom_lines_from_pdb(pdb_file, ignore_residues = [], keep_protons=False, tags = ['ATOM  ', 'HETATM'], chains=None):
 
-    lines = Source.lib.open_file_for_reading(pdb_file).readlines()
+    lines = propka.lib.open_file_for_reading(pdb_file).readlines()
     nterm_residue = 'next_residue'
     old_residue = None
     terminal = None
@@ -92,7 +94,7 @@ def get_atom_lines_from_pdb(pdb_file, ignore_residues = [], keep_protons=False, 
         if tag == 'MODEL ':
             model = int(line[6:])
             nterm_residue = 'next_residue'
-        
+
         if tag == 'TER   ':
             nterm_residue = 'next_residue'
 
@@ -106,21 +108,21 @@ def get_atom_lines_from_pdb(pdb_file, ignore_residues = [], keep_protons=False, 
                 continue
             if chains and line[21] not in chains:
                 continue
-            
-            # set the Nterm residue number - nessecary because we may need to 
+
+            # set the Nterm residue number - nessecary because we may need to
             # identify more than one N+ group for structures with alt_conf tags
             if nterm_residue == 'next_residue' and tag == 'ATOM  ':
-                # make sure that we reached a new residue - nessecary if OXT is not the last atom in 
-                # the previous residue 
+                # make sure that we reached a new residue - nessecary if OXT is not the last atom in
+                # the previous residue
                 if old_residue != residue_number:
                     nterm_residue = residue_number
                     old_residue = None
 
 
-            # Identify the configuration 
+            # Identify the configuration
             # convert digits to letters
             if alt_conf_tag in '123456789':
-                alt_conf_tag = chr(ord(alt_conf_tag)+16) 
+                alt_conf_tag = chr(ord(alt_conf_tag)+16)
             if alt_conf_tag == ' ':
                 alt_conf_tag = 'A'
             conformation = '%d%s'%(model, alt_conf_tag)
@@ -149,10 +151,10 @@ def get_atom_lines_from_pdb(pdb_file, ignore_residues = [], keep_protons=False, 
 def write_pdb(conformation, filename):
     write_pdb_for_atoms(conformation.atoms, filename)
     return
-    
+
 def write_pdb_for_atoms(atoms, filename, make_conect_section=False):
-    out = Source.lib.open_file_for_writing(filename)
-    
+    out = propka.lib.open_file_for_writing(filename)
+
     for atom in atoms:
         out.write(atom.make_pdb_line())
 
@@ -175,7 +177,7 @@ def write_mol2_for_atoms(atoms, filename):
     for i in range(len(atoms)):
         atoms_section += atoms[i].make_mol2_line(i+1)
 
-        
+
     bonds_section = '@<TRIPOS>BOND\n'
     id = 1
     for i in range(len(atoms)):
@@ -184,12 +186,12 @@ def write_mol2_for_atoms(atoms, filename):
                 type = get_bond_order(atoms[i],atoms[j])
                 bonds_section += '%7d %7d %7d %7s\n'%(id, i+1, j+1, type)
                 id+=1
-    
+
     substructure_section = '@<TRIPOS>SUBSTRUCTURE\n\n'
     if len(atoms)>0:
         substructure_section = '@<TRIPOS>SUBSTRUCTURE\n%-7d %10s %7d\n'%(atoms[0].resNumb,atoms[0].resName,atoms[0].numb)
 
-    out = Source.lib.open_file_for_writing(filename)
+    out = propka.lib.open_file_for_writing(filename)
     out.write(header%(len(atoms),id-1))
     out.write(atoms_section)
     out.write(bonds_section)
@@ -213,14 +215,14 @@ def get_bond_order(atom1, atom2):
 
     if '.ar' in atom1.sybyl_type and '.ar' in atom2.sybyl_type:
         type = 'ar'
-          
+
 
     return type
 
 
 
 def write_input(molecular_container, filename):
-    out = Source.lib.open_file_for_writing(filename)
+    out = propka.lib.open_file_for_writing(filename)
 
     for conformation_name in molecular_container.conformation_names:
         out.write('MODEL %s\n'%conformation_name)
@@ -254,14 +256,14 @@ def read_input(input_file, parameters,molecule):
         conformations[name].add_atom(atom)
 
     # make a sorted list of conformation names
-    names = sorted(conformations.keys(), key=Source.lib.conformation_sorter)
- 
+    names = sorted(conformations.keys(), key=propka.lib.conformation_sorter)
+
     return [conformations, names]
 
 
 
 def get_atom_lines_from_input(input_file, tags = ['ATOM  ','HETATM']):
-    lines = Source.lib.open_file_for_reading(input_file).readlines()
+    lines = propka.lib.open_file_for_reading(input_file).readlines()
     conformation = ''
 
     atoms = {}
@@ -282,7 +284,7 @@ def get_atom_lines_from_input(input_file, tags = ['ATOM  ','HETATM']):
             atom.is_protonated = True
             atoms[atom.numb] = atom
             numbers.append(atom.numb)
-            
+
         # found bonding information - apply it
         if tag == 'CONECT' and len(line)>14:
             conect_numbers = [line[i:i+5] for i in range(6, len(line)-1, 5)]
@@ -305,7 +307,7 @@ def get_atom_lines_from_input(input_file, tags = ['ATOM  ','HETATM']):
             center_atom = atoms[int(conect_numbers[0])]
             for n in conect_numbers[1:]:
                 cg = atoms[int(n)]
-                center_atom.group.couple_covalently(cg.group)            
+                center_atom.group.couple_covalently(cg.group)
 
         # found info on non-covalent coupling
         if tag == 'NCOUPL' and len(line)>14:
@@ -313,8 +315,8 @@ def get_atom_lines_from_input(input_file, tags = ['ATOM  ','HETATM']):
             center_atom = atoms[int(conect_numbers[0])]
             for n in conect_numbers[1:]:
                 cg = atoms[int(n)]
-                center_atom.group.couple_non_covalently(cg.group)            
-            
+                center_atom.group.couple_non_covalently(cg.group)
+
         # this conformation is done - yield the atoms
         if tag == 'ENDMDL':
             for n in numbers:

@@ -1,16 +1,19 @@
 #!/usr/bin/python
 #
-# Molecular container for storing all contents of pdb files 
+# Molecular container for storing all contents of pdb files
 #
 #
 from __future__ import division
 from __future__ import print_function
-import os, Source.pdb, sys, Source.version, Source.output, Source.conformation_container, Source.group, Source.lib
+
+import os, sys
+
+import propka.pdb, propka.version, propka.output, propka.conformation_container, propka.group, propka.lib
 
 class Molecular_container:
     def __init__(self, input_file, options=None):
         # printing out header before parsing input
-        Source.output.printHeader()
+        propka.output.printHeader()
 
         # set up some values
         self.options = options
@@ -22,11 +25,11 @@ class Molecular_container:
 
         # set the version
         if options:
-            parameters = Source.parameters.Parameters(self.options.parameters)
+            parameters = propka.parameters.Parameters(self.options.parameters)
         else:
-            parameters = Source.parameters.Parameters('propka.cfg')
+            parameters = propka.parameters.Parameters('propka.cfg')
         try:
-            exec('self.version = Source.version.%s(parameters)'%parameters.version)
+            exec('self.version = propka.version.%s(parameters)'%parameters.version)
         except:
             raise Exception('Error: Version %s does not exist'%parameters.version)
 
@@ -34,7 +37,7 @@ class Molecular_container:
         if input_file_extension[0:4] == '.pdb':
             # input is a pdb file
             # read in atoms and top up containers to make sure that all atoms are present in all conformations
-            [self.conformations, self.conformation_names] = Source.pdb.read_pdb(input_file, self.version.parameters,self)
+            [self.conformations, self.conformation_names] = propka.pdb.read_pdb(input_file, self.version.parameters,self)
             if len(self.conformations)==0:
                 print('Error: The pdb file does not seems to contain any molecular conformations')
                 sys.exit(-1)
@@ -42,7 +45,7 @@ class Molecular_container:
             self.top_up_conformations()
 
             # make a structure precheck
-            Source.pdb.protein_precheck(self.conformations, self.conformation_names)
+            propka.pdb.protein_precheck(self.conformations, self.conformation_names)
 
             # set up atom bonding and protonation
             self.version.setup_bonding_and_protonation(self)
@@ -59,12 +62,12 @@ class Molecular_container:
 
             # write out the input file
             filename = self.file.replace(input_file_extension,'.propka_input')
-            Source.pdb.write_input(self, filename)
+            propka.pdb.write_input(self, filename)
 
 
         elif input_file_extension == '.propka_input':
             #input is a propka_input file
-            [self.conformations, self.conformation_names] = Source.pdb.read_input(input_file, self.version.parameters, self)
+            [self.conformations, self.conformation_names] = propka.pdb.read_input(input_file, self.version.parameters, self)
 
             # Extract groups - this merely sets up the groups found in the input file
             self.extract_groups()
@@ -104,15 +107,15 @@ class Molecular_container:
         """ Identify the groups needed for pKa calculation """
         for name in self.conformation_names:
             self.conformations[name].extract_groups()
-            
+
         return
 
     def additional_setup_when_reading_input_file(self):
         for name in self.conformation_names:
             self.conformations[name].additional_setup_when_reading_input_file()
-            
+
         return
-        
+
 
     def calculate_pka(self):
         # calculate for each conformation
@@ -121,21 +124,21 @@ class Molecular_container:
 
         # find non-covalently coupled groups
         self.find_non_covalently_coupled_groups()
-        
+
         # find the average of the conformations
         self.average_of_conformations()
 
         # print out the conformation-average results
-        Source.output.printResult(self, 'AVR', self.version.parameters)
+        propka.output.printResult(self, 'AVR', self.version.parameters)
 
         return
 
     def average_of_conformations(self):
         # make a new configuration to hold the average values
-        avr_conformation = Source.conformation_container.Conformation_container(name='average',
-                                                                                parameters=self.conformations[self.conformation_names[0]].parameters, 
+        avr_conformation = propka.conformation_container.Conformation_container(name='average',
+                                                                                parameters=self.conformations[self.conformation_names[0]].parameters,
                                                                                 molecular_container=self)
-        
+
         for group in self.conformations[self.conformation_names[0]].get_titratable_groups_and_cysteine_bridges():
             # new group to hold average values
             avr_group = group.clone()
@@ -162,13 +165,13 @@ class Molecular_container:
 
     def write_pka(self, filename=None, reference="neutral", direction="folding", options=None):
         #for name in self.conformation_names:
-        #    Source.output.writePKA(self, self.version.parameters, filename='%s_3.1_%s.pka'%(self.name, name), 
-        #                           conformation=name,reference=reference, 
+        #    propka.output.writePKA(self, self.version.parameters, filename='%s_3.1_%s.pka'%(self.name, name),
+        #                           conformation=name,reference=reference,
         #                           direction=direction, options=options)
 
         # write out the average conformation
         filename=os.path.join('%s.pka'%(self.name))
-        
+
         # if the display_coupled_residues option is true,
         # write the results out to an alternative pka file
         if self.options.display_coupled_residues:
@@ -177,8 +180,8 @@ class Molecular_container:
         if hasattr(self.version.parameters, 'output_file_tag') and len(self.version.parameters.output_file_tag)>0:
             filename=os.path.join('%s_%s.pka'%(self.name,self.version.parameters.output_file_tag))
 
-        Source.output.writePKA(self, self.version.parameters, filename=filename,
-                               conformation='AVR',reference=reference, 
+        propka.output.writePKA(self, self.version.parameters, filename=filename,
+                               conformation='AVR',reference=reference,
                                direction=direction, options=options)
 
         return
@@ -186,7 +189,7 @@ class Molecular_container:
     def getFoldingProfile(self, conformation='AVR',reference="neutral", direction="folding", grid=[0., 14., 0.1], options=None):
         # calculate stability profile
         profile = []
-        for ph in Source.lib.make_grid(*grid):
+        for ph in propka.lib.make_grid(*grid):
             ddg = self.conformations[conformation].calculate_folding_energy( pH=ph, reference=reference)
             #print(ph,ddg)
             profile.append([ph, ddg])
@@ -197,29 +200,29 @@ class Molecular_container:
             opt = min(opt, point, key=lambda v:v[1])
 
         # find values within 80 % of optimum
-        range_80pct = [None, None] 
+        range_80pct = [None, None]
         values_within_80pct = [p[0] for p in profile if p[1]< 0.8*opt[1]]
         if len(values_within_80pct)>0:
             range_80pct = [min(values_within_80pct), max(values_within_80pct)]
 
         # find stability range
         stability_range = [None, None]
-        stable_values = [p[0] for p in profile if p[1]< 0.0]        
-        
+        stable_values = [p[0] for p in profile if p[1]< 0.0]
+
         if len(stable_values)>0:
             stability_range = [min(stable_values), max(stable_values)]
-        
+
         return profile, opt, range_80pct, stability_range
 
 
     def getChargeProfile(self, conformation='AVR', grid=[0., 14., .1]):
         charge_profile = []
-        for ph in Source.lib.make_grid(*grid):
+        for ph in propka.lib.make_grid(*grid):
             q_unfolded, q_folded = self.conformations[conformation].calculate_charge(self.version.parameters, pH=ph)
             charge_profile.append([ph, q_unfolded, q_folded])
 
         return charge_profile
-        
+
     def getPI(self, conformation='AVR', grid=[0., 14., 1], iteration=0):
         #print('staring',grid, iteration)
         # search
@@ -241,7 +244,7 @@ class Molecular_container:
 
         return pi_folded_value, pi_unfolded_value
 
-    
+
 
 if __name__ == '__main__':
     input_file = sys.argv[1]
