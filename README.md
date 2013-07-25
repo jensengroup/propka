@@ -33,11 +33,11 @@ This release of PROPKA 3.1 was modified by Oliver Beckstein
 Clone repository or unpack the tar ball and install with
 [setuptools](http://pythonhosted.org/setuptools/index.html) (note: if
 you don't have setuptools installed you will need an internet
-connection so that the installation procedure can sownload the
+connection so that the installation procedure can download the
 required files):
 
-   cd propka-3.1
-   python setup.py install --user
+    cd propka-3.1
+    python setup.py install --user
 
 This will install the `propka31` script in your executable directory,
 as configured for setuptools, for instance `~/.local/bin`. You can
@@ -45,7 +45,7 @@ change the bin directory with the `--install-scripts` option. For
 example, in order to install in my `bin` directory in my home
 directory:
 
-   python setup.py install --user --install-scripts ~/bin
+    python setup.py install --user --install-scripts ~/bin
 
 
 ## Requirements
