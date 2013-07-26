@@ -1,4 +1,7 @@
 
+from __future__ import division
+from __future__ import print_function
+
 class Determinant:
     """
         Determinant class - set up for later structurization

@@ -1,7 +1,12 @@
 #!/usr/bin/python
 
-import sys, Source.calculations
-from Source.vector_algebra import *
+from __future__ import division
+from __future__ import print_function
+
+import sys
+
+import propka.calculations
+from propka.vector_algebra import *
 
 
 all_sybyl_types = [
@@ -157,7 +162,7 @@ def assign_sybyl_type(atom):
         bonded_elements[i]=atom.bonded_atoms[i].element
 
 
-    
+
     # Aromatic carbon/nitrogen
     if aromatic:
         for ra in ring_atoms:
@@ -187,7 +192,7 @@ def assign_sybyl_type(atom):
             nitrogens = atom.get_bonded_elements('N')
             oxygens = atom.get_bonded_elements('O')
             if len(nitrogens)==1 and len(oxygens)==1:
-                C = atom 
+                C = atom
                 N = nitrogens[0]
                 O = oxygens[0]
 
@@ -199,9 +204,9 @@ def assign_sybyl_type(atom):
                 set_type(C,'C.2')
                 set_type(O,'O.2')
                 return
-                
 
-    if atom.element=='C':                
+
+    if atom.element=='C':
         # check for carboxyl
         if len(atom.bonded_atoms)==3 and list(bonded_elements.values()).count('O')==2:
             i1 = list(bonded_elements.values()).index('O')
@@ -213,11 +218,11 @@ def assign_sybyl_type(atom):
                 return
 
 
-                
+
         # sp carbon
         if len(atom.bonded_atoms)<=2:
             for b in atom.bonded_atoms:
-                if Source.calculations.squared_distance(atom, b) < max_C_triple_bond_squared:
+                if propka.calculations.squared_distance(atom, b) < max_C_triple_bond_squared:
                     set_type(atom,'C.1')
                     set_type(b,b.element+'.1')
             if atom.sybyl_assigned:
@@ -232,7 +237,7 @@ def assign_sybyl_type(atom):
                     if len(b.bonded_atoms)<3 or is_planar(b):
                         set_type(b,'N.pl3')
             return
-        
+
         # sp3 carbon
         set_type(atom, 'C.3')
         return
@@ -244,11 +249,11 @@ def assign_sybyl_type(atom):
             if is_planar(atom.bonded_atoms[0]):
                 set_type(atom,'N.pl3')
                 return
-                    
+
         if planar:
             set_type(atom,'N.pl3')
             return
-                
+
         set_type(atom,'N.3')
         return
 
@@ -262,7 +267,7 @@ def assign_sybyl_type(atom):
                 the_carbon = atom.bonded_atoms[0]
                 if len(the_carbon.bonded_atoms)==3 and the_carbon.count_bonded_elements('O')==2:
                     [O1,O2] = the_carbon.get_bonded_elements('O')
-                    
+
                     if len(O1.bonded_atoms)==1 and len(O2.bonded_atoms)==1:
                         set_type(O1,'O.co2-')
                         set_type(O2,'O.co2')
@@ -270,7 +275,7 @@ def assign_sybyl_type(atom):
                         return
 
             # check for X=O
-            if Source.calculations.squared_distance(atom, atom.bonded_atoms[0]) < max_C_double_bond_squared:
+            if propka.calculations.squared_distance(atom, atom.bonded_atoms[0]) < max_C_double_bond_squared:
                 set_type(atom,'O.2')
                 if atom.bonded_atoms[0].element=='C':
                     set_type(atom.bonded_atoms[0],'C.2')
@@ -287,7 +292,7 @@ def assign_sybyl_type(atom):
             set_type(atom.bonded_atoms[i2],'O.2')
             set_type(atom,'S.o2')
             return
-                
+
         # check for SO4
         if list(bonded_elements.values()).count('O')==4:
             no_O2 = 0
@@ -297,7 +302,7 @@ def assign_sybyl_type(atom):
                     no_O2+=1
                 else:
                     set_type(atom.bonded_atoms[i],'O.3')
-                    
+
         set_type(atom,'S.3')
 
 
@@ -315,8 +320,8 @@ def assign_sybyl_type(atom):
 #             # find oxygens only bonded to current phosphorus
 #             bonded_oxygens_1 = [o for o in bonded_oxygens if len(o.get_bonded_heavy_atoms())==1]
 #             # find the closest oxygen ...
-#             closest_oxygen = min(bonded_oxygens_1, 
-#                                  key= lambda o:Source.calculations.squared_distance(atom,o))
+#             closest_oxygen = min(bonded_oxygens_1,
+#                                  key= lambda o:propka.calculations.squared_distance(atom,o))
 #             # ... and set it to O.2
 #             set_type(closest_oxygen,'O.2')
 
@@ -378,20 +383,20 @@ def are_atoms_planar(atoms):
     v1 = vector(atom1=atoms[0], atom2=atoms[1])
     v2 = vector(atom1=atoms[0], atom2=atoms[2])
     n = (v1**v2).rescale(1.0)
-    
+
     margin = 0.20
     for b in atoms[3:]:
         v = vector(atom1=atoms[0], atom2=b).rescale(1.0)
         #print(atoms[0],abs(v*n) )
         if abs(v*n)>margin:
             return False
-            
+
     return True
 
 def is_aromatic_ring(atoms):
     if len(atoms)<5:
         return False
-    
+
     for i in range(len(atoms)):
         if not are_atoms_planar(atoms[i:]+atoms[:i]):
             return False

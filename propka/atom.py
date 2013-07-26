@@ -1,4 +1,8 @@
-import string, Source.lib, Source.group
+
+from __future__ import division
+from __future__ import print_function
+
+import string, propka.lib, propka.group
 
 
 class Atom:
@@ -8,17 +12,17 @@ class Atom:
 
     def __init__(self, line=None, verbose=False):
 
-        self.set_properties(line)     
+        self.set_properties(line)
 
-        self.residue_label = "%-3s%4d%2s" % (self.name,self.resNumb, self.chainID)        
+        self.residue_label = "%-3s%4d%2s" % (self.name,self.resNumb, self.chainID)
 
         self.groups_extracted = 0
         self.group = None
         self.group_type = None
         self.number_of_bonded_elements = {}
-        
+
         self.cysteine_bridge = False
-        
+
         self.bonded_atoms = []
         self.residue = None
         self.conformation_container = None
@@ -39,7 +43,7 @@ class Atom:
         self.sybyl_type = ''
         self.sybyl_assigned = False
         self.marvin_pka = False
-        
+
 
         return
 
@@ -122,13 +126,13 @@ class Atom:
                     return True
 
         return False
-        
+
 
 
     def setProperty(self,
-                    numb    = None, 
-                    name    = None, 
-                    resName = None, 
+                    numb    = None,
+                    name    = None,
+                    resName = None,
                     chainID = None,
                     resNumb = None,
                     x       = None,
@@ -157,7 +161,7 @@ class Atom:
         """
         making a copy of this atom
         """
-        
+
         newAtom = Atom()
         newAtom.type = self.type
         newAtom.numb = self.numb
@@ -191,11 +195,11 @@ class Atom:
 
             if self.group.titratable:
                 model_pka = '%6.2f'%self.group.model_pka
-       
+
 
         str  = "%-6s%5d %s %s%2s%4d%12.3lf%8.3lf%8.3lf%6s%6s \n" % (self.type.upper(),
                                                                     self.numb,
-                                                                    Source.lib.makeTidyAtomLabel(self.name,
+                                                                    propka.lib.makeTidyAtomLabel(self.name,
                                                                                                  self.element),
                                                                     self.resName,
                                                                     self.chainID,
@@ -213,7 +217,7 @@ class Atom:
 
     def make_conect_line(self):
         res = 'CONECT%5d'%self.numb
-        
+
         # extract and sort numbers of bonded residues
         bonded = []
         for atom in self.bonded_atoms:
@@ -226,9 +230,9 @@ class Atom:
         res += '\n'
         return res
 
-    
+
     def get_input_parameters(self):
-        """ Method for getting the input parameters stored in the 
+        """ Method for getting the input parameters stored in the
         occupancy and b-factor fields in input files"""
 
         # Set the group type
@@ -258,7 +262,7 @@ class Atom:
 
             # try to initialise the group
             try:
-                exec('self.group = Source.group.%s_group(self)'%self.occ)
+                exec('self.group = propka.group.%s_group(self)'%self.occ)
             except:
                 raise Exception('%s in input_file is not recognized as a group'%self.occ)
 
@@ -270,7 +274,7 @@ class Atom:
         # set occ and beta to standard values
         self.occ = '1.00'
         self.beta = '0.00'
-        
+
 
 
         return
@@ -282,7 +286,7 @@ class Atom:
         # making string
         str  = "%-6s%5d %s %s%2s%4d%12.3lf%8.3lf%8.3lf%6s%6s\n" % (self.type.upper(),
                                                                    self.numb,
-                                                                   Source.lib.makeTidyAtomLabel(self.name,
+                                                                   propka.lib.makeTidyAtomLabel(self.name,
                                                                                                 self.element),
                                                                    self.resName,
                                                                    self.chainID,
@@ -292,17 +296,17 @@ class Atom:
                                                                    self.z,
                                                                    self.occ,
                                                                    self.beta)
-        
+
 
         return str
 
 
 
     def make_mol2_line(self,id):
-#1	S1     3.6147     2.0531     1.4795	S.3	1	noname	-0.1785
+#1      S1     3.6147     2.0531     1.4795     S.3     1       noname  -0.1785
         # making string
         str  = "%-4d %-4s %10.4f %10.4f %10.4f %6s %6d %10s %10.4f\n" % (id,
-                                                                         Source.lib.makeTidyAtomLabel(self.name,
+                                                                         propka.lib.makeTidyAtomLabel(self.name,
                                                                                                       self.element),
                                                                          self.x,
                                                                          self.y,
@@ -311,7 +315,7 @@ class Atom:
                                                                          self.resNumb,
                                                                          self.resName,
                                                                          0.0)#self.charge)
-        
+
 
         return str
 
@@ -346,7 +350,7 @@ class Atom:
         # making string
         str  = "ATOM "
         str += "%6d" % (numb)
-        str += " %s" % (Source.lib.makeTidyAtomLabel(name,self.element))
+        str += " %s" % (propka.lib.makeTidyAtomLabel(name,self.element))
         str += " %s" % (resName)
         str += "%2s" % (chainID)
         str += "%4d" % (resNumb)
@@ -363,25 +367,25 @@ class Atom:
         """
         Returns a 'tidier' atom label for printing the new pdbfile
         """
-        return Source.lib.makeTidyAtomLabel(self.name,self.element)
+        return propka.lib.makeTidyAtomLabel(self.name,self.element)
 
 
     def __str__(self):
         return '%5d-%4s %5d-%3s (%1s) [%8.3f %8.3f %8.3f] %s' %(self.numb, self.name, self.resNumb, self.resName, self.chainID, self.x, self.y, self.z,self.element)
-            
+
 
 #    def get_element(self):
 #        """ try to extract element if not already done"""
 #        if self.element == '':
 #            self.element = self.name.strip(string.digits)[0]
 #        return self.element
-    
+
 
     def set_residue(self, residue):
         """ Makes a references to the parent residue"""
         if self.residue == None:
             self.residue = residue
 
- 
+
 
 
