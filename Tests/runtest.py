@@ -1,9 +1,13 @@
-#!/usr/bin/python3
+#!/usr/bin/env python
 
 """ Run test for test pdbs """
 
+from __future__ import division
+from __future__ import print_function
+
 from subprocess import call
 import os, re
+import sys
 
 pdbs = ['1FTJ-Chain-A',
         '1HPX',
@@ -14,7 +18,7 @@ for pdb in pdbs:
   print('RUNNING '+pdb)
 
   # Run pka calculation
-  call(['../propka.py','pdb/'+pdb+'.pdb'], stdout = open(pdb+'.out', 'w+'))
+  call([sys.executable, '../scripts/propka31.py','pdb/'+pdb+'.pdb'], stdout = open(pdb+'.out', 'w+'))
 
   # Test pka predictiona
   result = open('results/'+pdb+'.dat','r')
