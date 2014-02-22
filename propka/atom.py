@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import string, propka.lib, propka.group
 
+from . import hybrid36
 
 class Atom:
     """
@@ -68,7 +69,7 @@ class Atom:
 
         if line:
             self.name = line[12:16].strip()
-            self.numb = int( line[ 6:11].strip() )
+            self.numb = int( hybrid36.decode(line[ 6:11]) )
             self.x = float( line[30:38].strip() )
             self.y = float( line[38:46].strip() )
             self.z = float( line[46:54].strip() )
