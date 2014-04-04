@@ -354,8 +354,9 @@ class bondmaker:
         #print('z range: [%6.2f;%6.2f] %6.2f'%(zmin,zmax,zlen))
 
         # how many boxes do we need in each dimension?
-        # NOTE: math.ceil() returns an int in python3 and a float in python2,
-        # so we need to cast it to int for range() to work.
+        # NOTE: math.ceil() returns an int in python3 and a float in
+        # python2, so we need to convert it to an int for range() to work in
+        # both versions. See PEP 3141.
         self.no_box_x = max(1, int(math.ceil(xlen/box_size)))
         self.no_box_y = max(1, int(math.ceil(ylen/box_size)))
         self.no_box_z = max(1, int(math.ceil(zlen/box_size)))
@@ -369,7 +370,7 @@ class bondmaker:
         for x in range(self.no_box_x):
             for y in range(self.no_box_y):
                 for z in range(self.no_box_z):
-                    self.boxes[self.box_key(x,y,z)] = []
+                    self.boxes[(x,y,z)] = []
 
         # put atoms into boxes
         for atom in atoms:
@@ -379,10 +380,8 @@ class bondmaker:
             self.put_atom_in_box(x,y,z,atom)
 
         # assign bonds
-        keys = self.boxes.keys()
-        for key in keys:
-            self.find_bonds_for_atoms(self.boxes[key])
-
+        for key, value in self.boxes.items():
+            self.find_bonds_for_atoms(value)
 
 
         return
@@ -390,20 +389,20 @@ class bondmaker:
     def put_atom_in_box(self,x,y,z,atom):
         # atom in the x,y,z box and the up to 7 neighboring boxes on
         # one side of the x,y,z box in each dimension
+
         for bx in [x,x+1]:
             for by in [y,y+1]:
                 for bz in [z,z+1]:
-                    key = self.box_key(bx,by,bz)
-                    if key in self.boxes.keys():
+                    key = (bx,by,bz)
+                    try:
                         self.boxes[key].append(atom)
+                    except KeyError:
+                        # No box exists for this coordinate
+                        pass
 
                         #print(atom,'->',key,':',len(self.boxes[key]))
 
         return
-
-    def box_key(self, x, y, z):
-        return '%d-%d-%d'%(x,y,z)
-
 
     def has_bond(self, atom1, atom2):
         if atom1 in atom2.bonded_atoms or atom2 in atom1.bonded_atoms:

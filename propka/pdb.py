@@ -50,11 +50,17 @@ def protein_precheck(conformations, names):
     for name in names:
         atoms = conformations[name].atoms
 
-        res_ids = []
-        [res_ids.append(resid_from_atom(a)) for a in atoms if not res_ids.count(resid_from_atom(a))]
+        # Group the atoms by their residue:
+        atoms_by_residue = {}
+        for a in atoms:
+            if a.element != 'H':
+                res_id = resid_from_atom(a)
+                try:
+                    atoms_by_residue[res_id].append(a)
+                except KeyError:
+                    atoms_by_residue[res_id] = [a]
 
-        for res_id in res_ids:
-            res_atoms = [a for a in atoms if resid_from_atom(a) == res_id and a.element != 'H']
+        for res_id, res_atoms in atoms_by_residue.items():
             resname = res_atoms[0].resName
             residue_label = '%3s%5s'%(resname, res_id)
 

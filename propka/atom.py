@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import string, propka.lib, propka.group
 
+from . import hybrid36
 
 class Atom:
     """
@@ -68,13 +69,16 @@ class Atom:
 
         if line:
             self.name = line[12:16].strip()
-            self.numb = int( line[ 6:11].strip() )
+            self.numb = int( hybrid36.decode(line[ 6:11]) )
             self.x = float( line[30:38].strip() )
             self.y = float( line[38:46].strip() )
             self.z = float( line[46:54].strip() )
             self.resNumb = int( line[22:26].strip() )
             self.resName = "%-3s" % (line[17:20].strip())
-            self.chainID = max(line[21], 'A') # set chain id to A in case of white space
+            self.chainID = line[21]
+            # Set chain id to "_" if it is just white space.
+            if not self.chainID.strip():
+                self.chainID = '_'
             self.type = line[:6].strip().lower()
 
             if self.resName in ['DA ','DC ','DG ','DT ']:

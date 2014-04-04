@@ -168,11 +168,16 @@ def setIonDeterminants(conformation_container, version):
 def setBackBoneDeterminants(titratable_groups, backbone_groups, version):
 
     for titratable_group in titratable_groups:
+        titratable_group_interaction_atoms = titratable_group.interaction_atoms_for_acids
+        if not titratable_group_interaction_atoms:
+            continue
+
         # find out which backbone groups this titratable is interacting with
         for backbone_group in backbone_groups:
             # find the interacting atoms
             backbone_interaction_atoms = backbone_group.get_interaction_atoms(titratable_group)
-            titratable_group_interaction_atoms = titratable_group.interaction_atoms_for_acids
+            if not backbone_interaction_atoms:
+                continue
 
             # find the smallest distance
             [backbone_atom, distance, titratable_atom] = propka.calculations.get_smallest_distance(backbone_interaction_atoms,

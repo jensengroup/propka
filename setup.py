@@ -48,4 +48,5 @@ using the tutorial http://propka.ki.ku.dk/~luca/wiki/index.php/PROPKA_3.1_Tutori
             ],
         },
       zip_safe=True,
+      test_suite="Tests",
 )

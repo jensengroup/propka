@@ -420,6 +420,9 @@ class Group:
             return self.interaction_atoms_for_acids #default is acid interaction atoms - cf. 3.0
 
     def set_center(self, atoms):
+        if not atoms:
+            raise ValueError("At least one atom must be specified")
+
         # reset center
         self.x = 0.0; self.y = 0.0; self.z = 0.0
 
@@ -614,8 +617,14 @@ class COO_group(Group):
         # Identify the two caroxyl oxygen atoms
         the_oxygens = self.atom.get_bonded_elements('O')
 
-        # set the center using the two oxygen carboxyl atoms
-        self.set_center(the_oxygens)
+        # set the center using the two oxygen carboxyl atoms (if present)
+        if the_oxygens:
+            self.set_center(the_oxygens)
+        else:
+            self.set_center([self.atom])
+            # FIXME perhaps it would be better to ignore this group completely
+            # if the oxygen is missing from this residue?
+
         self.set_interaction_atoms(the_oxygens, the_oxygens)
         return
 
@@ -636,7 +645,12 @@ class HIS_group(Group):
             my_protonator.protonate_atom(r)
 
         # set the center using the ring atoms
-        self.set_center(ring_atoms)
+        if ring_atoms:
+            self.set_center(ring_atoms)
+        else:
+            # Missing side-chain atoms
+            self.set_center([self.atom])
+            # FIXME perhaps it would be better to ignore this group completely?
 
         # find the hydrogens on the ring-nitrogens
         hydrogens = []
@@ -751,14 +765,19 @@ class Cterm_group(Group):
 
     def setup_atoms(self):
         # Identify the carbon and other oxygen carboxyl atoms
-        the_carbon = self.atom.get_bonded_elements('C')
-        the_other_oxygen = the_carbon[0].get_bonded_elements('O')
-        the_other_oxygen.remove(self.atom)
+        the_carbons = self.atom.get_bonded_elements('C')
+        if not the_carbons:
+            self.set_center([self.atom])
+            # FIXME perhaps it would be better to ignore this group completely
+            # if the carbon is missing from this residue?
+        else:
+            the_other_oxygen = the_carbons[0].get_bonded_elements('O')
+            the_other_oxygen.remove(self.atom)
 
-        # set the center and interaction atoms
-        the_oxygens = [self.atom]+ the_other_oxygen
-        self.set_center(the_oxygens)
-        self.set_interaction_atoms(the_oxygens, the_oxygens)
+            # set the center and interaction atoms
+            the_oxygens = [self.atom]+ the_other_oxygen
+            self.set_center(the_oxygens)
+            self.set_interaction_atoms(the_oxygens, the_oxygens)
 
 
         return
