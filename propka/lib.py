@@ -107,7 +107,7 @@ def make_combination(combis, interaction):
 
 
 
-def loadOptions():
+def loadOptions(*args):
     """
     load the arguments parser with options
     """
@@ -166,7 +166,11 @@ def loadOptions():
 
 
     # parsing and returning options and arguments
-    options, args = parser.parse_args()
+    if len(args) == 0:
+        # command line
+        options, args = parser.parse_args()
+    else:
+        options, args = parser.parse_args(list(args))
 
     # adding specified filenames to arguments
     if options.filenames:
