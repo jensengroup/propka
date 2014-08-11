@@ -94,7 +94,7 @@ def loadOptions():
     parser.add_option("-r", "--reference", dest="reference", default="neutral",
            help="setting which reference to use for stability calculations [neutral/low-pH]")
     parser.add_option("-c", "--chain", action="append", dest="chains",
-           help="creating the protein with only a specified chain, note, chains without ID are labeled 'A' [all]")
+           help='creating the protein with only a specified chain. Specify " " for chains without ID [all]')
     parser.add_option("-t", "--thermophile", action="append", dest="thermophiles",
            help="defining a thermophile filename; usually used in 'alignment-mutations'")
     parser.add_option("-a", "--alignment", action="append", dest="alignment",
