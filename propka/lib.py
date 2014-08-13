@@ -75,6 +75,29 @@ def make_combination(combis, interaction):
     return res
 
 
+def parse_res_string(res_str):
+    """
+    Parse the residue string, in format "chain:resnum[inscode]", and return
+    a tuple of (chain, resnum, inscode). Raises ValueError if the input
+    string is invalid.
+    """
+    try:
+        chain, resnum_str = res_str.split(":")
+    except ValueError:
+        raise ValueError("Invalid residue string (must contain 2 colon-separated values)")
+    try:
+        resnum = int(resnum_str)
+    except ValueError:
+        try:
+            resnum = int(resnum_str[:-1])
+        except ValueError:
+            raise ValueError("Invalid residue number (not an int)")
+        else:
+            inscode = resnum_str[-1]
+    else:
+        inscode = " "
+    return chain, resnum, inscode
+
 
 def loadOptions():
     """
@@ -95,6 +118,10 @@ def loadOptions():
            help="setting which reference to use for stability calculations [neutral/low-pH]")
     parser.add_option("-c", "--chain", action="append", dest="chains",
            help='creating the protein with only a specified chain. Specify " " for chains without ID [all]')
+    parser.add_option("-i", "--titrate_only", dest="titrate_only",
+           help='Treat only the specified residues as titratable. Value should '
+           'be a comma-separated list of "chain:resnum" values; for example: '
+           '-i "A:10,A:11"')
     parser.add_option("-t", "--thermophile", action="append", dest="thermophiles",
            help="defining a thermophile filename; usually used in 'alignment-mutations'")
     parser.add_option("-a", "--alignment", action="append", dest="alignment",
@@ -147,7 +174,17 @@ def loadOptions():
       print("Warning: no pdbfile provided")
       #sys.exit(9)
 
-
+    # Convert titrate_only string to a list of (chain, resnum) items:
+    if options.titrate_only is not None:
+        res_list = []
+        for res_str in options.titrate_only.split(','):
+            try:
+                chain, resnum, inscode = parse_res_string(res_str)
+            except ValueError:
+                print('Invalid residue string: "%s"' % res_str)
+                sys.exit(1)
+            res_list.append((chain, resnum, inscode))
+        options.titrate_only = res_list
 
     # done!
     return options, args

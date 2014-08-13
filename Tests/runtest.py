@@ -10,19 +10,37 @@ import os, re
 import sys
 
 if __name__ == "__main__":
-    pdbs = ['1FTJ-Chain-A',
-            '1HPX',
-            '4DFR']
+    # A list of input structures and command-line arguments to be passed in
+    # to PROPKA for each:
+    pdbs = [('1FTJ-Chain-A', []),
+            ('1HPX', []),
+            ('4DFR', []),
+            ('3SGB', []),
+            ('3SGB-subset', ['--titrate_only', 'E:17,E:18,E:19,E:29,E:44,E:45,E:46,E:118,E:119,E:120,E:139']),
+           ]
 
-    for pdb in pdbs:
+    for pdb, args in pdbs:
         print('')
         print('RUNNING '+pdb)
 
         # Run pka calculation
-        call([sys.executable, '../scripts/propka31.py','pdb/'+pdb+'.pdb'], stdout = open(pdb+'.out', 'w+'))
+        fh = open(pdb + '.out', 'w')
+        cmd = [sys.executable, '../scripts/propka31.py','pdb/%s.pdb' % pdb] + args
+        ret = call(cmd, stdout=fh, stderr=fh)
+        if ret != 0:
+            print(" ERR:")
+            print(" Failed to execute PROPKA on %s" % pdb)
+            print(" See: %s.out" % pdb)
+            sys.exit(1)
 
-        # Test pka predictiona
-        result = open('results/'+pdb+'.dat','r')
+        # Test pka predictions
+        result_file = 'results/%s.dat' % pdb
+        if not os.path.isfile(result_file):
+            print(" ERR:")
+            print(" file not found: %s" % result_file)
+            sys.exit(1)
+
+        result = open(result_file,'r')
         atpka = False
         for line in open(pdb+'.pka', 'r').readlines():
             if not atpka:
@@ -37,11 +55,13 @@ if __name__ == "__main__":
                 atpka = False
                 continue
 
-            r = float(result.readline())
+            expected_value = float(result.readline())
             m = re.search('([0-9]+\.[0-9]+)', line)
+            value = float(m.group(0))
 
-            if(float(m.group(0)) != r):
+            if value != expected_value:
                 print(" ERR:")
                 print(line)
-                print(" "+"should be: "+str(r))
+                print(" %s should be: %s" % (value, expected_value))
+                sys.exit(1)
 

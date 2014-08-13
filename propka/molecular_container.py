@@ -139,7 +139,8 @@ class Molecular_container:
                                                                                 parameters=self.conformations[self.conformation_names[0]].parameters,
                                                                                 molecular_container=self)
 
-        for group in self.conformations[self.conformation_names[0]].get_titratable_groups_and_cysteine_bridges():
+        container = self.conformations[self.conformation_names[0]]
+        for group in container.get_groups_for_calculations():
             # new group to hold average values
             avr_group = group.clone()
             # sum up all groups ...
