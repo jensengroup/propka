@@ -74,8 +74,7 @@ class Conformation_container:
 
     def find_covalently_coupled_groups(self):
         """ Finds covalently coupled groups and sets common charge centres if needed """
-        for group in [ group for group in self.groups if group.titratable]:
-
+        for group in self.get_titratable_groups():
             # Find covalently bonded groups
             bonded_groups = self.find_bonded_titratable_groups(group.atom, 1, group.atom)
 
