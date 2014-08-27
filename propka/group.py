@@ -338,6 +338,7 @@ class Group:
         res.covalently_coupled_groups = self.covalently_coupled_groups
         res.non_covalently_coupled_groups = self.non_covalently_coupled_groups
         res.titratable = self.titratable
+        res.exclude_cys_from_results = self.exclude_cys_from_results
         res.charge = self.charge
         return res
 
@@ -367,7 +368,7 @@ class Group:
 
         if self.model_pka_set and not self.atom.cysteine_bridge:
             self.titratable = True
-
+        self.exclude_cys_from_results = False
 
         return
 
@@ -606,6 +607,15 @@ class Group:
 
         return charge
 
+    def use_in_calculations(self):
+        """
+        Whether this group should be included in the results report. If
+        --titrate_only option is specified, only residues that are titratable
+        and are in that list are included; otherwise all titratable residues
+        and CYS residues are included.
+        """
+        return self.titratable or (self.residue_type == 'CYS' and \
+                                   not self.exclude_cys_from_results)
 
 
 class COO_group(Group):

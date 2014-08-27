@@ -31,11 +31,13 @@ class Conformation_container:
         for atom in self.get_non_hydrogen_atoms():
             # has this atom been checked for groups?
             if atom.groups_extracted == 0:
-                self.validate_group(propka.group.is_group(self.parameters, atom))
-            # if the atom has been checked in a another conformation, check if it has a
-            # group that should be used in this conformation as well
-            elif atom.group:
-                self.validate_group(atom.group)
+                group = propka.group.is_group(self.parameters, atom)
+            else:
+                group = atom.group
+                # if the atom has been checked in a another conformation, check if it has a
+                # group that should be used in this conformation as well
+            if group:
+                self.setup_and_add_group(group)
 
         return
 
@@ -74,8 +76,7 @@ class Conformation_container:
 
     def find_covalently_coupled_groups(self):
         """ Finds covalently coupled groups and sets common charge centres if needed """
-        for group in [ group for group in self.groups if group.titratable]:
-
+        for group in self.get_titratable_groups():
             # Find covalently bonded groups
             bonded_groups = self.find_bonded_titratable_groups(group.atom, 1, group.atom)
 
@@ -131,8 +132,9 @@ class Conformation_container:
         return res
 
 
-    def validate_group(self, group):
+    def setup_and_add_group(self, group):
         """ Checks if we want to include this group in the calculations """
+
         # Is it recognized as a group at all?
         if not group:
             return
@@ -140,18 +142,25 @@ class Conformation_container:
         # Other checks (include ligands, which chains etc.)
 
         # if all ok, accept the group
-        self.accept_group(group)
-        return
+        self.init_group(group)
+        self.groups.append(group)
 
-
-    def accept_group(self, group):
+    def init_group(self, group):
+        """
+        Initialize the given Group object.
+        """
         # set up the group
         group.parameters=self.parameters
         group.setup()
 
-        # and store it
-        self.groups.append(group)
-        return
+        # If --titrate_only option is set, make non-specified residues un-titratable:
+        titrate_only = self.molecular_container.options.titrate_only
+        if titrate_only is not None:
+            at = group.atom
+            if not (at.chainID, at.resNumb, at.icode) in titrate_only:
+                group.titratable = False
+                if group.residue_type == 'CYS':
+                    group.exclude_cys_from_results = True
 
 
     #
@@ -335,8 +344,14 @@ class Conformation_container:
     def get_titratable_groups(self):
         return [group for group in self.groups if group.titratable]
 
-    def get_titratable_groups_and_cysteine_bridges(self):
-        return [group for group in self.groups if group.titratable or group.residue_type == 'CYS']
+    def get_groups_for_calculations(self):
+        """
+        Returns a list of groups that should be included in results report.
+        If --titrate_only option is specified, only residues that are titratable
+        and are in that list are included; otherwise all titratable residues
+        and CYS residues are included.
+        """
+        return [group for group in self.groups if group.use_in_calculations()]
 
     def get_acids(self):
         return [group for group in self.groups if (group.residue_type in self.parameters.acid_list
