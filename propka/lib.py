@@ -9,18 +9,49 @@ import pkg_resources
 # file I/O
 #
 def open_file_for_reading(filename):
+    """Open file or file-like stream  *filename* for reading.
+
+    *filename* may be a string and then it is opened but if it is a
+    file-like object (such as an open :class:`file` or
+    :class:`StringIO.StringIO` --- really anything with ``next()``,
+    ``read()``, ``readlines()``, ``readline``, ``close`` methods) then
+    the object is just passed through (the stream is attempted to be
+    reset to the beginning with ``fseek(0)``).
+    """
+    if hasattr(filename, 'next') and hasattr(filename, 'read') \
+            and hasattr(filename, 'readline') and hasattr(filename, 'readlines') \
+            and hasattr(filename, 'close'):
+        # already a stream
+        try:
+            filename.fseek(0)
+        except AttributeError:
+            pass
+        return filename
+
     try:
         f = open(filename,'r')
     except:
-        raise Exception('Cannot find file %s' %filename)
+        raise IOError('Cannot find file %s' %filename)
     return f
 
 def open_file_for_writing(filename):
+    """Open file or file-like stream for writing"""
+    if hasattr(filename, 'write') and hasattr(filename, 'writeline') and hasattr(filename, 'writelines') \
+            and hasattr(filename, 'close'):
+        # already a stream
+        try:
+            mode = filename.mode
+        except AttributeError:
+            mode = "w"
+        if not ("w" in mode or "a" in mode or "+" in mode):
+            raise IOError("File/stream not open for writing")
+        return filename
+
     try:
-        res = open(filename,'w')
+        f = open(filename,'w')
     except:
         raise Exception('Could not open %s'%filename)
-    return res
+    return f
 
 #
 # bookkeeping etc.
@@ -99,7 +130,7 @@ def parse_res_string(res_str):
     return chain, resnum, inscode
 
 
-def loadOptions():
+def loadOptions(*args):
     """
     load the arguments parser with options
     """
@@ -162,7 +193,11 @@ def loadOptions():
 
 
     # parsing and returning options and arguments
-    options, args = parser.parse_args()
+    if len(args) == 0:
+        # command line
+        options, args = parser.parse_args()
+    else:
+        options, args = parser.parse_args(list(args))
 
     # adding specified filenames to arguments
     if options.filenames:
@@ -230,10 +265,10 @@ def writeFile(filename, lines):
     """
     Writes a new file
     """
-    file = open(filename, 'w')
+    f = open_file_for_writing(filename)
 
     for line in lines:
-        file.write( "%s\n" % (line) )
-    file.close()
+        f.write( "%s\n" % (line) )
+    f.close()
 
 
