@@ -25,7 +25,7 @@ def single(pdbfile, optargs=None):
        single("protein.pdb", optargs=["--mutation=N25R/N181D", "-v", "--pH=7.2"])
     """
     optargs = optargs if optargs is not None else []
-    options, ignored_pdbfiles = propka.lib.loadOptions(*optargs)
+    options, ignored_pdbfiles = propka.lib.loadOptions(*optargs, commandline=False)
 
     my_molecule = propka.molecular_container.Molecular_container(pdbfile, options)
     my_molecule.calculate_pka()
