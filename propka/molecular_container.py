@@ -11,7 +11,7 @@ import os, sys
 import propka.pdb, propka.version, propka.output, propka.conformation_container, propka.group, propka.lib
 
 class Molecular_container:
-    def __init__(self, input_file, options=None):
+    def __init__(self, input_file, options=None, writeout=True):
         # printing out header before parsing input
         propka.output.printHeader()
 
@@ -61,8 +61,9 @@ class Molecular_container:
             self.find_covalently_coupled_groups()
 
             # write out the input file
-            filename = self.file.replace(input_file_extension,'.propka_input')
-            propka.pdb.write_input(self, filename)
+            if writeout:
+                filename = self.file.replace(input_file_extension,'.propka_input')
+                propka.pdb.write_input(self, filename)
 
 
         elif input_file_extension == '.propka_input':

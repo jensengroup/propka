@@ -130,11 +130,18 @@ def parse_res_string(res_str):
     return chain, resnum, inscode
 
 
-def loadOptions(*args):
+def loadOptions(*args, **kwargs):
     """
     load the arguments parser with options
+
+    :Keywords:
+        *commandline*
+            if True, read options from standard in; otherwise, read options
+            from args; default True
     """
     from optparse import OptionParser
+
+    commandline = kwargs.pop('commandline', True)
 
     # defining a 'usage' message
     usage = "usage: %prog [options] filename"
@@ -193,7 +200,7 @@ def loadOptions(*args):
 
 
     # parsing and returning options and arguments
-    if len(args) == 0:
+    if commandline:
         # command line
         options, args = parser.parse_args()
     else:
