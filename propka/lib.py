@@ -208,7 +208,7 @@ def loadOptions(*args):
 
     # checking at early stage that there is at least one pdbfile to work with
     if len(args) == 0:
-      dprint("Warning: no pdbfile provided")
+      dwarn("Warning: no pdbfile provided")
       #sys.exit(9)
 
     # Convert titrate_only string to a list of (chain, resnum) items:
@@ -283,17 +283,27 @@ no_print = False                # module-scope. Set when options are parsed.
 def dprint(*args, **kargs):
     """Behaves like print(), unless the --no-print option is set. """
     global no_print
-    if no_print:
-        return
+    if not no_print:
+        file = kargs.get('file', sys.stdout)
+        file.write(_dprintf(*args, **kargs))
 
-    # https://www.safaribooksonline.com/library/view/learning-python-5th/9781449355722/ch18s05.html
+
+def dwarn(*args, **kargs):
+    """Behaves like print() - possibly to be replaced by a logger"""
+    file = kargs.get('file', sys.stdout)
+    file.write(_dprintf(*args, **kargs))
+
+
+def _dprintf(*args, **kargs):
+    """Behaves like print(), returning a string. """
+     # https://www.safaribooksonline.com/library/view/learning-python-5th/9781449355722/ch18s05.html
     sep  = kargs.get('sep', ' ')            # Keyword arg defaults
     end  = kargs.get('end', '\n')
-    file = kargs.get('file', sys.stdout)
     output = ''
     first  = True
     for arg in args:
         output += ('' if first else sep) + str(arg)
         first = False
-    file.write(output + end)
+    output = output+end
+    return output
 

@@ -4,7 +4,7 @@ import math
 import sys, os
 
 import propka.lib as lib
-from propka.lib import dprint
+from propka.lib import dprint, dwarn
 import propka.calculations as calculations
 import propka.parameters
 

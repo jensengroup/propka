@@ -5,7 +5,7 @@ from __future__ import print_function
 import pickle,sys,os,math,propka.calculations
 
 import pkg_resources
-from propka.lib import dprint
+from propka.lib import dprint, dwarn
 
 class bondmaker:
     def __init__(self):

@@ -5,7 +5,7 @@ from __future__ import print_function
 
 from propka.vector_algebra import *
 import propka.bonds, propka.pdb, propka.atom
-from propka.lib import dprint
+from propka.lib import dprint, dwarn
 
 class Protonate:
     """ Protonates atoms using VSEPR theory """
@@ -242,7 +242,7 @@ class Protonate:
         if atom.steric_number in list(self.protonation_methods.keys()):
             self.protonation_methods[atom.steric_number](atom)
         else:
-            dprint('Warning: Do not have a method for protonating',atom,'(steric number: %d)'%atom.steric_number)
+            dwarn('Warning: Do not have a method for protonating',atom,'(steric number: %d)'%atom.steric_number)
 
         return
 
@@ -408,7 +408,7 @@ class Protonate:
         if element in list(self.bond_lengths.keys()):
             d = self.bond_lengths[element]
         else:
-            dprint('WARNING: Bond length for %s not found, using the standard value of %f'%(element, d))
+            dwarn('WARNING: Bond length for %s not found, using the standard value of %f'%(element, d))
 
         a = a.rescale(d)
 

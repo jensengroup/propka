@@ -5,7 +5,7 @@ from __future__ import print_function
 import sys
 
 import propka.lib
-from propka.lib import dprint
+from propka.lib import dprint, dwarn
 
 
 def printHeader():

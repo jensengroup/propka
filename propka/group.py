@@ -6,7 +6,7 @@ from __future__ import division
 from __future__ import print_function
 
 import propka.ligand, propka.determinant, propka.ligand_pka_values, math, propka.protonate
-from propka.lib import dprint
+from propka.lib import dprint, dwarn
 
 my_protonator = propka.protonate.Protonate(verbose=False)
 
@@ -397,18 +397,18 @@ class Group:
                         ok = False
 
         if not ok:
-            dprint('Warning: Missing atoms or failed protonation for %s (%s) -- please check the structure'%(self.label, self.type))
-            dprint('         %s'%self)
+            dwarn('Warning: Missing atoms or failed protonation for %s (%s) -- please check the structure'%(self.label, self.type))
+            dwarn('         %s'%self)
             Na = sum([expected_atoms_acid_interactions[self.type][e] for e in expected_atoms_acid_interactions[self.type].keys()])
             Nb = sum([expected_atoms_base_interactions[self.type][e] for e in expected_atoms_base_interactions[self.type].keys()])
 
-            dprint('         Expected %d interaction atoms for acids, found:'%Na)
+            dwarn('         Expected %d interaction atoms for acids, found:'%Na)
             for i in range(len(self.interaction_atoms_for_acids)):
-                 dprint('             %s'%self.interaction_atoms_for_acids[i])
+                 dwarn('             %s'%self.interaction_atoms_for_acids[i])
 
-            dprint('         Expected %d interaction atoms for bases, found:'%Nb)
+            dwarn('         Expected %d interaction atoms for bases, found:'%Nb)
             for i in range(len(self.interaction_atoms_for_bases)):
-                 dprint('             %s'%self.interaction_atoms_for_bases[i])
+                 dwarn('             %s'%self.interaction_atoms_for_bases[i])
 
 
                     #return
@@ -649,7 +649,7 @@ class HIS_group(Group):
         # Find the atoms in the histidine ring
         ring_atoms = propka.ligand.is_ring_member(self.atom)
         if len(ring_atoms) != 5:
-            dprint('Warning: His group does not seem to contain a ring',self)
+            dwarn('Warning: His group does not seem to contain a ring',self)
 
         # protonate ring
         for r in ring_atoms:
