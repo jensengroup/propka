@@ -4,7 +4,7 @@ import math
 import sys, os
 
 import propka.lib as lib
-from propka.lib import dprint, dwarn
+from propka.lib import info, warn
 import propka.calculations as calculations
 import propka.parameters
 
@@ -110,7 +110,7 @@ class simple_hb(version_A):
     def __init__(self, parameters):
         # set the calculation rutines used in this version
         version_A.__init__(self, parameters)
-        dprint('Using simple hb model')
+        info('Using simple hb model')
         return
 
     def get_hydrogen_bond_parameters(self, atom1, atom2):
@@ -127,7 +127,7 @@ class element_based_ligand_interactions(version_A):
     def __init__(self, parameters):
         # set the calculation rutines used in this version
         version_A.__init__(self, parameters)
-        dprint('Using detailed SC model!')
+        info('Using detailed SC model!')
         return
 
     def get_hydrogen_bond_parameters(self, atom1, atom2):
@@ -169,8 +169,8 @@ class element_based_ligand_interactions(version_A):
 
             res = self.parameters.hydrogen_bonds.get_value(elements[0], elements[1])
             if not res:
-                dprint('Could not determine backbone interaction parameters for:',
-                      backbone_atom,atom)
+                info('Could not determine backbone interaction parameters for:',
+                     backbone_atom, atom)
 
             return
 

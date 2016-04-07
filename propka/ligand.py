@@ -7,7 +7,7 @@ import sys
 
 import propka.calculations
 from propka.vector_algebra import *
-from propka.lib import dprint, dwarn
+from propka.lib import info, warn
 
 
 all_sybyl_types = [
@@ -151,7 +151,7 @@ max_C_triple_bond_squared = max_C_triple_bond*max_C_triple_bond
 def assign_sybyl_type(atom):
     # check if we already have assigned a name to this atom
     if atom.sybyl_assigned:
-        #dprint(atom.name,'already assigned')
+        #info(atom.name,'already assigned')
         return
 
     # find some properties of the atom
@@ -332,7 +332,7 @@ def assign_sybyl_type(atom):
 
     element = atom.element.capitalize()
     set_type(atom,element)
-    # dprint('Using element as type for %s'%atom.element)
+    # info('Using element as type for %s'%atom.element)
 
     return
 
@@ -363,7 +363,7 @@ def identify_ring(this_atom, original_atom, number, past_atoms):
 
 
 def set_type(atom,type):
-    #dprint(atom, '->',type)
+    #info(atom, '->',type)
     atom.sybyl_type = type
     atom.sybyl_assigned=True
     return
@@ -388,7 +388,7 @@ def are_atoms_planar(atoms):
     margin = 0.20
     for b in atoms[3:]:
         v = vector(atom1=atoms[0], atom2=b).rescale(1.0)
-        #dprint(atoms[0],abs(v*n) )
+        #info(atoms[0],abs(v*n) )
         if abs(v*n)>margin:
             return False
 

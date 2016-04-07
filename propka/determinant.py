@@ -1,7 +1,7 @@
 
 from __future__ import division
 from __future__ import print_function
-from propka.lib import dprint, dwarn
+from propka.lib import info, warn
 
 class Determinant:
     """

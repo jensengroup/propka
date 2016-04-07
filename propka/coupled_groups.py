@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import print_function
 
 import math, propka.output, propka.group, propka.lib, itertools
-from propka.lib import dprint, dwarn
+from propka.lib import info, warn
 
 
 class non_covalently_couple_groups:
@@ -130,22 +130,22 @@ class non_covalently_couple_groups:
 
         self.parameters = conformation.parameters
         if verbose:
-            dprint('')
-            dprint(' Warning: When using the -d option, pKa values based on \'swapped\' interactions')
-            dprint('          will be writting to the output .pka file')
-            dprint('')
-            dprint('-'*103)
-            dprint(' Detecting non-covalently coupled residues')
-            dprint('-'*103)
-            dprint('   Maximum pKa difference:     %4.2f pKa units'%self.parameters.max_intrinsic_pKa_diff)
-            dprint('   Minimum interaction energy: %4.2f pKa units'%self.parameters.min_interaction_energy)
-            dprint('   Maximum free energy diff.:  %4.2f pKa units'%self.parameters.max_free_energy_diff)
-            dprint('   Minimum swap pKa shift:     %4.2f pKa units'%self.parameters.min_swap_pka_shift)
-            dprint('   pH:                         %6s ' %str(self.parameters.pH))
-            dprint('   Reference:                  %s'   %self.parameters.reference)
-            dprint('   Min pKa:                    %4.2f'%self.parameters.min_pka)
-            dprint('   Max pKa:                    %4.2f'%self.parameters.max_pka)
-            dprint('')
+            info('')
+            info(' Warning: When using the -d option, pKa values based on \'swapped\' interactions')
+            info('          will be writting to the output .pka file')
+            info('')
+            info('-' * 103)
+            info(' Detecting non-covalently coupled residues')
+            info('-' * 103)
+            info('   Maximum pKa difference:     %4.2f pKa units' % self.parameters.max_intrinsic_pKa_diff)
+            info('   Minimum interaction energy: %4.2f pKa units' % self.parameters.min_interaction_energy)
+            info('   Maximum free energy diff.:  %4.2f pKa units' % self.parameters.max_free_energy_diff)
+            info('   Minimum swap pKa shift:     %4.2f pKa units' % self.parameters.min_swap_pka_shift)
+            info('   pH:                         %6s ' % str(self.parameters.pH))
+            info('   Reference:                  %s' % self.parameters.reference)
+            info('   Min pKa:                    %4.2f' % self.parameters.min_pka)
+            info('   Max pKa:                    %4.2f' % self.parameters.max_pka)
+            info('')
 
         # find coupled residues
         titratable_groups = conformation.get_titratable_groups()
@@ -170,7 +170,7 @@ class non_covalently_couple_groups:
         map = propka.output.make_interaction_map('Non-covalent coupling map for %s'%conformation,
                                                  conformation.get_non_covalently_coupled_groups(),
                                                  lambda g1,g2: g1 in g2.non_covalently_coupled_groups)
-        dprint(map)
+        info(map)
 
         for system in conformation.get_coupled_systems(conformation.get_non_covalently_coupled_groups(),propka.group.Group.get_non_covalently_coupled_groups):
             self.print_system(conformation, list(system))
@@ -178,7 +178,7 @@ class non_covalently_couple_groups:
 
     def print_system(self, conformation, system):
 
-        dprint('System containing %d groups:'%len(system))
+        info('System containing %d groups:' % len(system))
 
         # make list of interactions withi this system
         interactions = list(itertools.combinations(system,2))
@@ -188,7 +188,7 @@ class non_covalently_couple_groups:
         for interaction in interactions:
             data = self.is_coupled_protonation_state_probability(interaction[0], interaction[1],conformation.calculate_folding_energy, return_on_fail=False)
             coup_info += self.make_data_to_string(data,interaction[0],interaction[1])+'\n\n'
-        dprint(coup_info)
+        info(coup_info)
 
         # make list of possible combinations of swap to try out
         combinations = propka.lib.generate_combinations(interactions)
@@ -212,7 +212,7 @@ class non_covalently_couple_groups:
             #for interaction in combination:
             #    self.swap_interactions([interaction[0]], [interaction[1]])
 
-        dprint(swap_info)
+        info(swap_info)
 
         return
     #

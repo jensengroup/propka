@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import print_function
 
 import math, propka.protonate, propka.bonds,copy, sys
-from propka.lib import dprint, dwarn
+from propka.lib import info, warn
 
 
 #
@@ -61,7 +61,7 @@ def setup_bonding_and_protonation_30_style(parameters, molecular_container):
 
 def protonate_30_style(molecular_container):
     for name in molecular_container.conformation_names:
-        dprint('Now protonating',name)
+        info('Now protonating', name)
         # split atom into residues
         curres = -1000000
         residue = []
@@ -97,7 +97,7 @@ def addArgHydrogen(residue):
     """
     Adds Arg hydrogen atoms to residues according to the 'old way'.
     """
-    #dprint('Adding arg H',residue)
+    #info('Adding arg H',residue)
     for atom in residue:
         if   atom.name == "CD":
             CD  = atom
@@ -160,7 +160,7 @@ def addTrpHydrogen(residue):
             CE  = atom
     if CD == None or NE == None or CE == None:
         str = "Did not find all atoms in %s%4d - in %s" % (self.resName, self.resNumb, "addTrpHydrogen()")
-        dprint(str)
+        info(str)
         sys.exit(0)
 
     HE = protonateSP2([CD, NE, CE])
@@ -185,7 +185,7 @@ def addAmdHydrogen(residue):
 
     if C == None or O == None or N == None:
         str = "Did not find N, C and/or O in %s%4d - in %s" % (atom.resName, atom.resNumb, "addAmdHydrogen()")
-        dprint(str)
+        info(str)
         sys.exit(0)
 
     H1 = protonateDirection([N, O, C])
@@ -388,7 +388,7 @@ def radial_volume_desolvation(parameters, group):
 
 
 
-    #dprint('%s %5.2f %5.2f %4d'%(group, group.buried, group.Emass, group.Nmass))
+    #info('%s %5.2f %5.2f %4d'%(group, group.buried, group.Emass, group.Nmass))
     return
 
 
@@ -574,7 +574,7 @@ def hydrogen_bond_interaction(group1, group2, version):
     [closest_atom1, distance, closest_atom2] = propka.calculations.get_smallest_distance(atoms1, atoms2)
 
     if None in [closest_atom1, closest_atom2]:
-        dwarn('Warning: Side chain interaction failed for %s and %s'%(group1.label, group2.label))
+        warn('Warning: Side chain interaction failed for %s and %s' % (group1.label, group2.label))
         return None
 
     # get the parameters
@@ -628,17 +628,17 @@ def hydrogen_bond_interaction(group1, group2, version):
     #exception = False # circumventing exception
     if exception == True:
         """ do nothing, value should have been assigned """
-            #dprint(" exception for %s %s %6.2lf" % (group1.label, group2.label, value))
+            #info(" exception for %s %s %6.2lf" % (group1.label, group2.label, value))
     else:
         value = version.calculateSideChainEnergy(distance, dpka_max, cutoff, weight, f_angle)
 
-    # dprint('distance',distance)
-    # dprint('dpka_max',dpka_max)
-    # dprint('cutoff',cutoff)
-    # dprint('f_angle',f_angle)
-    # dprint('weight',weight)
-    # dprint('value',value)
-    # dprint('===============================================')
+    # info('distance',distance)
+    # info('dpka_max',dpka_max)
+    # info('cutoff',cutoff)
+    # info('f_angle',f_angle)
+    # info('weight',weight)
+    # info('value',value)
+    # info('===============================================')
 
     return value
 
@@ -787,7 +787,7 @@ def checkCooArgException(group_coo, group_arg, version):
     #cutoff   = parameters.sidechain_cutoffs.get_value(group_coo.type,group_arg.type)
 
     # needs to be this way since you want to find shortest distance first
-    #dprint("--- exception for %s %s ---" % (group_coo.label, group_arg.label))
+    #info("--- exception for %s %s ---" % (group_coo.label, group_arg.label))
     atoms_coo = []
     atoms_coo.extend(group_coo.get_interaction_atoms(group_arg))
     atoms_arg = []
@@ -805,7 +805,7 @@ def checkCooArgException(group_coo, group_arg, version):
             distance, f_angle, nada = AngleFactorX(closest_coo_atom, closest_arg_atom, atom3)
 
         value = HydrogenBondEnergy(distance, dpka_max, cutoff, f_angle)
-        #dprint(iter, closest_coo_atom, closest_arg_atom,distance,value)
+        #info(iter, closest_coo_atom, closest_arg_atom,distance,value)
         value_tot += value
         # remove closest atoms before we attemp to find the runner-up pair
         atoms_coo.remove(closest_coo_atom)

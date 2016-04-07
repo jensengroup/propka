@@ -5,7 +5,7 @@ from __future__ import print_function
 import string, sys, copy
 
 import propka.lib
-from propka.lib import dprint, dwarn
+from propka.lib import info, warn
 
 from propka.atom import Atom
 from propka.conformation_container import Conformation_container
@@ -73,12 +73,12 @@ def protein_precheck(conformations, names):
             # check for c-terminal
             if 'C-' in [a.terminal for a in res_atoms]:
                 if len(res_atoms) != expected_atom_numbers[resname]+1:
-                    dwarn('Warning: Unexpected number (%d) of atoms in residue %s in conformation %s'%(len(res_atoms),residue_label, name))
+                    warn('Warning: Unexpected number (%d) of atoms in residue %s in conformation %s' % (len(res_atoms), residue_label, name))
                 continue
 
             # check number of atoms in residue
             if len(res_atoms) != expected_atom_numbers[resname]:
-                dwarn('Warning: Unexpected number (%d) of atoms in residue %s in conformation %s'%(len(res_atoms),residue_label, name))
+                warn('Warning: Unexpected number (%d) of atoms in residue %s in conformation %s' % (len(res_atoms), residue_label, name))
 
     return
 

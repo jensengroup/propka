@@ -7,7 +7,7 @@ import math, time
 import propka.lib as lib
 from propka.determinant import Determinant
 import propka.calculations
-from propka.lib import dprint, dwarn
+from propka.lib import info, warn
 
 # Some library functions for the interative pKa determinants
 
@@ -188,7 +188,7 @@ def addDeterminants(iterative_interactions, version, options=None):
 
     # Initialize iterative scheme
     if options.verbose == True:
-      dprint("\n   --- pKa iterations (%d groups, %d interactions) ---" % ( len(iteratives), len(iterative_interactions) ))
+      info("\n   --- pKa iterations (%d groups, %d interactions) ---" % (len(iteratives), len(iterative_interactions)))
     converged = False
     iteration = 0
     # set non-iterative pka values as first step
@@ -247,7 +247,7 @@ def addDeterminants(iterative_interactions, version, options=None):
         itres.pKa_iter.append(itres.pKa_new)
 
       if iteration == 10:
-          dprint("did not converge in %d iterations" % (iteration))
+          info("did not converge in %d iterations" % (iteration))
           break
 
     # --- Iterations finished ---
@@ -257,20 +257,20 @@ def addDeterminants(iterative_interactions, version, options=None):
       str = "%12s" % (" ")
       for index in range(0, iteration+1 ):
         str += "%8d" % (index)
-      dprint(str)
+      info(str)
       for itres in iteratives:
         str  = "%s   " % (itres.label)
         for pKa in itres.pKa_iter:
           str += "%8.2lf" % (pKa)
         if itres.converged == False:
           str += " *"
-        dprint(str)
+        info(str)
 
     # creating real determinants and adding them to group object
     for itres in iteratives:
         for type in ['sidechain','backbone','coulomb']:
             for interaction in itres.determinants[type]:
-                #dprint('done',itres.group.label,interaction[0],interaction[1])
+                #info('done',itres.group.label,interaction[0],interaction[1])
                 value = interaction[1]
                 if value > 0.005 or value < -0.005:
                     g = interaction[0]

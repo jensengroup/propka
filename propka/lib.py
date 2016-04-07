@@ -208,7 +208,7 @@ def loadOptions(*args):
 
     # checking at early stage that there is at least one pdbfile to work with
     if len(args) == 0:
-      dwarn("Warning: no pdbfile provided")
+      warn("Warning: no pdbfile provided")
       #sys.exit(9)
 
     # Convert titrate_only string to a list of (chain, resnum) items:
@@ -218,7 +218,7 @@ def loadOptions(*args):
             try:
                 chain, resnum, inscode = parse_res_string(res_str)
             except ValueError:
-                dprint('Invalid residue string: "%s"' % res_str)
+                info('Invalid residue string: "%s"' % res_str)
                 sys.exit(1)
             res_list.append((chain, resnum, inscode))
         options.titrate_only = res_list
@@ -227,7 +227,7 @@ def loadOptions(*args):
     # Set the no-print variable
     global no_print             # "global" means just module-scope
     no_print = options.no_print
-    
+
     # done!
     return options, args
 
@@ -280,14 +280,14 @@ def writeFile(filename, lines):
 
 
 no_print = False                # module-scope. Set when options are parsed.
-def dprint(*args, **kargs):
+def info(*args, **kargs):
     """Behaves like print(), unless the --no-print option is set. """
     global no_print
     if not no_print:
         print(*args, **kargs)
 
 
-def dwarn(*args, **kargs):
+def warn(*args, **kargs):
     """Behaves like print() - possibly to be replaced by a logger"""
     print(*args, **kargs)
 

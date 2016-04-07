@@ -5,7 +5,7 @@ from __future__ import print_function
 import sys
 
 import propka.lib
-from propka.lib import dprint, dwarn
+from propka.lib import info, warn
 
 
 def printHeader():
@@ -16,7 +16,7 @@ def printHeader():
     str += "%s\n" % ( getReferencesHeader() )
     str += "%s\n" % ( getWarningHeader() )
 
-    dprint(str)
+    info(str)
 
 
 def writePDB(protein, file=None, filename=None, include_hydrogens=False, options=None):
@@ -29,7 +29,7 @@ def writePDB(protein, file=None, filename=None, include_hydrogens=False, options
       if filename == None:
         filename = "%s.pdb" % (protein.name)
       file = open(filename, 'w')
-      dprint("writing pdbfile %s" % (filename))
+      info("writing pdbfile %s" % (filename))
       close_file = True
     else:
       # don't close the file, it was opened in a different place
@@ -61,7 +61,7 @@ def writePKA(protein, parameters, filename=None, conformation ='1A',reference="n
       filename = "%s.pka" % (protein.name)
     file = open(filename, 'w')
     if verbose == True:
-      dprint("Writing %s" % (filename))
+      info("Writing %s" % (filename))
 
     # writing propka header
     str  = "%s\n" % ( getPropkaHeader() )
@@ -99,7 +99,7 @@ def printTmProfile(protein, reference="neutral", window=[0., 14., 1.], Tm=[0.,0.
       for (pH, Tm) in profile:
         if pH >= window[0] and pH <= window[1] and (pH%window[2] < 0.01 or pH%window[2] > 0.99*window[2]):
           str += "%6.2lf%10.2lf\n" % (pH, Tm)
-      dprint(str)
+      info(str)
 
 
 def printResult(protein, conformation, parameters):
@@ -115,10 +115,10 @@ def printPKASection(protein, conformation, parameters):
     """
     # geting the determinants section
     str = getDeterminantSection(protein, conformation, parameters)
-    dprint(str)
+    info(str)
 
     str = getSummarySection(protein,conformation,parameters)
-    dprint(str)
+    info(str)
 
 
 def getDeterminantSection(protein, conformation, parameters):
