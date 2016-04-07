@@ -6,6 +6,7 @@ from __future__ import division
 from __future__ import print_function
 
 import propka.group, propka.determinants, propka.determinant, propka.ligand, propka.output, propka.coupled_groups, functools
+from propka.lib import dprint
 
 class Conformation_container:
     def __init__(self, name='', parameters=None, molecular_container=None):
@@ -50,7 +51,7 @@ class Conformation_container:
         map = propka.output.make_interaction_map('Covalent coupling map for %s'%self,
                                                  self.get_covalently_coupled_groups(),
                                                  lambda g1,g2: g1 in g2.covalently_coupled_groups)
-        print(map)
+        dprint(map)
 
         # check if we should set a common charge centre as well
         if self.parameters.common_charge_centre:
@@ -96,7 +97,7 @@ class Conformation_container:
                                                  #self.get_titratable_groups(),
                                                  self.get_covalently_coupled_groups(),
                                                  lambda g1,g2: g1 in g2.covalently_coupled_groups)
-        print(map)
+        dprint(map)
 
 
         return
@@ -168,7 +169,7 @@ class Conformation_container:
     #
 
     def calculate_pka(self, version, options):
-        print('\nCalculating pKas for',self)
+        dprint('\nCalculating pKas for',self)
 
         # calculate desolvation
         for group in self.get_titratable_groups()+self.get_ions():
@@ -193,7 +194,7 @@ class Conformation_container:
         penalised_labels = self.coupling_effects()
 
         if self.parameters.remove_penalised_group and len(penalised_labels)>0:
-            print('Removing penalised groups!!!')
+            dprint('Removing penalised groups!!!')
 
             for g in self.get_titratable_groups():
                 g.remove_determinants(penalised_labels)
@@ -297,7 +298,7 @@ class Conformation_container:
     def calculate_folding_energy(self, pH=None, reference=None):
         ddg = 0.0
         for group in self.groups:
-            #print('Folding energy for %s at pH %f: %f'%(group,pH,group.calculate_folding_energy(self.parameters, pH=pH, reference=reference)))
+            #dprint('Folding energy for %s at pH %f: %f'%(group,pH,group.calculate_folding_energy(self.parameters, pH=pH, reference=reference)))
             ddg += group.calculate_folding_energy(self.parameters, pH=pH, reference=reference)
 
         return ddg
@@ -379,7 +380,7 @@ class Conformation_container:
 
 
     def add_atom(self, atom):
-        #print(self,'adding',atom)
+        #dprint(self,'adding',atom)
         self.atoms.append(atom)
         if not atom.conformation_container:
             atom.conformation_container = self
@@ -446,5 +447,5 @@ class Conformation_container:
         key += atom.resNumb*1000
         if len(atom.name) > len(atom.element):
             key += ord(atom.name[len(atom.element)])
-            #print(atom,ord(atom.name[len(atom.element)]), '|%s||%s|'%(atom.name,atom.element))
+            #dprint(atom,ord(atom.name[len(atom.element)]), '|%s||%s|'%(atom.name,atom.element))
         return key

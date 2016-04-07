@@ -5,6 +5,7 @@ from __future__ import print_function
 import math
 import propka.lib as lib
 import sys, os
+from propka.lib import dprint
 
 import pkg_resources
 
@@ -99,7 +100,7 @@ class Parameters:
             self.parse_to_string_dictionary(words)
 
 
-        #print(words)
+        #dprint(words)
 
         return
 
@@ -138,7 +139,7 @@ class Parameters:
         return
 
     def parse_string(self, words):
-        #print('self.%s = \'%s\''%tuple(words))
+        #dprint('self.%s = \'%s\''%tuple(words))
         exec('self.%s = \'%s\''%tuple(words))
         return
 
@@ -158,12 +159,12 @@ class Parameters:
         return
 
     def print_interaction_parameters(self):
-        print('--------------- Model pKa values ----------------------')
+        dprint('--------------- Model pKa values ----------------------')
         for k in self.model_pkas.keys():
-            print('%3s %8.2f'%(k,self.model_pkas[k]))
+            dprint('%3s %8.2f'%(k,self.model_pkas[k]))
 
-        print('')
-        print('--------------- Interactions --------------------------')
+        dprint('')
+        dprint('--------------- Interactions --------------------------')
         agroups = ['COO', 'HIS', 'CYS', 'TYR', 'SER', 'N+', 'LYS', 'AMD', 'ARG', 'TRP', 'ROH', 'CG', 'C2N', 'N30', 'N31', 'N32', 'N33', 'NAR', 'OCO', 'NP1', 'OH', 'O3', 'CL', 'F', 'NAM', 'N1', 'O2', 'OP', 'SH']
         lgroups = ['CG', 'C2N', 'N30', 'N31', 'N32', 'N33', 'NAR', 'OCO', 'NP1', 'OH', 'O3', 'CL', 'F', 'NAM', 'N1', 'O2', 'OP', 'SH']
 
@@ -213,21 +214,21 @@ class Parameters:
                     if len(map[g2])==0 and (self.sidechain_cutoffs.get_value(g1,g2)[0] !=3 or self.sidechain_cutoffs.get_value(g1,g2)[1] != 4):
                         map_interaction += '?  '
 
-                print(interaction,map_interaction )
+                dprint(interaction,map_interaction )
 
                 if g1==g2:
                     break
-            print('-')
+            dprint('-')
 
-        print('--------------- Exceptions ----------------------------')
-        print('COO-HIS',self.COO_HIS_exception)
-        print('OCO-HIS',self.OCO_HIS_exception)
-        print('CYS-HIS',self.CYS_HIS_exception)
-        print('CYS-CYS',self.CYS_CYS_exception)
+        dprint('--------------- Exceptions ----------------------------')
+        dprint('COO-HIS',self.COO_HIS_exception)
+        dprint('OCO-HIS',self.OCO_HIS_exception)
+        dprint('CYS-HIS',self.CYS_HIS_exception)
+        dprint('CYS-CYS',self.CYS_CYS_exception)
 
 
-        print('--------------- Mapping -------------------------------')
-        print("""
+        dprint('--------------- Mapping -------------------------------')
+        dprint("""
 Titratable:
 CG  ARG
 C2N ARG
@@ -258,12 +259,12 @@ O2
 
 
     def print_interaction_parameters_latex(self):
-#         print('--------------- Model pKa values ----------------------')
+#         dprint('--------------- Model pKa values ----------------------')
 #         for k in self.model_pkas.keys():
-#             print('%3s %8.2f'%(k,self.model_pkas[k]))
+#             dprint('%3s %8.2f'%(k,self.model_pkas[k]))
 
-#         print('')
-#         print('--------------- Interactions --------------------------')
+#         dprint('')
+#         dprint('--------------- Interactions --------------------------')
         agroups = ['COO', 'HIS', 'CYS', 'TYR', 'SER', 'N+', 'LYS', 'AMD', 'ARG', 'TRP', 'ROH', 'CG', 'C2N', 'N30', 'N31', 'N32', 'N33', 'NAR', 'OCO', 'NP1', 'OH', 'O3', 'CL', 'F', 'NAM', 'N1', 'O2', 'OP', 'SH']
         lgroups = ['CG', 'C2N', 'N30', 'N31', 'N32', 'N33', 'NAR', 'OCO', 'NP1', 'OH', 'O3', 'CL', 'F', 'NAM', 'N1', 'O2', 'OP', 'SH']
 
@@ -329,7 +330,7 @@ Group1 & Group2 & Interaction & c1 &c2 \\\\
                     break
 
         s += '  \\end{longtable}\n'
-        print(s)
+        dprint(s)
         return
 
     def print_interactions_latex(self):
@@ -373,7 +374,7 @@ Group1 & Group2 & Interaction & c1 &c2 \\\\
                     break
 
         s += '  \\end{longtable}\n'
-        print(s)
+        dprint(s)
         return
 
 
@@ -444,7 +445,7 @@ class Interaction_matrix:
 #                         p+='sidechain_cutoff %3s %3s %s\n'%(ks[i],ks[j],self[ks[i]][ks[j]])
 #                         n+=1
 
-#         print('total',n,len(ks))
+#         dprint('total',n,len(ks))
 #         return p
 
 
