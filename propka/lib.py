@@ -284,26 +284,11 @@ def dprint(*args, **kargs):
     """Behaves like print(), unless the --no-print option is set. """
     global no_print
     if not no_print:
-        file = kargs.get('file', sys.stdout)
-        file.write(_dprintf(*args, **kargs))
+        print(*args, **kargs)
 
 
 def dwarn(*args, **kargs):
     """Behaves like print() - possibly to be replaced by a logger"""
-    file = kargs.get('file', sys.stdout)
-    file.write(_dprintf(*args, **kargs))
+    print(*args, **kargs)
 
-
-def _dprintf(*args, **kargs):
-    """Behaves like print(), returning a string. """
-     # https://www.safaribooksonline.com/library/view/learning-python-5th/9781449355722/ch18s05.html
-    sep  = kargs.get('sep', ' ')            # Keyword arg defaults
-    end  = kargs.get('end', '\n')
-    output = ''
-    first  = True
-    for arg in args:
-        output += ('' if first else sep) + str(arg)
-        first = False
-    output = output+end
-    return output
 
