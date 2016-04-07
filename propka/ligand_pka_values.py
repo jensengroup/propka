@@ -68,7 +68,7 @@ class ligand_pka_values:
             propka.pdb.write_mol2_for_atoms(atoms, filename)
         # check that we actually have a file to work with
         if not os.path.isfile(filename):
-            warn('Warning: Didn\'t find a user-modified file \'%s\' - generating one' % filename)
+            warn('Didn\'t find a user-modified file \'%s\' - generating one' % filename)
             propka.pdb.write_mol2_for_atoms(atoms, filename)
 
 

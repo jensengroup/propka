@@ -574,7 +574,7 @@ def hydrogen_bond_interaction(group1, group2, version):
     [closest_atom1, distance, closest_atom2] = propka.calculations.get_smallest_distance(atoms1, atoms2)
 
     if None in [closest_atom1, closest_atom2]:
-        warn('Warning: Side chain interaction failed for %s and %s' % (group1.label, group2.label))
+        warn('Side chain interaction failed for %s and %s' % (group1.label, group2.label))
         return None
 
     # get the parameters

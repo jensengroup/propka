@@ -2,8 +2,11 @@ from __future__ import division
 from __future__ import print_function
 
 import string, sys, copy, math, os
-
 import pkg_resources
+import logging
+
+logging.basicConfig(level=logging.NOTSET,format="%(levelname)-8s %(message)s")
+logger = logging.getLogger("propka")
 
 #
 # file I/O
@@ -208,7 +211,7 @@ def loadOptions(*args):
 
     # checking at early stage that there is at least one pdbfile to work with
     if len(args) == 0:
-      warn("Warning: no pdbfile provided")
+      warn("No pdbfile provided")
       #sys.exit(9)
 
     # Convert titrate_only string to a list of (chain, resnum) items:
@@ -225,8 +228,8 @@ def loadOptions(*args):
 
 
     # Set the no-print variable
-    global no_print             # "global" means just module-scope
-    no_print = options.no_print
+    if options.no_print:
+        logger.setLevel(logging.WARNING)
 
     # done!
     return options, args
@@ -279,16 +282,23 @@ def writeFile(filename, lines):
     f.close()
 
 
-no_print = False                # module-scope. Set when options are parsed.
-def info(*args, **kargs):
-    """Behaves like print(), unless the --no-print option is set. """
-    global no_print
-    if not no_print:
-        print(*args, **kargs)
+# formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
+def info(*args, **kargs):
+    for l in _sprint(*args, **kargs):
+        logger.info(l)
 
 def warn(*args, **kargs):
-    """Behaves like print() - possibly to be replaced by a logger"""
-    print(*args, **kargs)
+    logger.warning(_sprint(*args, **kargs))
+
+def _sprint(*args, **kargs):
+    """Behaves like print(), but on a string.
+
+    Splits at newlines (so multiple log lines can be output)
+    """
+    import io
+    st=io.StringIO()
+    print(*args, **kargs, file=st)
+    return st.getvalue().strip("\n").split("\n")
 
 

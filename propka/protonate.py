@@ -242,7 +242,7 @@ class Protonate:
         if atom.steric_number in list(self.protonation_methods.keys()):
             self.protonation_methods[atom.steric_number](atom)
         else:
-            warn('Warning: Do not have a method for protonating', atom, '(steric number: %d)' % atom.steric_number)
+            warn('Do not have a method for protonating', atom, '(steric number: %d)' % atom.steric_number)
 
         return
 
@@ -408,19 +408,14 @@ class Protonate:
         if element in list(self.bond_lengths.keys()):
             d = self.bond_lengths[element]
         else:
-            warn('WARNING: Bond length for %s not found, using the standard value of %f' % (element, d))
+            warn('Bond length for %s not found, using the standard value of %f' % (element, d))
 
         a = a.rescale(d)
 
         return a
 
     def display(self,*text):
-        if self.verbose:
-            s = ''
-            for t in text:
-                s+='%s '%t
-            info(s)
-        return
+        info(*text)
 
 
 if __name__ == '__main__':

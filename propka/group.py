@@ -397,16 +397,16 @@ class Group:
                         ok = False
 
         if not ok:
-            warn('Warning: Missing atoms or failed protonation for %s (%s) -- please check the structure' % (self.label, self.type))
-            warn('         %s' % self)
+            warn('Missing atoms or failed protonation for %s (%s) -- please check the structure' % (self.label, self.type))
+            warn('%s' % self)
             Na = sum([expected_atoms_acid_interactions[self.type][e] for e in expected_atoms_acid_interactions[self.type].keys()])
             Nb = sum([expected_atoms_base_interactions[self.type][e] for e in expected_atoms_base_interactions[self.type].keys()])
 
-            warn('         Expected %d interaction atoms for acids, found:' % Na)
+            warn('Expected %d interaction atoms for acids, found:' % Na)
             for i in range(len(self.interaction_atoms_for_acids)):
                  warn('             %s' % self.interaction_atoms_for_acids[i])
 
-            warn('         Expected %d interaction atoms for bases, found:' % Nb)
+            warn('Expected %d interaction atoms for bases, found:' % Nb)
             for i in range(len(self.interaction_atoms_for_bases)):
                  warn('             %s' % self.interaction_atoms_for_bases[i])
 
@@ -649,7 +649,7 @@ class HIS_group(Group):
         # Find the atoms in the histidine ring
         ring_atoms = propka.ligand.is_ring_member(self.atom)
         if len(ring_atoms) != 5:
-            warn('Warning: His group does not seem to contain a ring', self)
+            warn('His group does not seem to contain a ring', self)
 
         # protonate ring
         for r in ring_atoms:
