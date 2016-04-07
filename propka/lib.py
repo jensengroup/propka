@@ -171,6 +171,8 @@ def loadOptions(*args):
            help="not activated yet")
     parser.add_option("--verbosity",  dest="verbosity", action="store_const",
            help="level of printout - not activated yet")
+    parser.add_option("--no-print",  dest="no_print", action="store_true", default=False,
+           help="inhibit printing to stdout")
     parser.add_option("-o", "--pH", dest="pH", type="float", default=7.0,
            help="setting pH-value used in e.g. stability calculations [7.0]")
     parser.add_option("-w", "--window", dest="window", nargs=3, type="float", default=(0.0, 14.0, 1.0),
@@ -221,6 +223,11 @@ def loadOptions(*args):
             res_list.append((chain, resnum, inscode))
         options.titrate_only = res_list
 
+
+    # Set the no-print variable
+    global no_print             # "global" means just module-scope
+    no_print = options.no_print
+    
     # done!
     return options, args
 
@@ -272,3 +279,13 @@ def writeFile(filename, lines):
     f.close()
 
 
+no_print = False                # module-scope. Set when options are parsed.
+def dprint(st):
+    """
+    Behaves like print(), unless the --no-print option is set.
+    """
+    global no_print
+    if not no_print:
+        print(st)
+
+    
