@@ -5,7 +5,7 @@ import string, sys, copy, math, os
 import pkg_resources
 import logging
 
-logging.basicConfig(level=logging.NOTSET,format="%(levelname)-8s %(message)s")
+logging.basicConfig(level=logging.NOTSET,format="%(levelname)8s: %(message)s")
 logger = logging.getLogger("propka")
 
 #
@@ -282,14 +282,16 @@ def writeFile(filename, lines):
     f.close()
 
 
-# formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
 def info(*args, **kargs):
+    """Log a message. Level defaults to INFO unless overridden."""
+    level=kargs.pop("level",logging.INFO)
     for l in _sprint(*args, **kargs):
-        logger.info(l)
+        logger.log(level,l)
 
 def warn(*args, **kargs):
-    logger.warning(_sprint(*args, **kargs))
+    """Log a WARN message"""
+    for l in _sprint(*args, **kargs):
+        logger.warning(l)
 
 def _sprint(*args, **kargs):
     """Behaves like print(), but on a string.
