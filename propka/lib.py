@@ -170,12 +170,8 @@ def loadOptions(*args):
            help="sleep during calculations")
     parser.add_option("-q", "--quiet", dest="verbose", action="store_false",
            help="sleep during calculations")
-    parser.add_option("-s", "--silent",  dest="verbose", action="store_false",
-           help="not activated yet")
-    parser.add_option("--verbosity",  dest="verbosity", action="store_const",
-           help="level of printout - not activated yet")
-    parser.add_option("--no-print",  dest="no_print", action="store_true", default=False,
-           help="inhibit printing to stdout")
+    parser.add_option("--log-level",  dest="log_level", type="int", default=20,
+           help="level of logging [10=debug, 20=default, 30=warnings]")
     parser.add_option("-o", "--pH", dest="pH", type="float", default=7.0,
            help="setting pH-value used in e.g. stability calculations [7.0]")
     parser.add_option("-w", "--window", dest="window", nargs=3, type="float", default=(0.0, 14.0, 1.0),
@@ -228,8 +224,7 @@ def loadOptions(*args):
 
 
     # Set the no-print variable
-    if options.no_print:
-        logger.setLevel(logging.WARNING)
+    logger.setLevel(options.log_level)
 
     # done!
     return options, args

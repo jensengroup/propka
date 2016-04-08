@@ -415,8 +415,9 @@ class Protonate:
         return a
 
     def display(self,*text):
-        import logging
-        info(level=logging.DEBUG,*text)
+        if self.verbose:
+            import logging
+            info(level=logging.DEBUG,*text)
 
 
 if __name__ == '__main__':
