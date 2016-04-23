@@ -237,7 +237,7 @@ class non_covalently_couple_groups:
         all_labels = [g.label for g in system]
         s = ' '+'-'*113+'\n'
         for group in system:
-            s += self.tagged_dprint(' %-8s|'%tag,group.getDeterminantString(), all_labels)
+            s += self.tagged_format(' %-8s|' % tag, group.getDeterminantString(), all_labels)
 
         return s+'\n'
 
@@ -288,7 +288,7 @@ class non_covalently_couple_groups:
     # Output methods
     #
 
-    def tagged_dprint(self, tag, s, labels):
+    def tagged_format(self, tag, s, labels):
         s = "%s %s"%(tag,s)
         s = s.replace('\n','\n%s '%tag)
         for label in labels:
