@@ -304,7 +304,7 @@ def info_warning(*args, **kargs):
 def _sprint(*args, **kargs):
     """Behaves like print(), but on a string.
 
-    Splits at newlines (so multiple log lines can be output)
+    Splits at newlines (so multiple log lines can be output w/ prefix)
     """
     import io
     st=io.StringIO()
