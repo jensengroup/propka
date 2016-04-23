@@ -224,13 +224,12 @@ def loadOptions(*args):
 
 
     # Set the no-print variable
-    logger.setLevel(logging.INFO)
     if options.verbosity == 0:
         logger.setLevel(logging.CRITICAL)
     elif options.verbosity == 1:
-        pass
+        logger.setLevel(logging.INFO)
     elif options.verbosity == 2:
-        pass
+        logger.setLevel(logging.DEBUG)
     else:
         logger.warning("Invalid verbosity level, using default")
 
@@ -284,6 +283,10 @@ def writeFile(filename, lines):
         f.write( "%s\n" % (line) )
     f.close()
 
+
+def info_debug(*args, **kargs):
+    """Log a message on the DEBUG level."""
+    info(*args, **kargs, level=logging.DEBUG)
 
 def info(*args, **kargs):
     """Log a message. Level defaults to INFO unless overridden."""

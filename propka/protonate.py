@@ -5,7 +5,7 @@ from __future__ import print_function
 
 from propka.vector_algebra import *
 import propka.bonds, propka.pdb, propka.atom
-from propka.lib import info, warn
+from propka.lib import info, warn, info_debug
 
 class Protonate:
     """ Protonates atoms using VSEPR theory """
@@ -415,9 +415,7 @@ class Protonate:
         return a
 
     def display(self,*text):
-        if self.verbose:
-            import logging
-            info(level=logging.DEBUG,*text)
+        info_debug(*text)
 
 
 if __name__ == '__main__':
