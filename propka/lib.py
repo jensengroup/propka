@@ -5,8 +5,10 @@ import string, sys, copy, math, os
 import pkg_resources
 import logging
 
-logging.basicConfig(level=logging.NOTSET,format="%(levelname)8s: %(message)s")
 logger = logging.getLogger("propka")
+stdout_handler = logging.StreamHandler(sys.stdout)
+stdout_handler.setFormatter(logging.Formatter("%(message)s"))
+logger.addHandler(stdout_handler)
 
 #
 # file I/O
@@ -165,13 +167,11 @@ def loadOptions(*args):
     parser.add_option("-v", "--version", dest="version_label", default="Jan15",
            help="specifying the sub-version of propka [Jan15/Dec19]")
     parser.add_option("-p", "--parameters",dest="parameters", default=pkg_resources.resource_filename(__name__, "propka.cfg"),
-                      help="set the parameter file [%default]")
-    parser.add_option("-z", "--verbose", dest="verbose", action="store_true", default=True,
-           help="sleep during calculations")
-    parser.add_option("-q", "--quiet", dest="verbose", action="store_false",
-           help="sleep during calculations")
-    parser.add_option("--log-level",  dest="log_level", type="int", default=20,
-           help="level of logging [10=debug, 20=default, 30=warnings]")
+           help="set the parameter file [%default]")
+    parser.add_option("--verbosity", dest="verbosity", action="store_const",
+           help="level of printout - 0, 1 or 2")
+    parser.add_option("-q", "--no-print", dest="verbosity", action="store_const", const=0,
+           help="inhibit printing to stdout")
     parser.add_option("-o", "--pH", dest="pH", type="float", default=7.0,
            help="setting pH-value used in e.g. stability calculations [7.0]")
     parser.add_option("-w", "--window", dest="window", nargs=3, type="float", default=(0.0, 14.0, 1.0),
@@ -224,7 +224,15 @@ def loadOptions(*args):
 
 
     # Set the no-print variable
-    logger.setLevel(options.log_level)
+    logger.setLevel(logging.INFO)
+    if options.verbosity == 0:
+        logger.setLevel(logging.CRITICAL)
+    elif options.verbosity == 1:
+        pass
+    elif options.verbosity == 2:
+        pass
+    else:
+        logger.warning("Invalid verbosity level, using default")
 
     # done!
     return options, args
@@ -279,14 +287,14 @@ def writeFile(filename, lines):
 
 def info(*args, **kargs):
     """Log a message. Level defaults to INFO unless overridden."""
-    level=kargs.pop("level",logging.INFO)
+    level = kargs.pop("level",logging.INFO)
     for l in _sprint(*args, **kargs):
         logger.log(level,l)
 
 def warn(*args, **kargs):
     """Log a WARN message"""
     for l in _sprint(*args, **kargs):
-        logger.warning(l)
+        logger.warning("Warning: "+l)
 
 def _sprint(*args, **kargs):
     """Behaves like print(), but on a string.
