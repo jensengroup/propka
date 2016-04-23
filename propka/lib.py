@@ -207,7 +207,7 @@ def loadOptions(*args):
 
     # checking at early stage that there is at least one pdbfile to work with
     if len(args) == 0:
-      warn("No pdbfile provided")
+      info_warning("No pdbfile provided")
       #sys.exit(9)
 
     # Convert titrate_only string to a list of (chain, resnum) items:
@@ -284,17 +284,19 @@ def writeFile(filename, lines):
     f.close()
 
 
-def info_debug(*args, **kargs):
-    """Log a message on the DEBUG level."""
-    info(*args, **kargs, level=logging.DEBUG)
-
 def info(*args, **kargs):
     """Log a message. Level defaults to INFO unless overridden."""
     level = kargs.pop("level",logging.INFO)
     for l in _sprint(*args, **kargs):
         logger.log(level,l)
 
-def warn(*args, **kargs):
+
+def info_debug(*args, **kargs):
+    """Log a message on the DEBUG level."""
+    info(*args, **kargs, level=logging.DEBUG)
+
+
+def info_warning(*args, **kargs):
     """Log a WARN message"""
     for l in _sprint(*args, **kargs):
         logger.warning("Warning: "+l)

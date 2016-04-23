@@ -7,7 +7,7 @@ import math, time
 import propka.lib as lib
 from propka.determinant import Determinant
 import propka.calculations
-from propka.lib import info, warn, info_debug
+from propka.lib import info, info_warning, info_debug
 
 # Some library functions for the interative pKa determinants
 

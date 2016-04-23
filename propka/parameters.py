@@ -5,7 +5,7 @@ from __future__ import print_function
 import math
 import propka.lib as lib
 import sys, os
-from propka.lib import info, warn
+from propka.lib import info, info_warning
 
 import pkg_resources
 
@@ -477,7 +477,7 @@ class Pair_wise_matrix:
 
         if k1 in self.dictionary.keys() and k2 in self.dictionary[k1].keys():
             if k1!=k2:
-                warn('Parameter value for %s, %s defined more than once' % (k1, k2))
+                info_warning('Parameter value for %s, %s defined more than once' % (k1, k2))
 
         if not k1 in self.dictionary:
             self.dictionary[k1] = {}

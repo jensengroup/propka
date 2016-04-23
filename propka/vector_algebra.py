@@ -1,7 +1,7 @@
 from __future__ import division
 from __future__ import print_function
 import math
-from propka.lib import info, warn
+from propka.lib import info, info_warning
 
 class vector:
     """ Vector """

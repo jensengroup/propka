@@ -7,7 +7,7 @@ import math, time
 import propka.iterative, propka.lib, propka.vector_algebra
 import propka.calculations
 from propka.determinant import Determinant
-from propka.lib import info, warn
+from propka.lib import info, info_warning
 
 
 def setDeterminants(propka_groups, version=None, options=None):

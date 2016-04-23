@@ -9,7 +9,7 @@ from __future__ import print_function
 import os, sys
 
 import propka.pdb, propka.version, propka.output, propka.conformation_container, propka.group, propka.lib
-from propka.lib import info, warn
+from propka.lib import info, info_warning
 
 class Molecular_container:
     def __init__(self, input_file, options=None):
@@ -150,7 +150,7 @@ class Molecular_container:
                 if group_to_add:
                     avr_group += group_to_add
                 else:
-                    warn('Group %s could not be found in conformation %s.' % (group.atom.residue_label, name))
+                    info_warning('Group %s could not be found in conformation %s.' % (group.atom.residue_label, name))
             # ... and store the average value
             avr_group = avr_group / len(self.conformation_names)
             avr_conformation.groups.append(avr_group)
