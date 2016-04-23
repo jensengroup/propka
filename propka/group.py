@@ -8,7 +8,7 @@ from __future__ import print_function
 import propka.ligand, propka.determinant, propka.ligand_pka_values, math, propka.protonate
 from propka.lib import info, info_warning
 
-my_protonator = propka.protonate.Protonate(verbose=False)
+my_protonator = propka.protonate.Protonate()
 
 expected_atoms_acid_interactions = {
     'COO':{'O':2},

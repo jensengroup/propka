@@ -22,7 +22,7 @@ def setup_bonding_and_protonation(parameters, molecular_container):
 
     # Protonate atoms
     if molecular_container.options.protonate_all:
-        my_protonator = propka.protonate.Protonate(verbose=False)
+        my_protonator = propka.protonate.Protonate()
         my_protonator.protonate(molecular_container)
 
 
