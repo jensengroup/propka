@@ -172,6 +172,8 @@ def loadOptions(*args):
            help="level of printout - 0, 1 or 2")
     parser.add_option("-q", "--no-print", dest="verbosity", action="store_const", const=0,
            help="inhibit printing to stdout")
+    parser.add_option("-z", "--verbose", dest="verbosity", action="store_const", const=2,
+           help="output debugging information (verbosity=2)")
     parser.add_option("-o", "--pH", dest="pH", type="float", default=7.0,
            help="setting pH-value used in e.g. stability calculations [7.0]")
     parser.add_option("-w", "--window", dest="window", nargs=3, type="float", default=(0.0, 14.0, 1.0),
@@ -205,9 +207,10 @@ def loadOptions(*args):
       for filename in options.filenames:
         args.append(filename)
 
-    # checking at early stage that there is at least one pdbfile to work with
+    # checking at early stage that there is at least one pdbfile to work with. The error message is misleading
+    # if one is using the python interface via Molecular_container.
     if len(args) == 0:
-      info_warning("No pdbfile provided")
+      info("No pdbfile provided")
       #sys.exit(9)
 
     # Convert titrate_only string to a list of (chain, resnum) items:
@@ -217,7 +220,7 @@ def loadOptions(*args):
             try:
                 chain, resnum, inscode = parse_res_string(res_str)
             except ValueError:
-                info('Invalid residue string: "%s"' % res_str)
+                logger.critical('Invalid residue string: "%s"' % res_str)
                 sys.exit(1)
             res_list.append((chain, resnum, inscode))
         options.titrate_only = res_list
