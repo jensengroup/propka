@@ -5,7 +5,7 @@ from __future__ import print_function
 import sys
 
 import propka.lib
-from propka.lib import info, info_warning
+from propka.lib import info, warning
 
 
 def printHeader():

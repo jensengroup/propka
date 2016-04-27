@@ -6,7 +6,7 @@ from __future__ import division
 from __future__ import print_function
 
 import propka.group, propka.determinants, propka.determinant, propka.ligand, propka.output, propka.coupled_groups, functools
-from propka.lib import info, info_warning
+from propka.lib import info, warning
 
 class Conformation_container:
     def __init__(self, name='', parameters=None, molecular_container=None):

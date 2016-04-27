@@ -4,7 +4,7 @@ import math
 import sys, os
 
 import propka.lib as lib
-from propka.lib import info, info_warning
+from propka.lib import info, warning
 import propka.calculations as calculations
 import propka.parameters
 

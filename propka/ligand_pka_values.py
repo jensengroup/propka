@@ -2,7 +2,7 @@
 
 from __future__ import division
 from __future__ import print_function
-from propka.lib import info, info_warning
+from propka.lib import info, warning
 
 import propka.molecular_container, propka.calculations, propka.calculations, propka.parameters, propka.pdb, propka.lib, os, subprocess, sys
 
@@ -68,7 +68,7 @@ class ligand_pka_values:
             propka.pdb.write_mol2_for_atoms(atoms, filename)
         # check that we actually have a file to work with
         if not os.path.isfile(filename):
-            info_warning('Didn\'t find a user-modified file \'%s\' - generating one' % filename)
+            warning('Didn\'t find a user-modified file \'%s\' - generating one' % filename)
             propka.pdb.write_mol2_for_atoms(atoms, filename)
 
 

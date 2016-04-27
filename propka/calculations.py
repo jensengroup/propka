@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import print_function
 
 import math, propka.protonate, propka.bonds,copy, sys
-from propka.lib import info, info_warning
+from propka.lib import info, warning
 
 
 #
@@ -574,7 +574,7 @@ def hydrogen_bond_interaction(group1, group2, version):
     [closest_atom1, distance, closest_atom2] = propka.calculations.get_smallest_distance(atoms1, atoms2)
 
     if None in [closest_atom1, closest_atom2]:
-        info_warning('Side chain interaction failed for %s and %s' % (group1.label, group2.label))
+        warning('Side chain interaction failed for %s and %s' % (group1.label, group2.label))
         return None
 
     # get the parameters

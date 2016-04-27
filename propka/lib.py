@@ -287,31 +287,34 @@ def writeFile(filename, lines):
     f.close()
 
 
-def info(*args, **kargs):
+def _log(*args, level=logging.INFO):
     """Log a message. Level defaults to INFO unless overridden."""
-    level = kargs.pop("level",logging.INFO)
-    for l in _sprint(*args, **kargs):
-        logger.log(level,l)
+    for l in _logsplit(*args):
+        logger.log(level, l)
 
 
-def info_debug(*args, **kargs):
+def info(*args):
+    """Log a message. Level defaults to INFO unless overridden."""
+    _log(*args, level=logging.INFO)
+
+
+def debug(*args):
     """Log a message on the DEBUG level."""
-    info(*args, **kargs, level=logging.DEBUG)
+    _log(*args, level=logging.DEBUG)
 
 
-def info_warning(*args, **kargs):
+def warning(*args):
     """Log a WARN message"""
-    for l in _sprint(*args, **kargs):
-        logger.warning("Warning: "+l)
+    _log(*args, level=logging.WARNING)
 
-def _sprint(*args, **kargs):
+
+def _logsplit(*args):
     """Behaves like print(), but on a string.
 
-    Splits at newlines (so multiple log lines can be output w/ prefix)
+    Splits at newlines (so multiple log lines can be output w/ prefix).
     """
-    import io
-    st=io.StringIO()
-    print(*args, **kargs, file=st)
-    return st.getvalue().strip("\n").split("\n")
+    str_args = [str(i) for i in args]
+    st=" ".join(str_args)
+    return st.strip("\n").split("\n")
 
 

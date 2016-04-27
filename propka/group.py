@@ -6,7 +6,7 @@ from __future__ import division
 from __future__ import print_function
 
 import propka.ligand, propka.determinant, propka.ligand_pka_values, math, propka.protonate
-from propka.lib import info, info_warning
+from propka.lib import info, warning
 
 my_protonator = propka.protonate.Protonate(verbose=False)
 
@@ -397,18 +397,18 @@ class Group:
                         ok = False
 
         if not ok:
-            info_warning('Missing atoms or failed protonation for %s (%s) -- please check the structure' % (self.label, self.type))
-            info_warning('%s' % self)
+            warning('Missing atoms or failed protonation for %s (%s) -- please check the structure' % (self.label, self.type))
+            warning('%s' % self)
             Na = sum([expected_atoms_acid_interactions[self.type][e] for e in expected_atoms_acid_interactions[self.type].keys()])
             Nb = sum([expected_atoms_base_interactions[self.type][e] for e in expected_atoms_base_interactions[self.type].keys()])
 
-            info_warning('Expected %d interaction atoms for acids, found:' % Na)
+            warning('Expected %d interaction atoms for acids, found:' % Na)
             for i in range(len(self.interaction_atoms_for_acids)):
-                 info_warning('             %s' % self.interaction_atoms_for_acids[i])
+                 warning('             %s' % self.interaction_atoms_for_acids[i])
 
-            info_warning('Expected %d interaction atoms for bases, found:' % Nb)
+            warning('Expected %d interaction atoms for bases, found:' % Nb)
             for i in range(len(self.interaction_atoms_for_bases)):
-                 info_warning('             %s' % self.interaction_atoms_for_bases[i])
+                 warning('             %s' % self.interaction_atoms_for_bases[i])
 
 
                     #return
@@ -649,7 +649,7 @@ class HIS_group(Group):
         # Find the atoms in the histidine ring
         ring_atoms = propka.ligand.is_ring_member(self.atom)
         if len(ring_atoms) != 5:
-            info_warning('His group does not seem to contain a ring', self)
+            warning('His group does not seem to contain a ring', self)
 
         # protonate ring
         for r in ring_atoms:
