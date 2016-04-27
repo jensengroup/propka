@@ -287,11 +287,6 @@ def writeFile(filename, lines):
     f.close()
 
 
-def _log(*args, level=logging.INFO):
-    """Log a message. Level defaults to INFO unless overridden."""
-    for l in _logsplit(*args):
-        logger.log(level, l)
-
 
 def info(*args):
     """Log a message. Level defaults to INFO unless overridden."""
@@ -306,6 +301,13 @@ def debug(*args):
 def warning(*args):
     """Log a WARN message"""
     _log(*args, level=logging.WARNING)
+
+
+def _log(*args, **kwargs):
+    # kwargs is a hack for python 2 which does not allow *args + named args
+    level = kwargs.pop('level', logging.INFO)
+    for l in _logsplit(*args):
+        logger.log(level, l)
 
 
 def _logsplit(*args):
