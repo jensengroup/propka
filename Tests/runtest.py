@@ -66,11 +66,3 @@ if __name__ == "__main__":
                 print(" %s should be: %s" % (value, expected_value))
                 sys.exit(1)
 
-        """
-        # Also check the other output files
-        for oext in ('out','pka','propka_input'):
-            of=pdb+'.'+oext
-            oref='results/'+pdb+'.'+oext+'.refout'
-            ret = call(['diff',of,oref])
-            print("Diff on %s is %d" % (of,ret))
-        """
