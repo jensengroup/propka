@@ -1,6 +1,7 @@
 from __future__ import division
 from __future__ import print_function
 import math
+from propka.lib import info
 
 class vector:
     """ Vector """
@@ -47,7 +48,7 @@ class vector:
         elif type(other) in [int, float]:
             return vector(self.x * other, self.y * other, self.z * other)
         else:
-            print('%s not supported'%type(other))
+            info('%s not supported' % type(other))
             raise TypeError
 
     def __rmul__(self,other):
@@ -235,7 +236,7 @@ class multi_vector:
                     atom2.setConfiguration(key)
                 v = vector(atom1=atom1, atom2=atom2)
                 self.vectors.append(v)
-                #print(key,v)
+                #info(key,v)
         return
     
     def __getattribute__(self,name):
@@ -252,7 +253,7 @@ class multi_vector:
 
 
     def do_job(self, job):
-        #print(job)
+        #info(job)
         self.res = multi_vector()
         for i in range(len(self.vectors)):
             self.res.vectors.append(eval('self.vectors[%d].%s()'%(i,job)))
