@@ -7,7 +7,7 @@ import sys
 
 import propka.calculations
 from propka.vector_algebra import *
-from propka.lib import info, warn
+from propka.lib import info, info_warning
 
 
 all_sybyl_types = [

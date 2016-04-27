@@ -5,7 +5,7 @@ from __future__ import print_function
 import string, propka.lib, propka.group
 
 from . import hybrid36
-from propka.lib import info, warn
+from propka.lib import info, info_warning
 
 class Atom:
     """

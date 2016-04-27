@@ -2,8 +2,13 @@ from __future__ import division
 from __future__ import print_function
 
 import string, sys, copy, math, os
-
 import pkg_resources
+import logging
+
+logger = logging.getLogger("propka")
+stdout_handler = logging.StreamHandler(sys.stdout)
+stdout_handler.setFormatter(logging.Formatter("%(message)s"))
+logger.addHandler(stdout_handler)
 
 #
 # file I/O
@@ -162,17 +167,13 @@ def loadOptions(*args):
     parser.add_option("-v", "--version", dest="version_label", default="Jan15",
            help="specifying the sub-version of propka [Jan15/Dec19]")
     parser.add_option("-p", "--parameters",dest="parameters", default=pkg_resources.resource_filename(__name__, "propka.cfg"),
-                      help="set the parameter file [%default]")
-    parser.add_option("-z", "--verbose", dest="verbose", action="store_true", default=True,
-           help="sleep during calculations")
-    parser.add_option("-q", "--quiet", dest="verbose", action="store_false",
-           help="sleep during calculations")
-    parser.add_option("-s", "--silent",  dest="verbose", action="store_false",
-           help="not activated yet")
-    parser.add_option("--verbosity",  dest="verbosity", action="store_const",
-           help="level of printout - not activated yet")
-    parser.add_option("--no-print",  dest="no_print", action="store_true", default=False,
+           help="set the parameter file [%default]")
+    parser.add_option("--verbosity", dest="verbosity", action="store_const", default=1,
+           help="level of printout - 0, 1 or 2")
+    parser.add_option("-q", "--no-print", dest="verbosity", action="store_const", const=0,
            help="inhibit printing to stdout")
+    parser.add_option("-z", "--verbose", dest="verbosity", action="store_const", const=2,
+           help="output debugging information (verbosity=2)")
     parser.add_option("-o", "--pH", dest="pH", type="float", default=7.0,
            help="setting pH-value used in e.g. stability calculations [7.0]")
     parser.add_option("-w", "--window", dest="window", nargs=3, type="float", default=(0.0, 14.0, 1.0),
@@ -206,9 +207,10 @@ def loadOptions(*args):
       for filename in options.filenames:
         args.append(filename)
 
-    # checking at early stage that there is at least one pdbfile to work with
+    # checking at early stage that there is at least one pdbfile to work with. The error message is misleading
+    # if one is using the python interface via Molecular_container.
     if len(args) == 0:
-      warn("Warning: no pdbfile provided")
+      info("No pdbfile provided")
       #sys.exit(9)
 
     # Convert titrate_only string to a list of (chain, resnum) items:
@@ -218,15 +220,21 @@ def loadOptions(*args):
             try:
                 chain, resnum, inscode = parse_res_string(res_str)
             except ValueError:
-                info('Invalid residue string: "%s"' % res_str)
+                logger.critical('Invalid residue string: "%s"' % res_str)
                 sys.exit(1)
             res_list.append((chain, resnum, inscode))
         options.titrate_only = res_list
 
 
     # Set the no-print variable
-    global no_print             # "global" means just module-scope
-    no_print = options.no_print
+    if options.verbosity == 0:
+        logger.setLevel(logging.CRITICAL)
+    elif options.verbosity == 1:
+        logger.setLevel(logging.INFO)
+    elif options.verbosity == 2:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.warning("Invalid verbosity level, using default")
 
     # done!
     return options, args
@@ -279,16 +287,31 @@ def writeFile(filename, lines):
     f.close()
 
 
-no_print = False                # module-scope. Set when options are parsed.
 def info(*args, **kargs):
-    """Behaves like print(), unless the --no-print option is set. """
-    global no_print
-    if not no_print:
-        print(*args, **kargs)
+    """Log a message. Level defaults to INFO unless overridden."""
+    level = kargs.pop("level",logging.INFO)
+    for l in _sprint(*args, **kargs):
+        logger.log(level,l)
 
 
-def warn(*args, **kargs):
-    """Behaves like print() - possibly to be replaced by a logger"""
-    print(*args, **kargs)
+def info_debug(*args, **kargs):
+    """Log a message on the DEBUG level."""
+    info(*args, **kargs, level=logging.DEBUG)
+
+
+def info_warning(*args, **kargs):
+    """Log a WARN message"""
+    for l in _sprint(*args, **kargs):
+        logger.warning("Warning: "+l)
+
+def _sprint(*args, **kargs):
+    """Behaves like print(), but on a string.
+
+    Splits at newlines (so multiple log lines can be output w/ prefix)
+    """
+    import io
+    st=io.StringIO()
+    print(*args, **kargs, file=st)
+    return st.getvalue().strip("\n").split("\n")
 
 

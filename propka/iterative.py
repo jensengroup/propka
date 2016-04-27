@@ -7,7 +7,7 @@ import math, time
 import propka.lib as lib
 from propka.determinant import Determinant
 import propka.calculations
-from propka.lib import info, warn
+from propka.lib import info, info_warning, info_debug
 
 # Some library functions for the interative pKa determinants
 
@@ -187,8 +187,8 @@ def addDeterminants(iterative_interactions, version, options=None):
                 done_group.append(group)
 
     # Initialize iterative scheme
-    if options.verbose == True:
-      info("\n   --- pKa iterations (%d groups, %d interactions) ---" % (len(iteratives), len(iterative_interactions)))
+    info_debug("\n   --- pKa iterations (%d groups, %d interactions) ---" %
+         (len(iteratives), len(iterative_interactions))   )
     converged = False
     iteration = 0
     # set non-iterative pka values as first step
@@ -253,18 +253,18 @@ def addDeterminants(iterative_interactions, version, options=None):
     # --- Iterations finished ---
 
     # printing pKa iterations
-    if options.verbose == True:
-      str = "%12s" % (" ")
-      for index in range(0, iteration+1 ):
+    # formerly was conditioned on if options.verbosity >= 2 - now unnecessary
+    str = "%12s" % (" ")
+    for index in range(0, iteration+1 ):
         str += "%8d" % (index)
-      info(str)
-      for itres in iteratives:
+    info_debug(str)
+    for itres in iteratives:
         str  = "%s   " % (itres.label)
         for pKa in itres.pKa_iter:
           str += "%8.2lf" % (pKa)
         if itres.converged == False:
           str += " *"
-        info(str)
+        info_debug(str)
 
     # creating real determinants and adding them to group object
     for itres in iteratives:

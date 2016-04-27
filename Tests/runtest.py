@@ -18,6 +18,7 @@ if __name__ == "__main__":
             ('3SGB', []),
             ('3SGB-subset', ['--titrate_only', 'E:17,E:18,E:19,E:29,E:44,E:45,E:46,E:118,E:119,E:120,E:139']),
             ('1HPX-warn', ['--no-print']),
+            ('1HPX-verbose', ['--verbosity=2']),
            ]
 
     for pdb, args in pdbs:
@@ -66,3 +67,9 @@ if __name__ == "__main__":
                 print(" %s should be: %s" % (value, expected_value))
                 sys.exit(1)
 
+        # Also check the other output files
+        for oext in ('out','pka','propka_input'):
+            of=pdb+'.'+oext
+            oref='results/'+pdb+'.'+oext+'.refout'
+            ret = call(['diff',of,oref])
+            print("Diff on %s is %d" % (of,ret))
