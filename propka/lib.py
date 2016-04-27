@@ -1,9 +1,14 @@
 from __future__ import division
 from __future__ import print_function
 
-import string, sys, copy, math, os
-
+import sys
 import pkg_resources
+import logging
+
+logger = logging.getLogger("propka")
+stdout_handler = logging.StreamHandler(sys.stdout)
+stdout_handler.setFormatter(logging.Formatter("%(message)s"))
+logger.addHandler(stdout_handler)
 
 #
 # file I/O
@@ -132,7 +137,7 @@ def parse_res_string(res_str):
 
 def loadOptions(*args):
     """
-    load the arguments parser with options
+    Load the arguments parser with options. Note that verbosity is set as soon as this function is invoked.
     """
     from optparse import OptionParser
 
@@ -162,15 +167,11 @@ def loadOptions(*args):
     parser.add_option("-v", "--version", dest="version_label", default="Jan15",
            help="specifying the sub-version of propka [Jan15/Dec19]")
     parser.add_option("-p", "--parameters",dest="parameters", default=pkg_resources.resource_filename(__name__, "propka.cfg"),
-                      help="set the parameter file [%default]")
-    parser.add_option("-z", "--verbose", dest="verbose", action="store_true", default=True,
-           help="sleep during calculations")
-    parser.add_option("-q", "--quiet", dest="verbose", action="store_false",
-           help="sleep during calculations")
-    parser.add_option("-s", "--silent",  dest="verbose", action="store_false",
-           help="not activated yet")
-    parser.add_option("--verbosity",  dest="verbosity", action="store_const",
-           help="level of printout - not activated yet")
+           help="set the parameter file [%default]")
+    parser.add_option("-q", "--no-print", dest="verbosity", action="store_const", const=0, default=1,
+           help="inhibit printing to stdout")
+    parser.add_option("-z", "--verbose", dest="verbosity", action="store_const", const=2,
+           help="output debugging information")
     parser.add_option("-o", "--pH", dest="pH", type="float", default=7.0,
            help="setting pH-value used in e.g. stability calculations [7.0]")
     parser.add_option("-w", "--window", dest="window", nargs=3, type="float", default=(0.0, 14.0, 1.0),
@@ -204,9 +205,10 @@ def loadOptions(*args):
       for filename in options.filenames:
         args.append(filename)
 
-    # checking at early stage that there is at least one pdbfile to work with
+    # checking at early stage that there is at least one pdbfile to work with. The error message is misleading
+    # if one is using the python interface via Molecular_container.
     if len(args) == 0:
-      print("Warning: no pdbfile provided")
+      info("No pdbfile provided")
       #sys.exit(9)
 
     # Convert titrate_only string to a list of (chain, resnum) items:
@@ -216,10 +218,21 @@ def loadOptions(*args):
             try:
                 chain, resnum, inscode = parse_res_string(res_str)
             except ValueError:
-                print('Invalid residue string: "%s"' % res_str)
+                logger.critical('Invalid residue string: "%s"' % res_str)
                 sys.exit(1)
             res_list.append((chain, resnum, inscode))
         options.titrate_only = res_list
+
+
+    # Set the no-print variable
+    if options.verbosity == 0:
+        logger.setLevel(logging.CRITICAL)
+    elif options.verbosity == 1:
+        logger.setLevel(logging.INFO)
+    elif options.verbosity == 2:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.warning("Invalid verbosity level, using default")
 
     # done!
     return options, args
@@ -271,4 +284,20 @@ def writeFile(filename, lines):
         f.write( "%s\n" % (line) )
     f.close()
 
+
+
+def _args_to_str(arg_list):
+    return " ".join(map(str, arg_list))
+
+def info(*args):
+    """Log a message. Level defaults to INFO unless overridden."""
+    logger.info(_args_to_str(args))
+
+def debug(*args):
+    """Log a message on the DEBUG level."""
+    logger.debug(_args_to_str(args))
+
+def warning(*args):
+    """Log a WARN message"""
+    logger.warning(_args_to_str(args))
 

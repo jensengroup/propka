@@ -5,6 +5,7 @@ from __future__ import print_function
 import pickle,sys,os,math,propka.calculations
 
 import pkg_resources
+from propka.lib import info, warning
 
 class bondmaker:
     def __init__(self):
@@ -111,14 +112,14 @@ class bondmaker:
         """ Finds bonds proteins based on the way atoms
         normally bond in proteins"""
 
-        print('++++ Side chains ++++')
+        info('++++ Side chains ++++')
         # side chains
         for chain in protein.chains:
             for residue in chain.residues:
                 if residue.resName.replace(' ','') not in ['N+','C-']:
                     self.find_bonds_for_side_chain(residue.atoms)
 
-        print('++++ Backbones ++++')
+        info('++++ Backbones ++++')
         # backbone
         last_residues = []
         for chain in protein.chains:
@@ -128,12 +129,12 @@ class bondmaker:
                         self.connect_backbone(chain.residues[i-1], chain.residues[i])
                         last_residues.append(chain.residues[i])
 
-        print('++++ terminal oxygen ++++')
+        info('++++ terminal oxygen ++++')
         # terminal OXT
         for last_residue in last_residues:
             self.find_bonds_for_terminal_oxygen(last_residue)
 
-        print('++++ cysteines ++++')
+        info('++++ cysteines ++++')
         # Cysteines
         for chain in protein.chains:
             for i in range(0,len(chain.residues)):
@@ -349,9 +350,9 @@ class bondmaker:
         ylen = ymax-ymin
         zlen = zmax-zmin
 
-        #print('x range: [%6.2f;%6.2f] %6.2f'%(xmin,xmax,xlen))
-        #print('y range: [%6.2f;%6.2f] %6.2f'%(ymin,ymax,ylen))
-        #print('z range: [%6.2f;%6.2f] %6.2f'%(zmin,zmax,zlen))
+        #info('x range: [%6.2f;%6.2f] %6.2f'%(xmin,xmax,xlen))
+        #info('y range: [%6.2f;%6.2f] %6.2f'%(ymin,ymax,ylen))
+        #info('z range: [%6.2f;%6.2f] %6.2f'%(zmin,zmax,zlen))
 
         # how many boxes do we need in each dimension?
         # NOTE: math.ceil() returns an int in python3 and a float in
@@ -361,9 +362,9 @@ class bondmaker:
         self.no_box_y = max(1, int(math.ceil(ylen/box_size)))
         self.no_box_z = max(1, int(math.ceil(zlen/box_size)))
 
-        #print('No. box x: %6.2f'%self.no_box_x)
-        #print('No. box y: %6.2f'%self.no_box_y)
-        #print('No. box z: %6.2f'%self.no_box_z)
+        #info('No. box x: %6.2f'%self.no_box_x)
+        #info('No. box y: %6.2f'%self.no_box_y)
+        #info('No. box z: %6.2f'%self.no_box_z)
 
         # initialize boxes
         self.boxes = {}
@@ -400,7 +401,7 @@ class bondmaker:
                         # No box exists for this coordinate
                         pass
 
-                        #print(atom,'->',key,':',len(self.boxes[key]))
+                        #info(atom,'->',key,':',len(self.boxes[key]))
 
         return
 
@@ -415,7 +416,7 @@ class bondmaker:
         if atom1 == atom2:
             return
 
-        #print('making bond for',atom1,atom2)
+        #info('making bond for',atom1,atom2)
         if not atom1 in atom2.bonded_atoms:
             atom2.bonded_atoms.append(atom1)
 
@@ -465,12 +466,12 @@ if __name__ == '__main__':
     import protein, pdb, sys,os
     arguments = sys.argv
     if len(arguments) != 2:
-        print('Usage: bonds.py <pdb_file>')
+        info('Usage: bonds.py <pdb_file>')
         sys.exit(0)
 
     filename = arguments[1]
     if not os.path.isfile(filename):
-        print('Error: Could not find \"%s\"'%filename)
+        info('Error: Could not find \"%s\"' % filename)
         sys.exit(1)
 
     pdblist = pdb.readPDB(filename)
