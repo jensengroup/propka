@@ -137,7 +137,7 @@ def parse_res_string(res_str):
 
 def loadOptions(*args):
     """
-    load the arguments parser with options
+    Load the arguments parser with options. Note that verbosity is set as soon as this function is invoked.
     """
     from optparse import OptionParser
 
@@ -288,35 +288,18 @@ def writeFile(filename, lines):
 
 
 
+def _args_to_str(arg_list):
+    return " ".join(map(str, arg_list))
+
 def info(*args):
     """Log a message. Level defaults to INFO unless overridden."""
-    _log(*args, level=logging.INFO)
-
+    logger.info(_args_to_str(args))
 
 def debug(*args):
     """Log a message on the DEBUG level."""
-    _log(*args, level=logging.DEBUG)
-
+    logger.debug(_args_to_str(args))
 
 def warning(*args):
     """Log a WARN message"""
-    _log(*args, level=logging.WARNING)
-
-
-def _log(*args, **kwargs):
-    # kwargs is a hack for python 2 which does not allow *args + named args
-    level = kwargs.pop('level', logging.INFO)
-    for l in _logsplit(*args):
-        logger.log(level, l)
-
-
-def _logsplit(*args):
-    """Behaves like print(), but on a string.
-
-    Splits at newlines (so multiple log lines can be output w/ prefix).
-    """
-    str_args = [str(i) for i in args]
-    st=" ".join(str_args)
-    return st.strip("\n").split("\n")
-
+    logger.warning(_args_to_str(args))
 
