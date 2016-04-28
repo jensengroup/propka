@@ -17,7 +17,7 @@ if __name__ == "__main__":
             ('4DFR', []),
             ('3SGB', []),
             ('3SGB-subset', ['--titrate_only', 'E:17,E:18,E:19,E:29,E:44,E:45,E:46,E:118,E:119,E:120,E:139']),
-            ('1HPX-warn', ['--no-print']),
+            ('1HPX-warn', ['--quiet']),
            ]
 
     for pdb, args in pdbs:

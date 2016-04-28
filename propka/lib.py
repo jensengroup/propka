@@ -168,10 +168,10 @@ def loadOptions(*args):
            help="specifying the sub-version of propka [Jan15/Dec19]")
     parser.add_option("-p", "--parameters",dest="parameters", default=pkg_resources.resource_filename(__name__, "propka.cfg"),
            help="set the parameter file [%default]")
-    parser.add_option("-q", "--no-print", dest="verbosity", action="store_const", const=0, default=1,
-           help="inhibit printing to stdout")
     parser.add_option("-z", "--verbose", dest="verbosity", action="store_const", const=2,
            help="output debugging information")
+    parser.add_option("-q", "--quiet", dest="verbosity", action="store_const", const=0, default=1,
+                      help="inhibit printing to stdout")
     parser.add_option("-o", "--pH", dest="pH", type="float", default=7.0,
            help="setting pH-value used in e.g. stability calculations [7.0]")
     parser.add_option("-w", "--window", dest="window", nargs=3, type="float", default=(0.0, 14.0, 1.0),
