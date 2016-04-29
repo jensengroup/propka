@@ -5,6 +5,7 @@ from __future__ import print_function
 
 from propka.vector_algebra import *
 import propka.bonds, propka.pdb, propka.atom
+from propka.lib import info, warning, debug
 
 class Protonate:
     """ Protonates atoms using VSEPR theory """
@@ -94,7 +95,7 @@ class Protonate:
     def protonate(self, molecules):
         """ Will protonate all atoms in the molecular container """
 
-        self.display('----- Protonation started -----')
+        debug('----- Protonation started -----')
         # Remove all currently present hydrogen atoms
         self.remove_all_hydrogen_atoms(molecules)
 
@@ -122,11 +123,11 @@ class Protonate:
         if atom.type=='atom':
             key = '%3s-%s'%(atom.resName, atom.name)
             if atom.terminal:
-                self.display(atom.terminal)
+                debug(atom.terminal)
                 key=atom.terminal
             if key in list(self.standard_charges.keys()):
                 atom.charge = self.standard_charges[key]
-                self.display('Charge', atom, atom.charge)
+                debug('Charge', atom, atom.charge)
                 atom.charge_set = True
         # atom is a ligand atom
         elif atom.type=='hetatm':
@@ -163,21 +164,21 @@ class Protonate:
 
 
     def set_number_of_protons_to_add(self, atom):
-        self.display('*'*10)
-        self.display('Setting number of protons to add for',atom)
+        debug('*'*10)
+        debug('Setting number of protons to add for',atom)
         atom.number_of_protons_to_add  = 8
-        self.display('                  %4d'%8)
+        debug('                  %4d'%8)
         atom.number_of_protons_to_add -= self.valence_electrons[atom.element]
-        self.display('Valence eletrons: %4d'%-self.valence_electrons[atom.element])
+        debug('Valence eletrons: %4d'%-self.valence_electrons[atom.element])
         atom.number_of_protons_to_add -= len(atom.bonded_atoms)
-        self.display('Number of bonds:  %4d'%- len(atom.bonded_atoms))
+        debug('Number of bonds:  %4d'%- len(atom.bonded_atoms))
         atom.number_of_protons_to_add -= atom.number_of_pi_electrons_in_double_and_triple_bonds
-        self.display('Pi electrons:     %4d'%-atom.number_of_pi_electrons_in_double_and_triple_bonds)
+        debug('Pi electrons:     %4d'%-atom.number_of_pi_electrons_in_double_and_triple_bonds)
         atom.number_of_protons_to_add += int(atom.charge)
-        self.display('Charge:           %4.1f'%atom.charge)
+        debug('Charge:           %4.1f'%atom.charge)
 
-        self.display('-'*10)
-        self.display(atom.number_of_protons_to_add)
+        debug('-'*10)
+        debug(atom.number_of_protons_to_add)
 
         return
 
@@ -187,8 +188,8 @@ class Protonate:
         if atom.steric_number_and_lone_pairs_set:
             return
 
-        self.display('='*10)
-        self.display('Setting steric number and lone pairs for',atom)
+        debug('='*10)
+        debug('Setting steric number and lone pairs for',atom)
 
         # costumly set the N backbone atoms up for peptide bond trigonal planer shape
         #if atom.name == 'N' and len(atom.bonded_atoms) == 2:
@@ -201,34 +202,34 @@ class Protonate:
 
         atom.steric_number = 0
 
-        self.display('%65s: %4d'%('Valence electrons',self.valence_electrons[atom.element]))
+        debug('%65s: %4d'%('Valence electrons',self.valence_electrons[atom.element]))
         atom.steric_number += self.valence_electrons[atom.element]
 
-        self.display('%65s: %4d'%('Number of bonds',len(atom.bonded_atoms)))
+        debug('%65s: %4d'%('Number of bonds',len(atom.bonded_atoms)))
         atom.steric_number += len(atom.bonded_atoms)
 
-        self.display('%65s: %4d'%('Number of hydrogen atoms to add',atom.number_of_protons_to_add))
+        debug('%65s: %4d'%('Number of hydrogen atoms to add',atom.number_of_protons_to_add))
         atom.steric_number += atom.number_of_protons_to_add
 
-        self.display('%65s: %4d'%('Number of pi-electrons in double and triple bonds(-)',atom.number_of_pi_electrons_in_double_and_triple_bonds))
+        debug('%65s: %4d'%('Number of pi-electrons in double and triple bonds(-)',atom.number_of_pi_electrons_in_double_and_triple_bonds))
         atom.steric_number -= atom.number_of_pi_electrons_in_double_and_triple_bonds
 
-        self.display('%65s: %4d'%('Number of pi-electrons in conjugated double and triple bonds(-)',atom.number_of_pi_electrons_in_conjugate_double_and_triple_bonds))
+        debug('%65s: %4d'%('Number of pi-electrons in conjugated double and triple bonds(-)',atom.number_of_pi_electrons_in_conjugate_double_and_triple_bonds))
         atom.steric_number -= atom.number_of_pi_electrons_in_conjugate_double_and_triple_bonds
 
-        self.display('%65s: %4d'%('Number of donated co-ordinated bonds',0))
+        debug('%65s: %4d'%('Number of donated co-ordinated bonds',0))
         atom.steric_number += 0
 
-        self.display('%65s: %4.1f'%('Charge(-)',atom.charge))
+        debug('%65s: %4.1f'%('Charge(-)',atom.charge))
         atom.steric_number -= atom.charge
 
         atom.steric_number = math.floor(atom.steric_number/2.0)
 
         atom.number_of_lone_pairs = atom.steric_number - len(atom.bonded_atoms) - atom.number_of_protons_to_add
 
-        self.display('-'*70)
-        self.display('%65s: %4d'%('Steric number',atom.steric_number))
-        self.display('%65s: %4d'%('Number of lone pairs',atom.number_of_lone_pairs))
+        debug('-'*70)
+        debug('%65s: %4d'%('Steric number',atom.steric_number))
+        debug('%65s: %4d'%('Number of lone pairs',atom.number_of_lone_pairs))
 
         atom.steric_number_and_lone_pairs_set = True
 
@@ -237,17 +238,17 @@ class Protonate:
 
     def add_protons(self, atom):
         # decide which method to use
-        self.display('PROTONATING',atom)
+        debug('PROTONATING',atom)
         if atom.steric_number in list(self.protonation_methods.keys()):
             self.protonation_methods[atom.steric_number](atom)
         else:
-            print('Warning: Do not have a method for protonating',atom,'(steric number: %d)'%atom.steric_number)
+            warning('Do not have a method for protonating', atom, '(steric number: %d)' % atom.steric_number)
 
         return
 
 
     def trigonal(self, atom):
-        self.display('TRIGONAL - %d bonded atoms'%(len(atom.bonded_atoms)))
+        debug('TRIGONAL - %d bonded atoms'%(len(atom.bonded_atoms)))
         rot_angle = math.radians(120.0)
 
         c = vector(atom1 = atom)
@@ -312,7 +313,7 @@ class Protonate:
 
 
     def tetrahedral(self, atom):
-        self.display('TETRAHEDRAL - %d bonded atoms'%(len(atom.bonded_atoms)))
+        debug('TETRAHEDRAL - %d bonded atoms'%(len(atom.bonded_atoms)))
         rot_angle = math.radians(109.5)
 
         # sanity check
@@ -399,7 +400,7 @@ class Protonate:
                 i+=1
 
 
-        self.display('added',new_H, 'to',atom)
+        debug('added',new_H, 'to',atom)
         return
 
     def set_bond_distance(self, a, element):
@@ -407,31 +408,23 @@ class Protonate:
         if element in list(self.bond_lengths.keys()):
             d = self.bond_lengths[element]
         else:
-            print('WARNING: Bond length for %s not found, using the standard value of %f'%(element, d))
+            warning('Bond length for %s not found, using the standard value of %f' % (element, d))
 
         a = a.rescale(d)
 
         return a
-
-    def display(self,*text):
-        if self.verbose:
-            s = ''
-            for t in text:
-                s+='%s '%t
-            print(s)
-        return
 
 
 if __name__ == '__main__':
     import protein, pdb, sys,os
     arguments = sys.argv
     if len(arguments) != 2:
-        print('Usage: protonate.py <pdb_file>')
+        info('Usage: protonate.py <pdb_file>')
         sys.exit(0)
 
     filename = arguments[1]
     if not os.path.isfile(filename):
-        print('Error: Could not find \"%s\"'%filename)
+        info('Error: Could not find \"%s\"' % filename)
         sys.exit(1)
 
 
