@@ -16,17 +16,6 @@ in publications:
 See [propka.ki.ku.dk](http://propka.ki.ku.dk/) for the PROPKA web server,
 using the [tutorial](http://propka.ki.ku.dk/~luca/wiki/index.php/PROPKA_3.1_Tutorial).
 
-## Modifications 
-
-This release of PROPKA 3.1 was modified by Oliver Beckstein
-<oliver.beckstein@asu.edu> from the released version.
-
-* Included patches from
-  https://github.com/schrodinger/propka-3.1/tree/python27-compat to
-  make it compatible with Python 2.7
-
-* Packaged for installation with setuptools.
-
 
 ## Installation
 

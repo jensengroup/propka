@@ -1,4 +1,4 @@
 include README.md INSTALL 
-include ez_setup.py setup.py 
+include setup.py 
 include propka.cfg
 

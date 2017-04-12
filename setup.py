@@ -1,13 +1,12 @@
+#! /usr/bin/python
 # PROPKA 3.1
 #
 #
 # setuptools installation of  PROPKA 3.1
 
-import ez_setup
-ez_setup.use_setuptools()
 from setuptools import setup, find_packages
 
-VERSION = "3.1"
+VERSION = "3.1.0"
 
 setup(name="PROPKA",
       version=VERSION,
@@ -31,14 +30,23 @@ in publications:
   residues in empirical pKa predictions." Journal of Chemical Theory
   and Computation 7, no. 2 (2011): 525-537.
 
-See http://propka.ki.ku.dk/ for the PROPKA web server,
-using the tutorial http://propka.ki.ku.dk/~luca/wiki/index.php/PROPKA_3.1_Tutorial .
+See http://propka.org/ for the PROPKA web server.
 """,
       author="Jan H. Jensen",
       author_email="jhjensen@chem.ku.dk",
-      license="",
-      url="http://propka.ki.ku.dk/",
+      license="LGPL v2.1",
+      url="http://propka.org",
       keywords="science",
+      classifiers=[
+          'Development Status :: 6 - Mature',
+          'Environment :: Console',
+          'Intended Audience :: Science/Research',
+          'License :: OSI Approved :: GNU Lesser General Public License v2 (LGPLv2)',
+          'Operating System :: POSIX',
+          'Programming Language :: Python',
+          'Topic :: Scientific/Engineering :: Bio-Informatics',
+          'Topic :: Scientific/Engineering :: Chemistry',
+      ],
       packages=find_packages(exclude=['scripts']),
       package_data = {'propka': ['*.dat', '*.cfg']},
       #scripts = ["scripts/propka31.py"],  # use entry point below
