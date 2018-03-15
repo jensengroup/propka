@@ -23,9 +23,10 @@ def open_file_for_reading(filename):
     the object is just passed through (the stream is attempted to be
     reset to the beginning with ``fseek(0)``).
     """
-    if hasattr(filename, 'next') and hasattr(filename, 'read') \
-            and hasattr(filename, 'readline') and hasattr(filename, 'readlines') \
-            and hasattr(filename, 'close'):
+    if (hasattr(filename, 'next') or hasattr(filename, '__next__')) \
+        and hasattr(filename, 'read') \
+        and hasattr(filename, 'readline') and hasattr(filename, 'readlines') \
+        and hasattr(filename, 'close'):
         # already a stream
         try:
             filename.fseek(0)
