@@ -64,5 +64,5 @@ class SystemTest(unittest.TestCase):
 
             if errors:
                 error_header = "       Group  Expected  Calculated\n"
-                self.Fail("Unexpected pKa values:\n" + error_header +
+                self.fail("Unexpected pKa values:\n" + error_header +
                           "\n".join(errors))
