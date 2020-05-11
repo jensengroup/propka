@@ -66,6 +66,9 @@ class SystemTest(unittest.TestCase):
                     errors.append("%12s  %8.2f    %8.2f" %
                             (identity, expected_value, value))
 
+            os.remove("%s.pka" % pdb)
+            os.remove("%s.propka_input" % pdb)
+
             ref.close()
             output.close()
 
