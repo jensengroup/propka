@@ -138,7 +138,7 @@ def parse_res_string(res_str):
     return chain, resnum, inscode
 
 
-def build_parser(parser_=None):
+def build_parser(parser=None):
     """Build an argument parser for PROPKA.
 
     Args:
@@ -148,75 +148,74 @@ def build_parser(parser_=None):
     Returns:
         ArgumentParser object.
     """
-    if parser_ is not None:
-        subparsers = parser_.add_subparsers(title="PROPKA sub-command group")
-        parser = subparsers.add_parser("PROPKA", help="PROPKA invocation options")
+    if parser is not None:
+        group = parser.add_argument_group(title="PROPKA invoation options")
     else:
         parser = argparse.ArgumentParser(description=("PROPKA predicts the pKa values of ionizable "
                                                       "groups in proteins and protein-ligand "
                                                       "complexes based in the 3D structure"),
                                          formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        # This is duck-typing at its finest
+        group = parser
+        group.add_argument("input_pdb", help="read data from <filename>")
 
-    parser.add_argument("-f", "--file", action="append", dest="filenames", 
-                        help="read data from <filename>, i.e. <filename> is added to arguments")
-    parser.add_argument("-r", "--reference", dest="reference", default="neutral",
-                        help=("setting which reference to use for stability calculations "
-                              "[neutral/low-pH]"))
-    parser.add_argument("-c", "--chain", action="append", dest="chains",
-                        help=('creating the protein with only a specified chain. Specify '
-                              '" " for chains without ID [all]'))
-    parser.add_argument("-i", "--titrate_only", dest="titrate_only",
-                        help=('Treat only the specified residues as titratable. Value should '
-                              'be a comma-separated list of "chain:resnum" values; for example: '
-                              '-i "A:10,A:11"'))
-    parser.add_argument("-t", "--thermophile", action="append", dest="thermophiles",
-                        help=("defining a thermophile filename; usually used in "
-                              "'alignment-mutations'"))
-    parser.add_argument("-a", "--alignment", action="append", dest="alignment",
-                        help=("alignment file connecting <filename> and <thermophile> "
-                              "[<thermophile>.pir]"))
-    parser.add_argument("-m", "--mutation", action="append", dest="mutations",
-                        help=("specifying mutation labels which is used to modify "
-                              "<filename> according to, e.g. N25R/N181D"))
-    parser.add_argument("-v", "--version", dest="version_label", default="Jan15",
-                        help="specifying the sub-version of propka [Jan15/Dec19]")
-    parser.add_argument("-p", "--parameters", dest="parameters",
-                        default=pkg_resources.resource_filename(__name__, "propka.cfg"),
-                        help="set the parameter file [%default]")
-    parser.add_argument("-z", "--verbose", dest="verbosity", action="store_const",
-                        const=2, help="output debugging information")
-    parser.add_argument("-q", "--quiet", dest="verbosity", action="store_const",
-                        const=0, default=1, help="inhibit printing to stdout")
-    parser.add_argument("-o", "--pH", dest="pH", type=float, default=7.0,
-                        help="setting pH-value used in e.g. stability calculations [7.0]")
-    parser.add_argument("-w", "--window", dest="window", nargs=3, type=float,
-                        default=(0.0, 14.0, 1.0),
-                        help=("setting the pH-window to show e.g. stability profiles "
-                              "[0.0, 14.0, 1.0]"))
-    parser.add_argument("-g", "--grid", dest="grid", nargs=3, type=float,
-                        default=(0.0, 14.0, 0.1),
-                        help=("setting the pH-grid to calculate e.g. stability "
-                              "related properties [0.0, 14.0, 0.1]"))
-    parser.add_argument("--mutator", dest="mutator",
-                        help="setting approach for mutating <filename> [alignment/scwrl/jackal]")
-    parser.add_argument("--mutator-option", dest="mutator_options", action="append",
-                        help="setting property for mutator [e.g. type=\"side-chain\"]")
-    parser.add_argument("-d", "--display-coupled-residues", dest="display_coupled_residues",
-                        action="store_true", help=("Displays alternative pKa values due "
-                                                   "to coupling of titratable groups"))
-    parser.add_argument("-l", "--reuse-ligand-mol2-files", dest="reuse_ligand_mol2_file",
-                        action="store_true", default=False,
-                        help=("Reuses the ligand mol2 files allowing the user to alter "
-                              "ligand bond orders"))
-    parser.add_argument("-k", "--keep-protons", dest="keep_protons", action="store_true",
-                        help="Keep protons in input file", default=False)
-    parser.add_argument("--protonate-all", dest="protonate_all", action="store_true",
-                        help="Protonate all atoms (will not influence pKa calculation)",
-                        default=False)
-    parser.add_argument("input_pdb",
-                        help="read data from <filename>")
-    if parser_ is not None:
-        return parser_
+
+    group.add_argument("-f", "--file", action="append", dest="filenames", default=[],
+                       help="read data from <filename>, i.e. <filename> is added to arguments")
+    group.add_argument("-r", "--reference", dest="reference", default="neutral",
+                       help=("setting which reference to use for stability calculations "
+                             "[neutral/low-pH]"))
+    group.add_argument("-c", "--chain", action="append", dest="chains",
+                       help=('creating the protein with only a specified chain. Specify '
+                             '" " for chains without ID [all]'))
+    group.add_argument("-i", "--titrate_only", dest="titrate_only",
+                       help=('Treat only the specified residues as titratable. Value should '
+                             'be a comma-separated list of "chain:resnum" values; for example: '
+                             '-i "A:10,A:11"'))
+    group.add_argument("-t", "--thermophile", action="append", dest="thermophiles",
+                       help=("defining a thermophile filename; usually used in "
+                             "'alignment-mutations'"))
+    group.add_argument("-a", "--alignment", action="append", dest="alignment",
+                       help=("alignment file connecting <filename> and <thermophile> "
+                             "[<thermophile>.pir]"))
+    group.add_argument("-m", "--mutation", action="append", dest="mutations",
+                       help=("specifying mutation labels which is used to modify "
+                             "<filename> according to, e.g. N25R/N181D"))
+    group.add_argument("-v", "--version", dest="version_label", default="Jan15",
+                       help="specifying the sub-version of propka [Jan15/Dec19]")
+    group.add_argument("-p", "--parameters", dest="parameters",
+                       default=pkg_resources.resource_filename(__name__, "propka.cfg"),
+                       help="set the parameter file [%(default)s]")
+    group.add_argument("-z", "--verbose", dest="verbosity", action="store_const",
+                       const=2, help="output debugging information")
+    group.add_argument("-q", "--quiet", dest="verbosity", action="store_const",
+                       const=0, default=1, help="inhibit printing to stdout")
+    group.add_argument("-o", "--pH", dest="pH", type=float, default=7.0,
+                       help="setting pH-value used in e.g. stability calculations [7.0]")
+    group.add_argument("-w", "--window", dest="window", nargs=3, type=float,
+                       default=(0.0, 14.0, 1.0),
+                       help=("setting the pH-window to show e.g. stability profiles "
+                             "[0.0, 14.0, 1.0]"))
+    group.add_argument("-g", "--grid", dest="grid", nargs=3, type=float,
+                       default=(0.0, 14.0, 0.1),
+                       help=("setting the pH-grid to calculate e.g. stability "
+                             "related properties [0.0, 14.0, 0.1]"))
+    group.add_argument("--mutator", dest="mutator",
+                       help="setting approach for mutating <filename> [alignment/scwrl/jackal]")
+    group.add_argument("--mutator-option", dest="mutator_options", action="append",
+                       help="setting property for mutator [e.g. type=\"side-chain\"]")
+    group.add_argument("-d", "--display-coupled-residues", dest="display_coupled_residues",
+                       action="store_true", help=("Displays alternative pKa values due "
+                                                  "to coupling of titratable groups"))
+    group.add_argument("-l", "--reuse-ligand-mol2-files", dest="reuse_ligand_mol2_file",
+                       action="store_true", default=False,
+                       help=("Reuses the ligand mol2 files allowing the user to alter "
+                             "ligand bond orders"))
+    group.add_argument("-k", "--keep-protons", dest="keep_protons", action="store_true",
+                       help="Keep protons in input file", default=False)
+    group.add_argument("--protonate-all", dest="protonate_all", action="store_true",
+                       help="Protonate all atoms (will not influence pKa calculation)",
+                       default=False)
     return parser
 
 
