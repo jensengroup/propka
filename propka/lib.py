@@ -149,10 +149,8 @@ def build_parser(parser_=None):
         ArgumentParser object.
     """
     if parser_ is not None:
-        subparsers = parser_.add_subparsers(title="PROPKA sub-command group",
-                                            dest="propka_group", action="store_true")
-        parser = subparsers.add_parser("PROPKA", help="PROPKA invocation options",
-                                       dest="propka", action="store_true")
+        subparsers = parser_.add_subparsers(title="PROPKA sub-command group")
+        parser = subparsers.add_parser("PROPKA", help="PROPKA invocation options")
     else:
         parser = argparse.ArgumentParser(description=("PROPKA predicts the pKa values of ionizable "
                                                       "groups in proteins and protein-ligand "
@@ -217,6 +215,8 @@ def build_parser(parser_=None):
                         default=False)
     parser.add_argument("input_pdb",
                         help="read data from <filename>")
+    if parser_ is not None:
+        return parser_
     return parser
 
 
