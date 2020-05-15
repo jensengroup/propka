@@ -159,7 +159,6 @@ def build_parser(parser=None):
         group = parser
         group.add_argument("input_pdb", help="read data from <filename>")
 
-
     group.add_argument("-f", "--file", action="append", dest="filenames", default=[],
                        help="read data from <filename>, i.e. <filename> is added to arguments")
     group.add_argument("-r", "--reference", dest="reference", default="neutral",
@@ -186,10 +185,8 @@ def build_parser(parser=None):
     group.add_argument("-p", "--parameters", dest="parameters",
                        default=pkg_resources.resource_filename(__name__, "propka.cfg"),
                        help="set the parameter file [%(default)s]")
-    group.add_argument("-z", "--verbose", dest="verbosity", action="store_const",
-                       const=2, help="output debugging information")
-    group.add_argument("-q", "--quiet", dest="verbosity", action="store_const",
-                       const=0, default=1, help="inhibit printing to stdout")
+    group.add_argument("--log-level", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+                       help="logging level verbosity", default="INFO")
     group.add_argument("-o", "--pH", dest="pH", type=float, default=7.0,
                        help="setting pH-value used in e.g. stability calculations [7.0]")
     group.add_argument("-w", "--window", dest="window", nargs=3, type=float,
@@ -262,14 +259,8 @@ def loadOptions(*args):
 
 
     # Set the no-print variable
-    if options.verbosity == 0:
-        logger.setLevel(logging.CRITICAL)
-    elif options.verbosity == 1:
-        logger.setLevel(logging.INFO)
-    elif options.verbosity == 2:
-        logger.setLevel(logging.DEBUG)
-    else:
-        logger.warning("Invalid verbosity level, using default")
+    level = getattr(logging, options.log_level)
+    logger.setLevel(level)
 
     # done!
     return options
