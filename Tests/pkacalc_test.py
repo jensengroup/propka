@@ -7,6 +7,8 @@ import unittest
 import logging
 
 
+# This error tolerance was chosen to make Ubuntu 18.04 pass under Windows 
+# Subsystem Linux.
 ACCEPTABLE_ERROR = 0.001
 
 
