@@ -224,13 +224,8 @@ def loadOptions(*args):
     Returns:
         argparse namespace
     """
-    from optparse import OptionParser
-
     # defining a 'usage' message
     usage = "usage: %prog [options] filename"
-
-    # creating a parser
-    parser = OptionParser(usage)
 
     # loading the parser
     parser = build_parser()
