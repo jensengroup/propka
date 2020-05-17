@@ -1,170 +1,164 @@
-
-from __future__ import division
-from __future__ import print_function
-
-import pickle,sys,os,math,propka.calculations
+"""PROPKA representation of bonds."""
+# TODO - is pickle still used?
+import pickle
+# TODO - eliminate use of sys
+import sys
+# TODO - eliminate use of os
+import os
+import math
 import json
-
 import pkg_resources
+import propka.calculations
+# TODO - replace the info/warning imports with logging functionality
 from propka.lib import info, warning
 
+
+# TODO - should these constants be defined higher up in the module?
+# TODO - I don't know what some of these constants mean
+DISULFIDE_DISTANCE = 2.5
+FLUORIDE_DISTANCE = 1.7
+HYDROGEN_DISTANCE = 1.5
+DEFAULT_DISTANCE = 2.0
+
+
 class bondmaker:
+    """Makes bonds?
+
+    TODO - the documentation for this class needs to be improved.
+    """
     def __init__(self):
-
         # predefined bonding distances
-        self.distances = {
-            'S-S':2.5,
-            'F-F':1.7}
-
+        self.distances = {'S-S' : DISULFIDE_DISTANCE, 'F-F' : FLUORIDE_DISTANCE}
         self.distances_squared = {}
         for k in self.distances.keys():
-            self.distances_squared[k]=self.distances[k]*self.distances[k]
-
-        self.H_dist = 1.5;
-        self.default_dist = 2.0;
-
-        self.H_dist_squared  = self.H_dist * self.H_dist
+            self.distances_squared[k] = self.distances[k] * self.distances[k]
+        self.H_dist = HYDROGEN_DISTANCE
+        self.default_dist = DEFAULT_DISTANCE
+        self.H_dist_squared = self.H_dist * self.H_dist
         self.default_dist_squared = self.default_dist * self.default_dist
-
-        self.max_sq_distance = max(list(self.distances_squared.values())+[self.default_dist_squared])
-
+        distances = list(self.distances_squared.values()) + [self.default_dist_squared]
+        self.max_sq_distance = max(distances)
         # protein bonding data
         self.data_file_name = pkg_resources.resource_filename(__name__, 'protein_bonds.json')
-        with open(self.data_file_name,'rt') as json_file:
+        with open(self.data_file_name, 'rt') as json_file:
             self.protein_bonds = json.load(json_file)
-
-
-        self.intra_residue_backbone_bonds = {'N': ['CA'],
-                                             'CA':['N','C'],
-                                             'C': ['CA','O'],
-                                             'O': ['C']}
-
-        self.number_of_pi_electrons_in_bonds_in_backbone = {'C':1,
-                                                            'O':1}
-
-        self.number_of_pi_electrons_in_conjugate_bonds_in_backbone = {'N':1}
-
-        self.number_of_pi_electrons_in_bonds_in_sidechains = {'ARG-CZ' :1,
-                                                              'ARG-NH1':1,
-                                                              'ASN-OD1':1,
-                                                              'ASN-CG' :1,
-                                                              'ASP-OD1':1,
-                                                              'ASP-CG' :1,
-                                                              'GLU-OE1':1,
-                                                              'GLU-CD' :1,
-                                                              'GLN-OE1':1,
-                                                              'GLN-CD' :1,
-                                                              'HIS-CG' :1,
-                                                              'HIS-CD2':1,
-                                                              'HIS-ND1':1,
-                                                              'HIS-CE1':1,
-                                                              'PHE-CG' :1,
-                                                              'PHE-CD1':1,
-                                                              'PHE-CE1':1,
-                                                              'PHE-CZ' :1,
-                                                              'PHE-CE2':1,
-                                                              'PHE-CD2':1,
-                                                              'TRP-CG' :1,
-                                                              'TRP-CD1':1,
-                                                              'TRP-CE2':1,
-                                                              'TRP-CD2':1,
-                                                              'TRP-CE3':1,
-                                                              'TRP-CZ3':1,
-                                                              'TRP-CH2':1,
-                                                              'TRP-CZ2':1,
-                                                              'TYR-CG' :1,
-                                                              'TYR-CD1':1,
-                                                              'TYR-CE1':1,
-                                                              'TYR-CZ' :1,
-                                                              'TYR-CE2':1,
-                                                              'TYR-CD2':1}
-
-
-        self.number_of_pi_electrons_in_conjugate_bonds_in_sidechains = {'ARG-NE' :1,
-                                                                        'ARG-NH2':1,
-                                                                        'ASN-ND2':1,
-                                                                        'GLN-NE2':1,
-                                                                        'HIS-NE2':1,
-                                                                        'TRP-NE1':1}
-
-        self.number_of_pi_electrons_in_bonds_ligands = {'C.ar':1,
-                                                        'N.pl3':0,
-                                                        'C.2':1,
-                                                        'O.2':1,
-                                                        'O.co2':1,
-                                                        'N.ar':1,
-                                                        'C.1':2,
-                                                        'N.1':2}
-
-        self.number_of_pi_electrons_in_conjugate_bonds_in_ligands = {'N.am':1,'N.pl3':1}
-
-
+        self.intra_residue_backbone_bonds = {'N': ['CA'], 'CA': ['N', 'C'],
+                                             'C': ['CA', 'O'], 'O': ['C']}
+        self.number_of_pi_electrons_in_bonds_in_backbone = {'C': 1, 'O': 1}
+        self.number_of_pi_electrons_in_conjugate_bonds_in_backbone = {'N': 1}
+        self.number_of_pi_electrons_in_bonds_in_sidechains = {'ARG-CZ' : 1,
+                                                              'ARG-NH1': 1,
+                                                              'ASN-OD1': 1,
+                                                              'ASN-CG' : 1,
+                                                              'ASP-OD1': 1,
+                                                              'ASP-CG' : 1,
+                                                              'GLU-OE1': 1,
+                                                              'GLU-CD' : 1,
+                                                              'GLN-OE1': 1,
+                                                              'GLN-CD' : 1,
+                                                              'HIS-CG' : 1,
+                                                              'HIS-CD2': 1,
+                                                              'HIS-ND1': 1,
+                                                              'HIS-CE1': 1,
+                                                              'PHE-CG' : 1,
+                                                              'PHE-CD1': 1,
+                                                              'PHE-CE1': 1,
+                                                              'PHE-CZ' : 1,
+                                                              'PHE-CE2': 1,
+                                                              'PHE-CD2': 1,
+                                                              'TRP-CG' : 1,
+                                                              'TRP-CD1': 1,
+                                                              'TRP-CE2': 1,
+                                                              'TRP-CD2': 1,
+                                                              'TRP-CE3': 1,
+                                                              'TRP-CZ3': 1,
+                                                              'TRP-CH2': 1,
+                                                              'TRP-CZ2': 1,
+                                                              'TYR-CG' : 1,
+                                                              'TYR-CD1': 1,
+                                                              'TYR-CE1': 1,
+                                                              'TYR-CZ' : 1,
+                                                              'TYR-CE2': 1,
+                                                              'TYR-CD2': 1}
+        self.number_of_pi_electrons_in_conjugate_bonds_in_sidechains = {'ARG-NE': 1,
+                                                                        'ARG-NH2': 1,
+                                                                        'ASN-ND2': 1,
+                                                                        'GLN-NE2': 1,
+                                                                        'HIS-NE2': 1,
+                                                                        'TRP-NE1': 1}
+        self.number_of_pi_electrons_in_bonds_ligands = {'C.ar': 1, 'N.pl3': 0,
+                                                        'C.2': 1, 'O.2': 1,
+                                                        'O.co2': 1, 'N.ar': 1,
+                                                        'C.1': 2, 'N.1': 2}
+        self.number_of_pi_electrons_in_conjugate_bonds_in_ligands = {'N.am': 1,
+                                                                     'N.pl3': 1}
         self.backbone_atoms = list(self.intra_residue_backbone_bonds.keys())
-
-        self.terminal_oxygen_names = ['OXT','O\'\'']
-
-
-        return
-
+        self.terminal_oxygen_names = ['OXT', 'O\'\'']
 
     def find_bonds_for_protein(self, protein):
-        """ Finds bonds proteins based on the way atoms
-        normally bond in proteins"""
+        """Finds bonds proteins based on the way atoms normally bond in proteins.
 
+        Args:
+            protein:  the protein to search for bonds
+        """
         info('++++ Side chains ++++')
         # side chains
         for chain in protein.chains:
             for residue in chain.residues:
-                if residue.resName.replace(' ','') not in ['N+','C-']:
+                if residue.resName.replace(' ', '') not in ['N+', 'C-']:
                     self.find_bonds_for_side_chain(residue.atoms)
-
         info('++++ Backbones ++++')
         # backbone
         last_residues = []
         for chain in protein.chains:
-            for i in range(1,len(chain.residues)):
-                if chain.residues[i-1].resName.replace(' ','') not in ['N+','C-']:
-                    if chain.residues[i].resName.replace(' ','') not in ['N+','C-']:
+            for i in range(1, len(chain.residues)):
+                if chain.residues[i-1].resName.replace(' ', '') not in ['N+', 'C-']:
+                    if chain.residues[i].resName.replace(' ', '') not in ['N+', 'C-']:
                         self.connect_backbone(chain.residues[i-1], chain.residues[i])
                         last_residues.append(chain.residues[i])
-
         info('++++ terminal oxygen ++++')
         # terminal OXT
         for last_residue in last_residues:
             self.find_bonds_for_terminal_oxygen(last_residue)
-
         info('++++ cysteines ++++')
         # Cysteines
         for chain in protein.chains:
-            for i in range(0,len(chain.residues)):
+            for i in range(0, len(chain.residues)):
                 if chain.residues[i].resName == 'CYS':
-                    for j in range(0,len(chain.residues)):
+                    for j in range(0, len(chain.residues)):
                         if chain.residues[j].resName == 'CYS' and j != i:
                             self.check_for_cysteine_bonds(chain.residues[i],
                                                           chain.residues[j])
-        return
 
     def check_for_cysteine_bonds(self, cys1, cys2):
+        """Looks for potential bonds between two cysteines.
+
+        Args:
+            cys1:  one of the cysteines to check
+            cys1:  one of the cysteines to check
+        """
         for atom1 in cys1.atoms:
             if atom1.name == 'SG':
                 for atom2 in cys2.atoms:
                     if atom2.name == 'SG':
-                        if propka.calculations.squared_distance(atom1,atom2) < self.SS_dist_squared:
+                        dist = propka.calculations.squared_distance(atom1, atom2)
+                        # TODO - is SS_dist_squared an attribute of this class?
+                        if dist < self.SS_dist_squared:
                             self.make_bond(atom1, atom2)
 
-
-        return
-
     def find_bonds_for_terminal_oxygen(self, residue):
+        """Look for bonds for terminal oxygen.
+
+        Args:
+            residue - test residue
+        """
         for atom1 in residue.atoms:
             if atom1.name in self.terminal_oxygen_names:
                 for atom2 in residue.atoms:
                     if atom2.name == 'C':
                         self.make_bond(atom1, atom2)
 
-        return
-
-
+    # TODO - stopped here.
     def connect_backbone(self, residue1, residue2):
         """ Sets up bonds in the backbone """
         # residue 1
