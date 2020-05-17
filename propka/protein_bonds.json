@@ -1,0 +1,21 @@
+{
+    "CYS": { "CB": [ "CA", "SG" ], "CA": [ "CB" ], "SG": [ "CB", "SG" ] },
+    "GLN": { "CB": [ "CA", "CG" ], "CA": [ "CB" ], "CG": [ "CB", "CD" ], "CD": [ "CG", "OE1", "NE2" ], "NE2": [ "CD" ], "OE1": [ "CD" ] },
+    "HIS": { "CD2": [ "CG", "NE2" ], "CB": [ "CA", "CG" ], "CA": [ "CB" ], "CG": [ "CB", "ND1", "CD2" ], "CE1": [ "ND1", "NE2" ], "ND1": [ "CG", "CE1" ], "NE2": [ "CD2", "CE1" ] },
+    "ASN": { "CB": [ "CA", "CG" ], "CA": [ "CB" ], "ND2": [ "CG" ], "CG": [ "CB", "OD1", "ND2" ], "OD1": [ "CG" ] },
+    "VAL": { "CG1": [ "CB" ], "CB": [ "CA", "CG1", "CG2" ], "CA": [ "CB" ], "CG2": [ "CB" ] },
+    "LYS": { "CB": [ "CA", "CG" ], "CA": [ "CB" ], "CG": [ "CB", "CD" ], "CE": [ "CD", "NZ" ], "CD": [ "CG", "CE" ], "NZ": [ "CE" ] },
+    "ILE": { "CG1": [ "CB", "CD1" ], "CB": [ "CA", "CG1", "CG2" ], "CA": [ "CB" ], "CG2": [ "CB" ], "CD1": [ "CG1" ] },
+    "PRO": { "CB": [ "CA", "CG" ], "CA": [ "CB" ], "CD": [ "N", "CG" ], "CG": [ "CB", "CD" ], "N": [ "CD" ] },
+    "THR": { "CB": [ "CA", "OG1", "CG2" ], "CA": [ "CB" ], "CG2": [ "CB" ], "OG1": [ "CB" ] },
+    "PHE": { "CD2": [ "CG", "CE2" ], "CB": [ "CA", "CG" ], "CA": [ "CB" ], "CG": [ "CB", "CD1", "CD2" ], "CZ": [ "CE1", "CE2" ], "CD1": [ "CG", "CE1" ], "CE1": [ "CD1", "CZ" ], "CE2": [ "CD2", "CZ" ] },
+    "ALA": { "CB": [ "CA" ], "CA": [ "CB" ] },
+    "MET": { "CB": [ "CA", "CG" ], "CA": [ "CB" ], "CG": [ "CB", "SD" ], "CE": [ "SD" ], "SD": [ "CG", "CE" ] },
+    "ASP": { "CB": [ "CA", "CG" ], "CA": [ "CB" ], "CG": [ "CB", "OD1", "OD2" ], "OD2": [ "CG" ], "OD1": [ "CG" ] },
+    "LEU": { "CB": [ "CA", "CG" ], "CA": [ "CB" ], "CG": [ "CB", "CD1", "CD2" ], "CD1": [ "CG" ], "CD2": [ "CG" ] },
+    "ARG": { "CB": [ "CA", "CG" ], "CA": [ "CB" ], "CG": [ "CB", "CD" ], "NE": [ "CD", "CZ" ], "CD": [ "CG", "NE" ], "CZ": [ "NE", "NH1", "NH2" ], "NH1": [ "CZ" ], "NH2": [ "CZ" ] },
+    "TRP": { "CZ2": [ "CE2", "CH2" ], "CB": [ "CA", "CG" ], "CA": [ "CB" ], "CG": [ "CB", "CD1", "CD2" ], "CH2": [ "CZ2", "CZ3" ], "CE2": [ "CD2", "NE1", "CZ2" ], "CE3": [ "CD2", "CZ3" ], "CD1": [ "CG", "NE1" ], "CD2": [ "CG", "CE2", "CE3" ], "CZ3": [ "CE3", "CH2" ], "NE1": [ "CD1", "CE2" ] },
+    "GLU": { "OE2": [ "CD" ], "CA": [ "CB" ], "CG": [ "CB", "CD" ], "CD": [ "CG", "OE1", "OE2" ], "CB": [ "CA", "CG" ], "OE1": [ "CD" ] },
+    "TYR": { "CD2": [ "CG", "CE2" ], "OH": [ "CZ" ], "CB": [ "CA", "CG" ], "CA": [ "CB" ], "CG": [ "CB", "CD1", "CD2" ], "CZ": [ "CE1", "CE2", "OH" ], "CD1": [ "CG", "CE1" ], "CE1": [ "CD1", "CZ" ], "CE2": [ "CD2", "CZ" ] },
+    "SER": { "OG": [ "CB" ], "CB": [ "CA", "OG" ], "CA": [ "CB" ] }
+}

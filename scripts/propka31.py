@@ -16,7 +16,8 @@ def main():
     Reads in structure files, calculates pKa values, and prints pKa files
     """
     # loading options, flaggs and arguments
-    options, pdbfiles = propka.lib.loadOptions()
+    options = propka.lib.loadOptions()
+    pdbfiles = options.filenames
 
     for pdbfile in pdbfiles:
         my_molecule = propka.molecular_container.Molecular_container(pdbfile, options)
