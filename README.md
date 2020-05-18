@@ -56,7 +56,7 @@ Calculate using pdb file
 
 ## Testing (for developers)
 
-Please run `Tests/pkacalc_test.py` via `unittest` or `pytest` after changes before pushing commits.
+Please run `Tests/pkacalc_test.py` via `unittest` or `pytest` as well as `python Tests/runtest.py` after changes before pushing commits.
 
 ## References / Citations
 
