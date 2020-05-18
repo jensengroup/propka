@@ -111,22 +111,22 @@ class Group:
         self.common_charge_centre = False
 
 
-        self.residue_type = self.atom.resName
+        self.residue_type = self.atom.res_name
         if self.atom.terminal:
             self.residue_type = self.atom.terminal
 
         if self.atom.type=='atom':
-            self.label = '%-3s%4d%2s'%(self.residue_type, atom.resNumb, atom.chainID)
-        elif self.atom.resName in ['DA ','DC ','DG ','DT ']:
+            self.label = '%-3s%4d%2s'%(self.residue_type, atom.res_num, atom.chain_id)
+        elif self.atom.res_name in ['DA ','DC ','DG ','DT ']:
             self.label = '%1s%1s%1s%4d%2s'%(self.residue_type[1],
                                             atom.element,
                                             atom.name.replace('\'','')[-1],
-                                            atom.resNumb,
-                                            atom.chainID)
+                                            atom.res_num,
+                                            atom.chain_id)
 
-#            self.label = '%1s%1s%1s%4d%2s'%(self.residue_type[1], atom.element,atom.name[-1], atom.resNumb, atom.chainID)
+#            self.label = '%1s%1s%1s%4d%2s'%(self.residue_type[1], atom.element,atom.name[-1], atom.res_num, atom.chain_id)
         else:
-            self.label = '%-3s%4s%2s'%(self.residue_type, atom.name, atom.chainID)
+            self.label = '%-3s%4s%2s'%(self.residue_type, atom.name, atom.chain_id)
 
 
         # container for squared distances
@@ -253,7 +253,7 @@ class Group:
             return self.label==other.label
         else:
             # For heterogene atoms we also need to check the residue number
-            return self.label==other.label and self.atom.resNumb == other.atom.resNumb
+            return self.label==other.label and self.atom.res_num == other.atom.res_num
 
     def __hash__(self):
         """ Needed together with __eq__ - otherwise we can't make sets of groups """
@@ -361,7 +361,7 @@ class Group:
             if not self.model_pka_set:
                 self.model_pka = self.parameters.model_pkas[self.residue_type]
                 # check if we should apply a custom model pka
-                key = '%s-%s'%(self.atom.resName.strip(), self.atom.name.strip())
+                key = '%s-%s'%(self.atom.res_name.strip(), self.atom.name.strip())
                 if key in self.parameters.custom_model_pkas.keys():
                     self.model_pka = self.parameters.custom_model_pkas[key]
 
@@ -1122,7 +1122,7 @@ class Ion_group(Group):
     def __init__(self, atom):
         Group.__init__(self,atom)
         self.type = 'ION'
-        self.residue_type = atom.resName.strip()
+        self.residue_type = atom.res_name.strip()
         info('Found ion group:', atom)
         return
 
@@ -1201,7 +1201,7 @@ def is_protein_group(parameters,atom):
     ### Backbone
     if atom.type == 'atom' and atom.name == 'N':
         # ignore proline backbone nitrogens
-        if atom.resName != 'PRO':
+        if atom.res_name != 'PRO':
             return BBN_group(atom)
     if atom.type == 'atom' and atom.name == 'C':
         # ignore C- carboxyl
@@ -1209,7 +1209,7 @@ def is_protein_group(parameters,atom):
             return BBC_group(atom)
 
     ### Filters for side chains based on PDB protein atom names
-    key = '%s-%s'%(atom.resName, atom.name)
+    key = '%s-%s'%(atom.res_name, atom.name)
 
     if key in parameters.protein_group_mapping.keys():
         return eval('%s_group(atom)'%parameters.protein_group_mapping[key])
@@ -1342,7 +1342,7 @@ def is_ligand_group_by_marvin_pkas(parameters, atom):
 
 def is_ion_group(parameters, atom):
 
-    if atom.resName.strip() in parameters.ions.keys():
+    if atom.res_name.strip() in parameters.ions.keys():
         return Ion_group(atom)
 
     return None

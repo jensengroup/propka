@@ -105,15 +105,15 @@ class bondmaker:
         # side chains
         for chain in protein.chains:
             for residue in chain.residues:
-                if residue.resName.replace(' ', '') not in ['N+', 'C-']:
+                if residue.res_name.replace(' ', '') not in ['N+', 'C-']:
                     self.find_bonds_for_side_chain(residue.atoms)
         info('++++ Backbones ++++')
         # backbone
         last_residues = []
         for chain in protein.chains:
             for i in range(1, len(chain.residues)):
-                if chain.residues[i-1].resName.replace(' ', '') not in ['N+', 'C-']:
-                    if chain.residues[i].resName.replace(' ', '') not in ['N+', 'C-']:
+                if chain.residues[i-1].res_name.replace(' ', '') not in ['N+', 'C-']:
+                    if chain.residues[i].res_name.replace(' ', '') not in ['N+', 'C-']:
                         self.connect_backbone(chain.residues[i-1], chain.residues[i])
                         last_residues.append(chain.residues[i])
         info('++++ terminal oxygen ++++')
@@ -124,9 +124,9 @@ class bondmaker:
         # Cysteines
         for chain in protein.chains:
             for i in range(0, len(chain.residues)):
-                if chain.residues[i].resName == 'CYS':
+                if chain.residues[i].res_name == 'CYS':
                     for j in range(0, len(chain.residues)):
-                        if chain.residues[j].resName == 'CYS' and j != i:
+                        if chain.residues[j].res_name == 'CYS' and j != i:
                             self.check_for_cysteine_bonds(chain.residues[i],
                                                           chain.residues[j])
 
@@ -180,9 +180,9 @@ class bondmaker:
     def find_bonds_for_residue_backbone(self, residue):
         for atom1 in residue.atoms:
             if atom1.name in list(self.number_of_pi_electrons_in_bonds_in_backbone.keys()):
-                atom1.number_of_pi_electrons_in_double_and_triple_bonds = self.number_of_pi_electrons_in_bonds_in_backbone[atom1.name]
+                atom1.num_pi_elec_2_3_bonds = self.number_of_pi_electrons_in_bonds_in_backbone[atom1.name]
             if atom1.name in list(self.number_of_pi_electrons_in_conjugate_bonds_in_backbone.keys()) and len(atom1.bonded_atoms)>1: # last part to avoid including N-term
-                atom1.number_of_pi_electrons_in_conjugate_double_and_triple_bonds = self.number_of_pi_electrons_in_conjugate_bonds_in_backbone[atom1.name]
+                atom1.num_pi_elec_conj_2_3_bonds = self.number_of_pi_electrons_in_conjugate_bonds_in_backbone[atom1.name]
 
             if atom1.name in self.backbone_atoms:
                 for atom2 in residue.atoms:
@@ -196,16 +196,16 @@ class bondmaker:
         """ Finds bonds for a side chain """
         for atom1 in atoms:
 
-            key = '%s-%s'%(atom1.resName,atom1.name)
+            key = '%s-%s'%(atom1.res_name,atom1.name)
             if key in list(self.number_of_pi_electrons_in_bonds_in_sidechains.keys()):
-                atom1.number_of_pi_electrons_in_double_and_triple_bonds = self.number_of_pi_electrons_in_bonds_in_sidechains[key]
+                atom1.num_pi_elec_2_3_bonds = self.number_of_pi_electrons_in_bonds_in_sidechains[key]
             if key in list(self.number_of_pi_electrons_in_conjugate_bonds_in_sidechains.keys()):
-                atom1.number_of_pi_electrons_in_conjugate_double_and_triple_bonds = self.number_of_pi_electrons_in_conjugate_bonds_in_sidechains[key]
+                atom1.num_pi_elec_conj_2_3_bonds = self.number_of_pi_electrons_in_conjugate_bonds_in_sidechains[key]
 
             if not atom1.name in self.backbone_atoms:
                 if not atom1.name in self.terminal_oxygen_names:
                     for atom2 in atoms:
-                        if atom2.name in self.protein_bonds[atom1.resName][atom1.name]:
+                        if atom2.name in self.protein_bonds[atom1.res_name][atom1.name]:
                             self.make_bond(atom1,atom2)
 
         return
@@ -225,22 +225,22 @@ class bondmaker:
             # for ligands
             if atom.type == 'hetatm':
                 if atom.sybyl_type in self.number_of_pi_electrons_in_bonds_ligands.keys():
-                    atom.number_of_pi_electrons_in_double_and_triple_bonds = self.number_of_pi_electrons_in_bonds_ligands[atom.sybyl_type]
+                    atom.num_pi_elec_2_3_bonds = self.number_of_pi_electrons_in_bonds_ligands[atom.sybyl_type]
                 if atom.sybyl_type in self.number_of_pi_electrons_in_conjugate_bonds_in_ligands.keys():
-                    atom.number_of_pi_electrons_in_conjugate_double_and_triple_bonds = self.number_of_pi_electrons_in_conjugate_bonds_in_ligands[atom.sybyl_type]
+                    atom.num_pi_elec_conj_2_3_bonds = self.number_of_pi_electrons_in_conjugate_bonds_in_ligands[atom.sybyl_type]
 
             # for protein
             if atom.type == 'atom':
-                key = '%s-%s'%(atom.resName,atom.name)
+                key = '%s-%s'%(atom.res_name,atom.name)
                 if key in list(self.number_of_pi_electrons_in_bonds_in_sidechains.keys()):
-                    atom.number_of_pi_electrons_in_double_and_triple_bonds = self.number_of_pi_electrons_in_bonds_in_sidechains[key]
+                    atom.num_pi_elec_2_3_bonds = self.number_of_pi_electrons_in_bonds_in_sidechains[key]
                 if key in list(self.number_of_pi_electrons_in_conjugate_bonds_in_sidechains.keys()):
-                    atom.number_of_pi_electrons_in_conjugate_double_and_triple_bonds = self.number_of_pi_electrons_in_conjugate_bonds_in_sidechains[key]
+                    atom.num_pi_elec_conj_2_3_bonds = self.number_of_pi_electrons_in_conjugate_bonds_in_sidechains[key]
 
                 if atom.name in list(self.number_of_pi_electrons_in_bonds_in_backbone.keys()):
-                    atom.number_of_pi_electrons_in_double_and_triple_bonds = self.number_of_pi_electrons_in_bonds_in_backbone[atom.name]
+                    atom.num_pi_elec_2_3_bonds = self.number_of_pi_electrons_in_bonds_in_backbone[atom.name]
                 if atom.name in list(self.number_of_pi_electrons_in_conjugate_bonds_in_backbone.keys()) and len(atom.bonded_atoms)>1: # last part to avoid including N-term
-                    atom.number_of_pi_electrons_in_conjugate_double_and_triple_bonds = self.number_of_pi_electrons_in_conjugate_bonds_in_backbone[atom.name]
+                    atom.num_pi_elec_conj_2_3_bonds = self.number_of_pi_electrons_in_conjugate_bonds_in_backbone[atom.name]
 
         return
 
@@ -251,7 +251,7 @@ class bondmaker:
         atoms = []
         for chain in molecule.chains:
             for residue in chain.residues:
-                if residue.resName.replace(' ','') not in ['N+','C-']:
+                if residue.res_name.replace(' ','') not in ['N+','C-']:
                     for atom in residue.atoms:
                         atoms.append(atom)
 
@@ -423,9 +423,9 @@ class bondmaker:
 
         for atom in atoms:
             for bonded_atom in atom.bonded_atoms:
-                resi_i = atom.resName
+                resi_i = atom.res_name
                 name_i = atom.name
-                resi_j = bonded_atom.resName
+                resi_j = bonded_atom.res_name
                 name_j = bonded_atom.name
 
                 if not name_i in self.backbone_atoms or\

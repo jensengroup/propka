@@ -121,7 +121,7 @@ class Protonate:
     def set_charge(self, atom):
         # atom is a protein atom
         if atom.type=='atom':
-            key = '%3s-%s'%(atom.resName, atom.name)
+            key = '%3s-%s'%(atom.res_name, atom.name)
             if atom.terminal:
                 debug(atom.terminal)
                 key=atom.terminal
@@ -172,8 +172,8 @@ class Protonate:
         debug('Valence eletrons: %4d'%-self.valence_electrons[atom.element])
         atom.number_of_protons_to_add -= len(atom.bonded_atoms)
         debug('Number of bonds:  %4d'%- len(atom.bonded_atoms))
-        atom.number_of_protons_to_add -= atom.number_of_pi_electrons_in_double_and_triple_bonds
-        debug('Pi electrons:     %4d'%-atom.number_of_pi_electrons_in_double_and_triple_bonds)
+        atom.number_of_protons_to_add -= atom.num_pi_elec_2_3_bonds
+        debug('Pi electrons:     %4d'%-atom.num_pi_elec_2_3_bonds)
         atom.number_of_protons_to_add += int(atom.charge)
         debug('Charge:           %4.1f'%atom.charge)
 
@@ -185,7 +185,7 @@ class Protonate:
     def set_steric_number_and_lone_pairs(self, atom):
 
         # If we already did this, there is no reason to do it again
-        if atom.steric_number_and_lone_pairs_set:
+        if atom.steric_num_lone_pairs_set:
             return
 
         debug('='*10)
@@ -211,11 +211,11 @@ class Protonate:
         debug('%65s: %4d'%('Number of hydrogen atoms to add',atom.number_of_protons_to_add))
         atom.steric_number += atom.number_of_protons_to_add
 
-        debug('%65s: %4d'%('Number of pi-electrons in double and triple bonds(-)',atom.number_of_pi_electrons_in_double_and_triple_bonds))
-        atom.steric_number -= atom.number_of_pi_electrons_in_double_and_triple_bonds
+        debug('%65s: %4d'%('Number of pi-electrons in double and triple bonds(-)',atom.num_pi_elec_2_3_bonds))
+        atom.steric_number -= atom.num_pi_elec_2_3_bonds
 
-        debug('%65s: %4d'%('Number of pi-electrons in conjugated double and triple bonds(-)',atom.number_of_pi_electrons_in_conjugate_double_and_triple_bonds))
-        atom.steric_number -= atom.number_of_pi_electrons_in_conjugate_double_and_triple_bonds
+        debug('%65s: %4d'%('Number of pi-electrons in conjugated double and triple bonds(-)',atom.num_pi_elec_conj_2_3_bonds))
+        atom.steric_number -= atom.num_pi_elec_conj_2_3_bonds
 
         debug('%65s: %4d'%('Number of donated co-ordinated bonds',0))
         atom.steric_number += 0
@@ -231,7 +231,7 @@ class Protonate:
         debug('%65s: %4d'%('Steric number',atom.steric_number))
         debug('%65s: %4d'%('Number of lone pairs',atom.number_of_lone_pairs))
 
-        atom.steric_number_and_lone_pairs_set = True
+        atom.steric_num_lone_pairs_set = True
 
         return
 
@@ -364,11 +364,11 @@ class Protonate:
     def add_proton(self, atom, position):
         # Create the new proton
         new_H = propka.atom.Atom()
-        new_H.setProperty(numb    = None,
+        new_H.set_property(numb    = None,
                           name    = 'H%s'%atom.name[1:],
-                          resName = atom.resName,
-                          chainID = atom.chainID,
-                          resNumb = atom.resNumb,
+                          res_name = atom.res_name,
+                          chain_id = atom.chain_id,
+                          res_num = atom.res_num,
                           x       = round(position.x,3), # round of to three digimal points
                           y       = round(position.y,3), # to avoid round-off differences
                           z       = round(position.z,3), # when input file
@@ -382,7 +382,7 @@ class Protonate:
         new_H.steric_number = 0
         new_H.number_of_lone_pairs = 0
         new_H.number_of_protons_to_add = 0
-        new_H.number_of_pi_electrons_in_double_and_triple_bonds = 0
+        new_H.num_pi_elec_2_3_bonds = 0
         new_H.is_protonates = True
 
         atom.bonded_atoms.append(new_H)
@@ -390,13 +390,13 @@ class Protonate:
         atom.conformation_container.add_atom(new_H)
 
         # update names of all protons on this atom
-        new_H.residue_label = "%-3s%4d%2s" % (new_H.name,new_H.resNumb, new_H.chainID)
+        new_H.residue_label = "%-3s%4d%2s" % (new_H.name,new_H.res_num, new_H.chain_id)
         no_protons = atom.count_bonded_elements('H')
         if no_protons > 1:
             i = 1
             for proton in atom.get_bonded_elements('H'):
                 proton.name = 'H%s%d'%(atom.name[1:],i)
-                proton.residue_label = "%-3s%4d%2s" % (proton.name,proton.resNumb, proton.chainID)
+                proton.residue_label = "%-3s%4d%2s" % (proton.name,proton.res_num, proton.chain_id)
                 i+=1
 
 
