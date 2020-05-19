@@ -1,15 +1,33 @@
-
+"""Reproduce tests from original PROPKA."""
 import os
 import re
 from subprocess import call
 import sys
 import unittest
 import logging
+import propka.lib
+import propka.molecular_container
 
 
 # This error tolerance was chosen to make Ubuntu 18.04 pass under Windows 
 # Subsystem Linux.
 ACCEPTABLE_ERROR = 0.001
+
+
+def run_propka(args):
+    """Run PROPKA.
+
+    Args:
+        args:  command-line arguments for PROPKA
+    """
+    options = propka.lib.loadOptions()
+    raise NotImplementedError("Need to incorporated command-line arguments")
+    pdbfiles = options.filenames
+
+    for pdbfile in pdbfiles:
+        my_molecule = propka.molecular_container.Molecular_container(pdbfile, options)
+        my_molecule.calculate_pka()
+        my_molecule.write_pka()
 
 
 # Setting this up as a direct translation of the original runtest.py script
