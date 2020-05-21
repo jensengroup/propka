@@ -210,17 +210,21 @@ def build_parser(parser=None):
                              "ligand bond orders"))
     group.add_argument("-k", "--keep-protons", dest="keep_protons", action="store_true",
                        help="Keep protons in input file", default=False)
+    group.add_argument("-q", "--quiet", action="store_const", const="WARNING",
+                       dest="log_level", help="supress non-warning messages")
     group.add_argument("--protonate-all", dest="protonate_all", action="store_true",
                        help="Protonate all atoms (will not influence pKa calculation)",
                        default=False)
     return parser
 
 
-def loadOptions(*args):
+def loadOptions(args):
     """
     Load the arguments parser with options. Note that verbosity is set as soon
     as this function is invoked.
 
+    Arguments:
+        args:  list of arguments
     Returns:
         argparse namespace
     """
@@ -235,7 +239,7 @@ def loadOptions(*args):
         # command line
         options = parser.parse_args()
     else:
-        options = parser.parse_args(list(args))
+        options = parser.parse_args(args)
 
     # adding specified filenames to arguments
     options.filenames.append(options.input_pdb)
