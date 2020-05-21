@@ -56,5 +56,6 @@ See http://propka.org/ for the PROPKA web server.
             ],
         },
       zip_safe=True,
-      test_suite="Tests",
+      python_requires='>=3',
+      test_suite="tests",
 )
