@@ -36,10 +36,16 @@ directory:
 
     python setup.py install --user --install-scripts ~/bin
 
+For the purposes of testing or development, you may prefer to install PROPKA as
+an editable module via PIP by running
+```
+pip install -e .
+```
+from within a virtual environment (e.g., via [virtualenv](https://pypi.org/project/virtualenv/)).
 
 ## Requirements
 
-* Python 2.7 or higher or Python 3.1 or higher 
+* Python 3.1 or higher 
 
 ## Getting started
 
@@ -56,7 +62,8 @@ Calculate using pdb file
 
 ## Testing (for developers)
 
-Please run `Tests/pkacalc_test.py` via `unittest` or `pytest` as well as `python Tests/runtest.py` after changes before pushing commits.
+Please see [`tests/README.md`](tests/README.md) for testing instructions.
+Please run these tests after making changes to the code and _before_ pushing commits.
 
 ## References / Citations
 
