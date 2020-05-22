@@ -1,53 +1,53 @@
-
-from __future__ import division
-from __future__ import print_function
-
-import math, propka.protonate, propka.bonds,copy, sys
+"""PROPKA calculations."""
+import math
+import copy
+import sys
+import propka.protonate
+import propka.bonds
 from propka.lib import info, warning
 
 
-#
-# methods for setting up atom naming, bonding, and protonation
-#
-
 def setup_bonding_and_protonation(parameters, molecular_container):
+    """Set up bonding and protonation for a molecule.
+
+    Args:
+        molecular_container:  molecule container.
+    """
     # make bonds
     my_bond_maker = setup_bonding(parameters, molecular_container)
-
     # set up ligand atom names
     set_ligand_atom_names(molecular_container)
-
     # apply information on pi electrons
     my_bond_maker.add_pi_electron_information(molecular_container)
-
     # Protonate atoms
     if molecular_container.options.protonate_all:
         my_protonator = propka.protonate.Protonate(verbose=False)
         my_protonator.protonate(molecular_container)
 
 
-    return
-
-
-
 def setup_bonding(parameters, molecular_container):
-    # make bonds
+    """Set up bonding for a molecular container.
+
+    Args:
+        molecular_container:  the molecular container in question
+    Returns:
+        BondMaker object
+    """
     my_bond_maker = propka.bonds.BondMaker()
     my_bond_maker.find_bonds_for_molecules_using_boxes(molecular_container)
-
     return my_bond_maker
 
 
 def set_ligand_atom_names(molecular_container):
+    """Set names for ligands in molecular container.
+
+    Args:
+        molecular_container:  molecular container for ligand names
+    """
     for name in molecular_container.conformation_names:
         molecular_container.conformations[name].set_ligand_atom_names()
-    return
 
 
-
-#
-# The following methods imitates propka3.0 protonation!
-#
 def setup_bonding_and_protonation_30_style(parameters, molecular_container):
     # Protonate atoms
     protonate_30_style(molecular_container)
