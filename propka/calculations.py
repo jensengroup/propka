@@ -32,7 +32,7 @@ def setup_bonding_and_protonation(parameters, molecular_container):
 
 def setup_bonding(parameters, molecular_container):
     # make bonds
-    my_bond_maker = propka.bonds.bondmaker()
+    my_bond_maker = propka.bonds.BondMaker()
     my_bond_maker.find_bonds_for_molecules_using_boxes(molecular_container)
 
     return my_bond_maker
@@ -53,7 +53,7 @@ def setup_bonding_and_protonation_30_style(parameters, molecular_container):
     protonate_30_style(molecular_container)
 
     # make bonds
-    my_bond_maker = propka.bonds.bondmaker()
+    my_bond_maker = propka.bonds.BondMaker()
     my_bond_maker.find_bonds_for_molecules_using_boxes(molecular_container)
 
     return
