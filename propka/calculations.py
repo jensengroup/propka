@@ -48,51 +48,6 @@ def set_ligand_atom_names(molecular_container):
         molecular_container.conformations[name].set_ligand_atom_names()
 
 
-def setup_bonding_and_protonation_30_style(parameters, molecular_container):
-    # Protonate atoms
-    protonate_30_style(molecular_container)
-
-    # make bonds
-    my_bond_maker = propka.bonds.BondMaker()
-    my_bond_maker.find_bonds_for_molecules_using_boxes(molecular_container)
-
-    return
-
-
-def protonate_30_style(molecular_container):
-    for name in molecular_container.conformation_names:
-        info('Now protonating', name)
-        # split atom into residues
-        curres = -1000000
-        residue = []
-        O=None
-        C=None
-        for atom in molecular_container.conformations[name].atoms:
-            if atom.res_num != curres:
-                curres = atom.res_num
-                if len(residue)>0:
-                    #backbone
-                    [O, C]= addBackBoneHydrogen(residue,O,C)
-                    #arginine
-                    if residue[0].res_name == 'ARG':
-                        addArgHydrogen(residue)
-                    #histidine
-                    if residue[0].res_name == 'HIS':
-                        addHisHydrogen(residue)
-                    #tryptophan
-                    if residue[0].res_name == 'TRP':
-                        addTrpHydrogen(residue)
-                    #amides
-                    if residue[0].res_name in ['GLN','ASN']:
-                        addAmdHydrogen(residue)
-
-
-                    residue = []
-            if atom.type=='atom':
-                residue.append(atom)
-
-    return
-
 def addArgHydrogen(residue):
     """
     Adds Arg hydrogen atoms to residues according to the 'old way'.
