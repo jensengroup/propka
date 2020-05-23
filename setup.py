@@ -57,6 +57,6 @@ See http://propka.org/ for the PROPKA web server.
         },
       zip_safe=True,
       python_requires='>=3.5',
-      tests_require=["pandas", "pytest"],
+      tests_require=["pandas", "numpy"],
       test_suite="tests",
 )
