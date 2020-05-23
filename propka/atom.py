@@ -141,8 +141,7 @@ class Atom(object):
         Returns:
             list of atoms.
         """
-        array = [ba for ba in self.bonded_atoms if ba.element != 'H']
-        return array
+        return [ba for ba in self.bonded_atoms if ba.element != 'H']
 
     def is_atom_within_bond_distance(self, other_atom, max_bonds, cur_bond):
         """Check if <other_atom> is found within <max_bonds> bonds of self.
