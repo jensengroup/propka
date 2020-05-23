@@ -1,6 +1,7 @@
 # Testing PROPKA
 
-These tests assume that PROPKA is installed as a module on your system.
+These tests assume that PROPKA is installed as a module on your system the 
+dependencies in `../requirements.txt` are satisfied.
 If you are running in a virtual environment and want to make changes to your
 code, module installation accomplished by
 ```

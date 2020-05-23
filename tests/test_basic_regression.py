@@ -4,7 +4,7 @@ import os
 import re
 from pathlib import Path
 import pytest
-import pandas as pd
+from numpy.testing import assert_almost_equal
 import propka.lib
 import propka.molecular_container
 
@@ -12,9 +12,10 @@ import propka.molecular_container
 _LOGGER = logging.getLogger(__name__)
 
 
-# Maximum error set by number of decimal places in pKa output as well as need
-# to make unmodified code work on WSL Ubuntu 18.04
-MAX_ERR = 0.01
+# Number of decimal places for maximum tolerable error.  Set by number of
+# decimal places in pKa output as well as need to make unmodified code work
+# on WSL Ubuntu 18.04
+MAX_ERR_DECIMALS = 2
 
 
 # This directory
@@ -69,8 +70,6 @@ def run_propka(options, pdb_path, tmp_path):
         molecule = propka.molecular_container.Molecular_container(str(pdb_path), args)
         molecule.calculate_pka()
         molecule.write_pka()
-    except Exception as err:
-        raise err
     finally:
         os.chdir(cwd)
 
@@ -104,13 +103,9 @@ def compare_output(pdb, tmp_path, ref_path):
                 m = re.search(r'([0-9]+\.[0-9]+)', line)
                 value = float(m.group(0))
                 test_data.append(value)
-
-    df = pd.DataFrame({"reference": ref_data, "test": test_data})
-    df["difference"] = df["reference"] - df["test"]
-    max_err = df["difference"].abs().max()
-    if max_err > MAX_ERR:
-        errstr = "Error in test (%g) exceeds maximum (%g)" % (max_err, MAX_ERR)
-        raise ValueError(errstr)
+    errstr = "Error exceeds maximum allowed value (%d decimal places)" % MAX_ERR_DECIMALS
+    assert_almost_equal(test_data, ref_data, decimal=MAX_ERR_DECIMALS,
+                        err_msg=errstr, verbose=True)
 
 
 @pytest.mark.parametrize("pdb, options", [
