@@ -9,9 +9,9 @@ For proteins without ligands both version should produce the same result.
 The method is described in the following papers, which you should cite
 in publications:
 
-* Sondergaard, Chresten R., Mats HM Olsson, Michal Rostkowski, and Jan H. Jensen. "Improved Treatment of Ligands and Coupling Effects in Empirical Calculation and Rationalization of pKa Values." Journal of Chemical Theory and Computation 7, no. 7 (2011): 2284-2295. DOI:[10.1021/ct200133y](https://doi.org/10.1021/ct200133y)
+* Sondergaard, Chresten R., Mats HM Olsson, Michal Rostkowski, and Jan H. Jensen. "Improved Treatment of Ligands and Coupling Effects in Empirical Calculation and Rationalization of pKa Values." Journal of Chemical Theory and Computation 7, no. 7 (2011): 2284-2295. doi:[10.1021/ct200133y](https://doi.org/10.1021/ct200133y)
 
-* Olsson, Mats HM, Chresten R. Sondergaard, Michal Rostkowski, and Jan H. Jensen. "PROPKA3: consistent treatment of internal and surface residues in empirical pKa predictions." Journal of Chemical Theory and Computation 7, no. 2 (2011): 525-537. DOI:[10.1021/ct100578z](https://doi.org/10.1021/ct100578z)
+* Olsson, Mats HM, Chresten R. Sondergaard, Michal Rostkowski, and Jan H. Jensen. "PROPKA3: consistent treatment of internal and surface residues in empirical pKa predictions." Journal of Chemical Theory and Computation 7, no. 2 (2011): 525-537. doi:[10.1021/ct100578z](https://doi.org/10.1021/ct100578z)
 
 See [propka.ki.ku.dk](http://propka.ki.ku.dk/) for the PROPKA web server,
 using the [tutorial](http://propka.ki.ku.dk/~luca/wiki/index.php/PROPKA_3.1_Tutorial).
