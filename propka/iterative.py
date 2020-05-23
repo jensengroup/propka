@@ -124,9 +124,9 @@ def addIterativeIonPair(object1, object2, interaction, version):
     Q2 = object2.Q
     comp1 = object1.pKa_old + annihilation[0] + Q1*coulomb_value
     comp2 = object2.pKa_old + annihilation[1] + Q2*coulomb_value
-    if object1.resName not in version.parameters.exclude_sidechain_interactions:
+    if object1.res_name not in version.parameters.exclude_sidechain_interactions:
         comp1 += Q1*hbond_value
-    if object2.resName not in version.parameters.exclude_sidechain_interactions:
+    if object2.res_name not in version.parameters.exclude_sidechain_interactions:
         comp2 += Q2*hbond_value
 
     if   Q1 == -1.0 and comp1 < comp2:
@@ -155,12 +155,12 @@ def addIterativeIonPair(object1, object2, interaction, version):
       # Side-chain
       if hbond_value > 0.005:
         # residue1
-        if object1.resName not in version.parameters.exclude_sidechain_interactions:
+        if object1.res_name not in version.parameters.exclude_sidechain_interactions:
           interaction = [object2, Q1*hbond_value]
           annihilation[0] += -Q1*hbond_value
           object1.determinants['sidechain'].append(interaction)
         # residue2
-        if object2.resName not in version.parameters.exclude_sidechain_interactions:
+        if object2.res_name not in version.parameters.exclude_sidechain_interactions:
           interaction = [object1, Q2*hbond_value]
           annihilation[1] += -Q2*hbond_value
           object2.determinants['sidechain'].append(interaction)
@@ -309,7 +309,7 @@ class Iterative:
 
         self.label    = group.label
         self.atom     = group.atom
-        self.resName  = group.residue_type
+        self.res_name  = group.residue_type
         self.Q        = group.charge
         self.pKa_old  = None
         self.pKa_new  = None
@@ -357,7 +357,7 @@ class Iterative:
             return self.label==other.label
         else:
             # For heterogene atoms we also need to check the residue number
-            return self.label==other.label and self.atom.resNumb == other.atom.resNumb
+            return self.label==other.label and self.atom.res_num == other.atom.res_num
 
     def __hash__(self):
         """ Needed together with __eq__ - otherwise we can't make sets of groups """

@@ -38,13 +38,13 @@ def writePDB(protein, file=None, filename=None, include_hydrogens=False, options
     numb = 0
     for chain in protein.chains:
       for residue in chain.residues:
-        if residue.resName not in ["N+ ", "C- "]:
+        if residue.res_name not in ["N+ ", "C- "]:
           for atom in residue.atoms:
             if include_hydrogens == False and atom.name[0] == "H":
               """ don't print """
             else:
               numb += 1
-              line = atom.makePDBLine(numb=numb)
+              line = atom.make_pdb_line2(numb=numb)
               line += "\n"
               file.write(line)
 
@@ -130,7 +130,7 @@ def getDeterminantSection(protein, conformation, parameters):
     # printing determinants
     for chain in protein.conformations[conformation].chains:
         for residue_type in parameters.write_out_order:
-            groups = [g for g in protein.conformations[conformation].groups if g.atom.chainID == chain]
+            groups = [g for g in protein.conformations[conformation].groups if g.atom.chain_id == chain]
             for group in groups:
                 if group.residue_type == residue_type:
                     str += "%s" % ( group.getDeterminantString(parameters.remove_penalised_group) )
@@ -226,8 +226,8 @@ def writeJackalScapFile(mutationData=None, filename="1xxx_scap.list", options=No
     """
     file = open(filename, 'w')
 
-    for chainID, code1, resNumb, code2 in mutationData:
-      str = "%s, %d, %s\n" % (chainID, resNumb, code2)
+    for chain_id, code1, res_num, code2 in mutationData:
+      str = "%s, %d, %s\n" % (chain_id, res_num, code2)
       file.write(str)
     file.close()
 

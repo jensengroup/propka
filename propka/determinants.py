@@ -54,7 +54,7 @@ def addDeterminants(group1, group2, distance, version):
 def addSidechainDeterminants(group1, group2, version=None):
     """
     adding side-chain determinants/perturbations
-    Note, resNumb1 > resNumb2
+    Note, res_num1 > res_num2
     """
 
     hbond_interaction = version.hydrogen_bond_interaction(group1, group2)

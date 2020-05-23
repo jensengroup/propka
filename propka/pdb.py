@@ -63,27 +63,27 @@ def protein_precheck(conformations, names):
                     atoms_by_residue[res_id] = [a]
 
         for res_id, res_atoms in atoms_by_residue.items():
-            resname = res_atoms[0].resName
-            residue_label = '%3s%5s'%(resname, res_id)
+            res_name = res_atoms[0].res_name
+            residue_label = '%3s%5s'%(res_name, res_id)
 
             # ignore ligand residues
-            if resname not in expected_atom_numbers:
+            if res_name not in expected_atom_numbers:
                 continue
 
             # check for c-terminal
             if 'C-' in [a.terminal for a in res_atoms]:
-                if len(res_atoms) != expected_atom_numbers[resname]+1:
+                if len(res_atoms) != expected_atom_numbers[res_name]+1:
                     warning('Unexpected number (%d) of atoms in residue %s in conformation %s' % (len(res_atoms), residue_label, name))
                 continue
 
             # check number of atoms in residue
-            if len(res_atoms) != expected_atom_numbers[resname]:
+            if len(res_atoms) != expected_atom_numbers[res_name]:
                 warning('Unexpected number (%d) of atoms in residue %s in conformation %s' % (len(res_atoms), residue_label, name))
 
     return
 
 def resid_from_atom(a):
-    return '%4d %s %s'%(a.resNumb,a.chainID,a.icode)
+    return '%4d %s %s'%(a.res_num,a.chain_id,a.icode)
 
 
 def get_atom_lines_from_pdb(pdb_file, ignore_residues = [], keep_protons=False, tags = ['ATOM  ', 'HETATM'], chains=None):
@@ -197,7 +197,7 @@ def write_mol2_for_atoms(atoms, filename):
 
     substructure_section = '@<TRIPOS>SUBSTRUCTURE\n\n'
     if len(atoms)>0:
-        substructure_section = '@<TRIPOS>SUBSTRUCTURE\n%-7d %10s %7d\n'%(atoms[0].resNumb,atoms[0].resName,atoms[0].numb)
+        substructure_section = '@<TRIPOS>SUBSTRUCTURE\n%-7d %10s %7d\n'%(atoms[0].res_num,atoms[0].res_name,atoms[0].numb)
 
     out = propka.lib.open_file_for_writing(filename)
     out.write(header%(len(atoms),id-1))
@@ -210,8 +210,8 @@ def write_mol2_for_atoms(atoms, filename):
 
 def get_bond_order(atom1, atom2):
     type = '1'
-    pi_electrons1 = atom1.number_of_pi_electrons_in_double_and_triple_bonds
-    pi_electrons2 = atom2.number_of_pi_electrons_in_double_and_triple_bonds
+    pi_electrons1 = atom1.num_pi_elec_2_3_bonds
+    pi_electrons2 = atom2.num_pi_elec_2_3_bonds
 
     if '.ar' in atom1.sybyl_type:
         pi_electrons1 -=1
