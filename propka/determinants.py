@@ -157,9 +157,9 @@ def setIonDeterminants(conformation_container, version):
         for ion_group in conformation_container.get_ions():
             squared_distance = propka.calculations.squared_distance(titratable_group, ion_group)
             if squared_distance < version.parameters.coulomb_cutoff2_squared:
-                weight = version.calculatePairWeight(titratable_group.Nmass, ion_group.Nmass)
+                weight = version.calculate_pair_weight(titratable_group.Nmass, ion_group.Nmass)
                 # the pKa of both acids and bases are shifted up by negative ions (and vice versa)
-                value  =  (-ion_group.charge) * version.calculateCoulombEnergy(math.sqrt(squared_distance), weight)
+                value  =  (-ion_group.charge) * version.calculate_coulomb_energy(math.sqrt(squared_distance), weight)
                 newDeterminant = Determinant(ion_group, value)
                 titratable_group.determinants['coulomb'].append(newDeterminant)
 
@@ -206,7 +206,7 @@ def setBackBoneDeterminants(titratable_groups, backbone_groups, version):
                         if titratable_atom.element == 'H':
                             heavy_atom    = titratable_atom.bonded_atoms[0]
                             hydrogen_atom = titratable_atom
-                            [d1, f_angle, d2] = propka.calculations.AngleFactorX(atom1=heavy_atom,
+                            [d1, f_angle, d2] = propka.calculations.angle_distance_factors(atom1=heavy_atom,
                                                                                  atom2=hydrogen_atom,
                                                                                  atom3=backbone_atom)
                         else:
@@ -227,7 +227,7 @@ def setBackBoneDeterminants(titratable_groups, backbone_groups, version):
                     if backbone_atom.element == 'H':
                         backbone_N = backbone_atom.bonded_atoms[0]
                         backbone_H = backbone_atom
-                        [d1, f_angle, d2] = propka.calculations.AngleFactorX(atom1=titratable_atom,
+                        [d1, f_angle, d2] = propka.calculations.angle_distance_factors(atom1=titratable_atom,
                                                                              atom2=backbone_H,
                                                                              atom3=backbone_N)
                     else:
@@ -238,7 +238,7 @@ def setBackBoneDeterminants(titratable_groups, backbone_groups, version):
 
 
                 if f_angle > 0.001:
-                    value = titratable_group.charge * propka.calculations.HydrogenBondEnergy(distance, dpKa_max, [cutoff1,cutoff2], f_angle)
+                    value = titratable_group.charge * propka.calculations.hydrogen_bond_energy(distance, dpKa_max, [cutoff1,cutoff2], f_angle)
 
                     newDeterminant = Determinant(backbone_group, value)
                     titratable_group.determinants['backbone'].append(newDeterminant)

@@ -1,10 +1,8 @@
 """PROPKA calculations."""
 import math
-import copy
-import sys
 import propka.protonate
 import propka.bonds
-from propka.lib import info, warning
+from propka.lib import warning
 
 
 # TODO - this file should be broken into three separate files:
@@ -45,7 +43,7 @@ def distance(atom1, atom2):
     Returns:
         distance
     """
-    return math.sqrt(squared_distance(atom1,atom2))
+    return math.sqrt(squared_distance(atom1, atom2))
 
 
 def get_smallest_distance(atoms1, atoms2):
@@ -57,17 +55,17 @@ def get_smallest_distance(atoms1, atoms2):
     Returns:
         smallest distance between groups
     """
-    res_distance = MAX_DISTANCE
+    res_dist = MAX_DISTANCE
     res_atom1 = None
     res_atom2 = None
     for atom1 in atoms1:
         for atom2 in atoms2:
             dist = squared_distance(atom1, atom2)
-            if dist < res_distance:
-                res_distance = dist
+            if dist < res_dist:
+                res_dist = dist
                 res_atom1 = atom1
                 res_atom2 = atom2
-    return [res_atom1, math.sqrt(res_distance), res_atom2]
+    return [res_atom1, math.sqrt(res_dist), res_atom2]
 
 
 # TODO - the next set of functions form a distinct "module" for hydrogen addition
@@ -76,11 +74,15 @@ def get_smallest_distance(atoms1, atoms2):
 def setup_bonding_and_protonation(parameters, molecular_container):
     """Set up bonding and protonation for a molecule.
 
+    NOTE - the unused `parameters` argument is required for compatibility in version.py
+    TODO - figure out why there is a similar function in version.py
+
     Args:
+        parameters:  not used
         molecular_container:  molecule container.
     """
     # make bonds
-    my_bond_maker = setup_bonding(parameters, molecular_container)
+    my_bond_maker = setup_bonding(molecular_container)
     # set up ligand atom names
     set_ligand_atom_names(molecular_container)
     # apply information on pi electrons
@@ -91,8 +93,10 @@ def setup_bonding_and_protonation(parameters, molecular_container):
         my_protonator.protonate(molecular_container)
 
 
-def setup_bonding(parameters, molecular_container):
+def setup_bonding(molecular_container):
     """Set up bonding for a molecular container.
+
+    TODO - figure out why there is a similar function in version.py
 
     Args:
         molecular_container:  the molecular container in question
@@ -159,11 +163,11 @@ def add_his_hydrogen(residue):
         elif atom.name == "ND1":
             nd_atom = atom
         elif atom.name == "CD2":
-            cd_atom  = atom
+            cd_atom = atom
         elif atom.name == "CE1":
-            ce_atom  = atom
+            ce_atom = atom
         elif atom.name == "NE2":
-            ne_atom  = atom
+            ne_atom = atom
     hd_atom = protonate_sp2(cg_atom, nd_atom, ce_atom)
     hd_atom.name = "HND"
     he_atom = protonate_sp2(cd_atom, ne_atom, ce_atom)
@@ -180,11 +184,11 @@ def add_trp_hydrogen(residue):
     ne_atom = None
     for atom in residue:
         if atom.name == "CD1":
-            cd_atom  = atom
+            cd_atom = atom
         elif atom.name == "NE1":
-            ne_atom  = atom
+            ne_atom = atom
         elif atom.name == "CE2":
-            ce_atom  = atom
+            ce_atom = atom
     if (cd_atom is None) or (ne_atom is None) or (ce_atom is None):
         errstr = "Unable to find all atoms for %s %s" % (residue[0].res_name,
                                                          residue[0].res_num)
@@ -203,11 +207,14 @@ def add_amd_hydrogen(residue):
     o_atom = None
     n_atom = None
     for atom in residue:
-        if (atom.res_name == "GLN" and atom.name == "CD") or (atom.res_name == "ASN" and atom.name == "CG"):
+        if (atom.res_name == "GLN" and atom.name == "CD") \
+            or (atom.res_name == "ASN" and atom.name == "CG"):
             c_atom = atom
-        elif (atom.res_name == "GLN" and atom.name == "OE1") or (atom.res_name == "ASN" and atom.name == "OD1"):
+        elif (atom.res_name == "GLN" and atom.name == "OE1") \
+            or (atom.res_name == "ASN" and atom.name == "OD1"):
             o_atom = atom
-        elif (atom.res_name == "GLN" and atom.name == "NE2") or (atom.res_name == "ASN" and atom.name == "ND2"):
+        elif (atom.res_name == "GLN" and atom.name == "NE2") \
+            or (atom.res_name == "ASN" and atom.name == "ND2"):
             n_atom = atom
     if (c_atom is None) or (o_atom is None) or (n_atom is None):
         errstr = "Unable to find all atoms for %s %s" % (residue[0].res_name,
@@ -245,11 +252,12 @@ def add_backbone_hydrogen(residue, o_atom, c_atom):
     if None in [c_atom, o_atom, n_atom]:
         return [new_o_atom, new_c_atom]
     if n_atom.res_name == "PRO":
-        """PRO doesn't have an H-atom; do nothing"""
+        # PRO doesn't have an H-atom; do nothing
+        pass
     else:
         h_atom = protonate_direction(n_atom, o_atom, c_atom)
         h_atom.name = "H"
-    return [new_o_atom,new_c_atom]
+    return [new_o_atom, new_c_atom]
 
 
 def protonate_direction(x1_atom, x2_atom, x3_atom):
@@ -264,16 +272,16 @@ def protonate_direction(x1_atom, x2_atom, x3_atom):
     Returns:
         new hydrogen atom
     """
-    dX = (x3_atom.x - x2_atom.x)
-    dY = (x3_atom.y - x2_atom.y)
-    dZ = (x3_atom.z - x2_atom.z)
-    length = math.sqrt( dX*dX + dY*dY + dZ*dZ )
-    x = x1_atom.x + dX/length
-    y = x1_atom.y + dY/length
-    z = x1_atom.z + dZ/length
-    H  = make_new_h(x1_atom,x,y,z)
-    H.name = "H"
-    return H
+    dx = (x3_atom.x - x2_atom.x)
+    dy = (x3_atom.y - x2_atom.y)
+    dz = (x3_atom.z - x2_atom.z)
+    length = math.sqrt(dx*dx + dy*dy + dz*dz)
+    x = x1_atom.x + dx/length
+    y = x1_atom.y + dy/length
+    z = x1_atom.z + dz/length
+    h_atom = make_new_h(x1_atom, x, y, z)
+    h_atom.name = "H"
+    return h_atom
 
 
 def protonate_average_direction(x1_atom, x2_atom, x3_atom):
@@ -290,16 +298,16 @@ def protonate_average_direction(x1_atom, x2_atom, x3_atom):
     Returns:
         new hydrogen atom
     """
-    dX = (x3_atom.x + x1_atom.x)*0.5 - x2_atom.x
-    dY = (x3_atom.y + x1_atom.y)*0.5 - x2_atom.y
-    dZ = (x3_atom.z + x1_atom.z)*0.5 - x2_atom.z
-    length = math.sqrt( dX*dX + dY*dY + dZ*dZ )
-    x = x1_atom.x + dX/length
-    y = x1_atom.y + dY/length
-    z = x1_atom.z + dZ/length
-    H  = make_new_h(x1_atom,x,y,z)
-    H.name = "H"
-    return H
+    dx = (x3_atom.x + x1_atom.x)*0.5 - x2_atom.x
+    dy = (x3_atom.y + x1_atom.y)*0.5 - x2_atom.y
+    dz = (x3_atom.z + x1_atom.z)*0.5 - x2_atom.z
+    length = math.sqrt(dx*dx + dy*dy + dz*dz)
+    x = x1_atom.x + dx/length
+    y = x1_atom.y + dy/length
+    z = x1_atom.z + dz/length
+    h_atom = make_new_h(x1_atom, x, y, z)
+    h_atom.name = "H"
+    return h_atom
 
 
 def protonate_sp2(x1_atom, x2_atom, x3_atom):
@@ -312,19 +320,19 @@ def protonate_sp2(x1_atom, x2_atom, x3_atom):
     Returns:
         new hydrogen atom
     """
-    dX = (x1_atom.x + x3_atom.x)*0.5 - x2_atom.x
-    dY = (x1_atom.y + x3_atom.y)*0.5 - x2_atom.y
-    dZ = (x1_atom.z + x3_atom.z)*0.5 - x2_atom.z
-    length = math.sqrt( dX*dX + dY*dY + dZ*dZ )
-    x = x2_atom.x - dX/length
-    y = x2_atom.y - dY/length
-    z = x2_atom.z - dZ/length
-    H  = make_new_h(x2_atom,x,y,z)
-    H.name = "H"
-    return H
+    dx = (x1_atom.x + x3_atom.x)*0.5 - x2_atom.x
+    dy = (x1_atom.y + x3_atom.y)*0.5 - x2_atom.y
+    dz = (x1_atom.z + x3_atom.z)*0.5 - x2_atom.z
+    length = math.sqrt(dx*dx + dy*dy + dz*dz)
+    x = x2_atom.x - dx/length
+    y = x2_atom.y - dy/length
+    z = x2_atom.z - dz/length
+    h_atom = make_new_h(x2_atom, x, y, z)
+    h_atom.name = "H"
+    return h_atom
 
 
-def make_new_h(atom, x,y,z):
+def make_new_h(atom, x, y, z):
     """Add a new hydrogen to an atom at the specified position.
 
     Args:
@@ -335,28 +343,38 @@ def make_new_h(atom, x,y,z):
     Returns:
         new hydrogen atom
     """
-    new_H = propka.atom.Atom()
-    new_H.set_property(numb=None, name='H%s' % atom.name[1:],
+    new_h = propka.atom.Atom()
+    new_h.set_property(numb=None, name='H%s' % atom.name[1:],
                        res_name=atom.res_name, chain_id=atom.chain_id,
                        res_num=atom.res_num, x=x, y=y, z=z, occ=None,
                        beta=None)
-    new_H.element = 'H'
-    new_H.bonded_atoms = [atom]
-    new_H.charge = 0
-    new_H.steric_number = 0
-    new_H.number_of_lone_pairs = 0
-    new_H.number_of_protons_to_add = 0
-    new_H.num_pi_elec_2_3_bonds = 0
-    atom.bonded_atoms.append(new_H)
-    atom.conformation_container.add_atom(new_H)
-    return new_H
+    new_h.element = 'H'
+    new_h.bonded_atoms = [atom]
+    new_h.charge = 0
+    new_h.steric_number = 0
+    new_h.number_of_lone_pairs = 0
+    new_h.number_of_protons_to_add = 0
+    new_h.num_pi_elec_2_3_bonds = 0
+    atom.bonded_atoms.append(new_h)
+    atom.conformation_container.add_atom(new_h)
+    return new_h
 
 
 # TODO - the remaining functions form a distinct "module" for desolvation
 
 
-MYSTERY_MIN_DISTANCE = 2.75
-MIN_DISTANCE_4TH = math.pow(MYSTERY_MIN_DISTANCE, 4)
+# TODO - I have no idea what these constants mean so I labeled them "UNK_"
+UNK_MIN_DISTANCE = 2.75
+MIN_DISTANCE_4TH = math.pow(UNK_MIN_DISTANCE, 4)
+UNK_DIELECTRIC1 = 160
+UNK_DIELECTRIC2 = 30
+UNK_PKA_SCALING1 = 244.12
+UNK_BACKBONE_DISTANCE1 = 6.0
+UNK_BACKBONE_DISTANCE2 = 3.0
+UNK_FANGLE_MIN = 0.001
+UNK_PKA_SCALING2 = 0.8
+COMBINED_NUM_BURIED_MAX = 900
+SEPARATE_NUM_BURIED_MAX = 400
 
 
 def radial_volume_desolvation(parameters, group):
@@ -372,21 +390,23 @@ def radial_volume_desolvation(parameters, group):
     # He had to re-read the original paper to figure out what it was.
     # A better name would be num_volume.
     group.Nmass = 0
-    min_distance_4th = MIN_DISTANCE_4TH
+    min_dist_4th = MIN_DISTANCE_4TH
     for atom in all_atoms:
         # ignore atoms in the same residue
-        if atom.res_num == group.atom.res_num and atom.chain_id == group.atom.chain_id:
+        if atom.res_num == group.atom.res_num \
+            and atom.chain_id == group.atom.chain_id:
             continue
         sq_dist = squared_distance(group, atom)
         # desolvation
         if sq_dist < parameters.desolv_cutoff_squared:
-            # use a default relative volume of 1.0 if the volume of the element is not found in parameters
+            # use a default relative volume of 1.0 if the volume of the element
+            # is not found in parameters
             # insert check for methyl groups
-            if atom.element == 'C' and atom.name not in ['CA','C']:
-                dv = parameters.VanDerWaalsVolume['C4']
+            if atom.element == 'C' and atom.name not in ['CA', 'C']:
+                dvol = parameters.VanDerWaalsVolume['C4']
             else:
-                dv = parameters.VanDerWaalsVolume.get(atom.element, 1.0)
-            dv_inc = dv/max(min_distance_4th, sq_dist*sq_dist)
+                dvol = parameters.VanDerWaalsVolume.get(atom.element, 1.0)
+            dv_inc = dvol/max(min_dist_4th, sq_dist*sq_dist)
             volume += dv_inc
         # buried
         if sq_dist < parameters.buried_cutoff_squared:
@@ -394,417 +414,475 @@ def radial_volume_desolvation(parameters, group):
     group.buried = calculate_weight(parameters, group.Nmass)
     scale_factor = calculate_scale_factor(parameters, group.buried)
     volume_after_allowance = max(0.00, volume-parameters.desolvationAllowance)
-    group.Emass = group.charge * parameters.desolvationPrefactor * volume_after_allowance * scale_factor
+    group.Emass = group.charge * parameters.desolvationPrefactor \
+        * volume_after_allowance * scale_factor
 
 
 def calculate_scale_factor(parameters, weight):
+    """Calculate desolvation scaling factor.
+
+    Args:
+        parameters:  parameters for desolvation calculation
+        weight:  weight for scaling factor
+    Returns:
+        scaling factor
+    """
     scale_factor = 1.0 - (1.0 - parameters.desolvationSurfaceScalingFactor)*(1.0 - weight)
     return scale_factor
 
 
-def calculate_weight(parameters, Nmass):
+def calculate_weight(parameters, num_volume):
+    """Calculate the atom-based desolvation weight.
+
+    TODO - figure out why a similar function exists in version.py
+
+    Args:
+        parameters:  parameters for desolvation calculation
+        num_volume:  number of heavy atoms within desolvation calculation volume
+    Returns:
+        desolvation weight
     """
-    calculating the atom-based desolvation weight
-    """
-    weight = float(Nmass - parameters.Nmin)/float(parameters.Nmax - parameters.Nmin)
+    weight = float(num_volume - parameters.Nmin) \
+        / float(parameters.Nmax - parameters.Nmin)
     weight = min(1.0, weight)
     weight = max(0.0, weight)
-
     return weight
 
 
-def calculatePairWeight(parameters, Nmass1, Nmass2):
+def calculate_pair_weight(parameters, num_volume1, num_volume2):
+    """Calculate the atom-pair based desolvation weight.
+
+    Args:
+        num_volume1:  number of heavy atoms within first desolvation volume
+        num_volume2:  number of heavy atoms within second desolvation volume
+    Returns:
+        desolvation weight
     """
-    calculating the atom-pair based desolvation weight
-    """
-    Nmass = Nmass1 + Nmass2
-    Nmin  = 2*parameters.Nmin
-    Nmax  = 2*parameters.Nmax
-    weight = float(Nmass - Nmin)/float(Nmax - Nmin)
+    num_volume = num_volume1 + num_volume2
+    num_min = 2*parameters.Nmin
+    num_max = 2*parameters.Nmax
+    weight = float(num_volume - num_min)/float(num_max - num_min)
     weight = min(1.0, weight)
     weight = max(0.0, weight)
-
     return weight
 
 
-def HydrogenBondEnergy(distance, dpka_max, cutoff, f_angle=1.0):
+def hydrogen_bond_energy(dist, dpka_max, cutoffs, f_angle=1.0):
+    """Calculate hydrogen-bond interaction pKa shift.
+
+    Args:
+        dist:  distance for hydrogen bond
+        dpka_max:  maximum pKa value shift
+        cutoffs:  array with max and min distance values
+        f_angle:  angle scaling factor
+    Returns:
+        pKa shift value
     """
-    returns a hydrogen-bond interaction pKa shift
-    """
-    if   distance < cutoff[0]:
+    if dist < cutoffs[0]:
         value = 1.00
-    elif distance > cutoff[1]:
+    elif dist > cutoffs[1]:
         value = 0.00
     else:
-        value = 1.0-(distance-cutoff[0])/(cutoff[1]-cutoff[0])
-
-    dpKa  = dpka_max*value*f_angle
-
-    return abs(dpKa)
+        value = 1.0 - (dist - cutoffs[0])/(cutoffs[1] - cutoffs[0])
+    dpka = dpka_max*value*f_angle
+    return abs(dpka)
 
 
+def angle_distance_factors(atom1=None, atom2=None, atom3=None, center=None):
+    """Calculate distance and angle factors for three atoms for backbone interactions.
 
-def AngleFactorX(atom1=None, atom2=None, atom3=None, center=None):
-    """
-    Calculates the distance and angle-factor from three atoms for back-bone interactions,
-    IMPORTANT: you need to use atom1 to be the e.g. ASP atom if distance is reset at return: [O1 -- H2-N3]
+    NOTE - you need to use atom1 to be the e.g. ASP atom if distance is reset at
+    return: [O1 -- H2-N3].
+
     Also generalized to be able to be used for residue 'centers' for C=O COO interactions.
+
+    Args:
+        atom1:  first atom for calculation (could be None)
+        atom2:  second atom for calculation
+        atom3:  third atom for calculation
+        center:  center point between atoms 1 and 2
+    Returns
+        [distance factor between atoms 1 and 2,
+         angle factor,
+         distance factor between atoms 2 and 3]
     """
-
-    dX_32 = atom2.x - atom3.x
-    dY_32 = atom2.y - atom3.y
-    dZ_32 = atom2.z - atom3.z
-
-    distance_23 = math.sqrt( dX_32*dX_32 + dY_32*dY_32 + dZ_32*dZ_32 )
-
-    dX_32 = dX_32/distance_23
-    dY_32 = dY_32/distance_23
-    dZ_32 = dZ_32/distance_23
-
-    if atom1 == None:
-        dX_21 = center[0] - atom2.x
-        dY_21 = center[1] - atom2.y
-        dZ_21 = center[2] - atom2.z
-    else:
-        dX_21 = atom1.x - atom2.x
-        dY_21 = atom1.y - atom2.y
-        dZ_21 = atom1.z - atom2.z
-
-    distance_12 = math.sqrt( dX_21*dX_21 + dY_21*dY_21 + dZ_21*dZ_21 )
-
-    dX_21 = dX_21/distance_12
-    dY_21 = dY_21/distance_12
-    dZ_21 = dZ_21/distance_12
-
-    f_angle = dX_21*dX_32 + dY_21*dY_32 + dZ_21*dZ_32
-
-
-    return distance_12, f_angle, distance_23
-
-
-
-def hydrogen_bond_interaction(group1, group2, version):
-
-    # find the smallest distance between interacting atoms
-    atoms1 = group1.get_interaction_atoms(group2)
-    atoms2 = group2.get_interaction_atoms(group1)
-    [closest_atom1, distance, closest_atom2] = propka.calculations.get_smallest_distance(atoms1, atoms2)
-
-    if None in [closest_atom1, closest_atom2]:
-        warning('Side chain interaction failed for %s and %s' % (group1.label, group2.label))
-        return None
-
-    # get the parameters
-    [dpka_max, cutoff] = version.get_hydrogen_bond_parameters(closest_atom1,closest_atom2)
-
-    if dpka_max==None or None in cutoff:
-        return None
-
-    # check that the closest atoms are close enough
-    if distance >= cutoff[1]:
-        return None
-
-    # check that bond distance criteria is met
-    bond_distance_too_short = group1.atom.is_atom_within_bond_distance(group2.atom,
-                                                                       version.parameters.min_bond_distance_for_hydrogen_bonds,1)
-    if bond_distance_too_short:
-        return None
-
-    # set the angle factor
+    # The angle factor
     #
     #  ---closest_atom1/2
     #                     .
     #                      .
     #                       the_hydrogen---closest_atom2/1---
+    dx_32 = atom2.x - atom3.x
+    dy_32 = atom2.y - atom3.y
+    dz_32 = atom2.z - atom3.z
+    dist_23 = math.sqrt(dx_32 * dx_32 + dy_32 * dy_32 + dz_32 * dz_32)
+    dx_32 = dx_32/dist_23
+    dy_32 = dy_32/dist_23
+    dz_32 = dz_32/dist_23
+    if atom1 is None:
+        dx_21 = center[0] - atom2.x
+        dy_21 = center[1] - atom2.y
+        dz_21 = center[2] - atom2.z
+    else:
+        dx_21 = atom1.x - atom2.x
+        dy_21 = atom1.y - atom2.y
+        dz_21 = atom1.z - atom2.z
+    dist_12 = math.sqrt(dx_21 * dx_21 + dy_21 * dy_21 + dz_21 * dz_21)
+    dx_21 = dx_21/dist_12
+    dy_21 = dy_21/dist_12
+    dz_21 = dz_21/dist_12
+    f_angle = dx_21*dx_32 + dy_21*dy_32 + dz_21*dz_32
+    return dist_12, f_angle, dist_23
+
+
+def hydrogen_bond_interaction(group1, group2, version):
+    """Calculate energy for hydrogen bond interactions between two groups.
+
+    Args:
+        group1:  first interacting group
+        group2:  second interacting group
+        version:  an object that contains version-specific parameters
+    Returns:
+        hydrogen bond interaction energy
+    """
+    # find the smallest distance between interacting atoms
+    atoms1 = group1.get_interaction_atoms(group2)
+    atoms2 = group2.get_interaction_atoms(group1)
+    [closest_atom1, dist, closest_atom2] = get_smallest_distance(atoms1, atoms2)
+    if None in [closest_atom1, closest_atom2]:
+        warning('Side chain interaction failed for %s and %s' % (group1.label,
+                                                                 group2.label))
+        return None
+    # get the parameters
+    [dpka_max, cutoff] = version.get_hydrogen_bond_parameters(closest_atom1,
+                                                              closest_atom2)
+    if (dpka_max is None) or (None in cutoff):
+        return None
+    # check that the closest atoms are close enough
+    if dist >= cutoff[1]:
+        return None
+    # check that bond distance criteria is met
+    min_hbond_dist = version.parameters.min_bond_distance_for_hydrogen_bonds
+    if group1.atom.is_atom_within_bond_distance(group2.atom, min_hbond_dist, 1):
+        return None
+    # set angle factor
     f_angle = 1.0
     if group2.type in version.parameters.angular_dependent_sidechain_interactions:
         if closest_atom2.element == 'H':
             heavy_atom = closest_atom2.bonded_atoms[0]
-            hydrogen   = closest_atom2
-            distance, f_angle, nada = propka.calculations.AngleFactorX(closest_atom1, hydrogen, heavy_atom)
+            hydrogen = closest_atom2
+            dist, f_angle, _ = angle_distance_factors(closest_atom1, hydrogen,
+                                                      heavy_atom)
         else:
-            # Either the structure is corrupt (no hydrogen), or the heavy atom is closer to
-            # the titratable atom than the hydrogen. In either case we set the angle factor
-            # to 0
+            # Either the structure is corrupt (no hydrogen), or the heavy atom
+            # is closer to the titratable atom than the hydrogen. In either
+            # case, we set the angle factor to 0
             f_angle = 0.0
-
     elif group1.type in version.parameters.angular_dependent_sidechain_interactions:
         if closest_atom1.element == 'H':
             heavy_atom = closest_atom1.bonded_atoms[0]
-            hydrogen   = closest_atom1
-            distance, f_angle, nada = propka.calculations.AngleFactorX(closest_atom2, hydrogen, heavy_atom)
+            hydrogen = closest_atom1
+            dist, f_angle, _ = angle_distance_factors(closest_atom2, hydrogen,
+                                                      heavy_atom)
         else:
-            # Either the structure is corrupt (no hydrogen), or the heavy atom is closer to
-            # the titratable atom than the hydrogen. In either case we set the angle factor
-            # to 0
+            # Either the structure is corrupt (no hydrogen), or the heavy atom
+            # is closer to the titratable atom than the hydrogen. In either
+            # case, we set the angle factor to 0
             f_angle = 0.0
-
-    weight = version.calculatePairWeight(group1.Nmass, group2.Nmass)
-
-    exception, value = version.checkExceptions(group1, group2)
-    #exception = False # circumventing exception
-    if exception == True:
-        """ do nothing, value should have been assigned """
-            #info(" exception for %s %s %6.2lf" % (group1.label, group2.label, value))
+    weight = version.calculate_pair_weight(group1.Nmass, group2.Nmass)
+    exception, value = version.check_exceptions(group1, group2)
+    if exception:
+        # Do nothing, value should have been assigned.
+        pass
     else:
-        value = version.calculateSideChainEnergy(distance, dpka_max, cutoff, weight, f_angle)
-
-    # info('distance',distance)
-    # info('dpka_max',dpka_max)
-    # info('cutoff',cutoff)
-    # info('f_angle',f_angle)
-    # info('weight',weight)
-    # info('value',value)
-    # info('===============================================')
-
+        value = version.calculateSideChainEnergy(dist, dpka_max, cutoff, weight,
+                                                 f_angle)
     return value
 
 
+def electrostatic_interaction(group1, group2, dist, version):
+    """Calculate electrostatic interaction betwee two groups.
 
-def HydrogenBondEnergy(distance, dpka_max, cutoff, f_angle=1.0):
+    Args:
+        group1:  first interacting group
+        group2:  second interacting group
+        dist:  distance between groups
+        version:  version-specific object with parameters and functions
+    Returns:
+        electrostatic interaction energy or None (if no interaction is appropriate)
     """
-    returns a hydrogen-bond interaction pKa shift
-    """
-    if   distance < cutoff[0]:
-        value = 1.00
-    elif distance > cutoff[1]:
-        value = 0.00
-    else:
-        value = 1.0-(distance-cutoff[0])/(cutoff[1]-cutoff[0])
-
-    dpKa  = dpka_max*value*f_angle
-
-    return abs(dpKa)
-
-
-
-
-def electrostatic_interaction(group1, group2, distance, version):
-
     # check if we should do coulomb interaction at all
-    if not version.checkCoulombPair(group1, group2, distance):
+    if not version.check_coulomb_pair(group1, group2, dist):
         return None
-
-    weight = version.calculatePairWeight(group1.Nmass, group2.Nmass)
-    value  = version.calculateCoulombEnergy(distance, weight)
-
+    weight = version.calculate_pair_weight(group1.Nmass, group2.Nmass)
+    value = version.calculate_coulomb_energy(dist, weight)
     return value
 
 
-def checkCoulombPair(parameters, group1, group2, distance):
-    """
-    Checks if this Coulomb interaction should be done - a propka2.0 hack
-    """
-    Npair = group1.Nmass + group2.Nmass
-    do_coulomb = True
+def check_coulomb_pair(parameters, group1, group2, dist):
+    """Checks if this Coulomb interaction should be done.
 
-    # check if both groups are titratable (ions are taken care of in determinants::setIonDeterminants)
+    NOTE - this is a propka2.0 hack
+    TODO - figure out why a similar function exists in version.py
+
+    Args:
+        parameters:  parameters for Coulomb calculations
+        group1:  first interacting group
+        group2:  second interacting group
+        dist:  distance between groups
+    Returns:
+        Boolean
+    """
+    num_volume = group1.Nmass + group2.Nmass
+    do_coulomb = True
+    # check if both groups are titratable (ions are taken care of in
+    # determinants::setIonDeterminants)
     if not (group1.titratable and group2.titratable):
         do_coulomb = False
-
     # check if the distance is not too big
-    if distance > parameters.coulomb_cutoff2:
+    if dist > parameters.coulomb_cutoff2:
         do_coulomb = False
-
     # check that desolvation is ok
-    if Npair < parameters.Nmin:
+    if num_volume < parameters.Nmin:
         do_coulomb = False
-
     return do_coulomb
 
 
-def CoulombEnergy(distance, weight, parameters):
-    """
-    calculates the Coulomb interaction pKa shift based on Coulombs law
-    eps = 60.0 for the moment; to be scaled with 'weight'
-    """
-    #diel = 80.0 -  60.0*weight
+def coulomb_energy(dist, weight, parameters):
+    """Calculates the Coulomb interaction pKa shift based on Coulomb's law.
 
-    diel = 160 - (160 -30)*weight
-    R = max(distance, parameters.coulomb_cutoff1)
-    scale = (R - parameters.coulomb_cutoff2)/(parameters.coulomb_cutoff1 -parameters.coulomb_cutoff2)
+    Args:
+        dist:  distance for electrostatic interaction
+        weight:  scaling of dielectric constant
+        parameters:  parameter object for calculation
+    Returns:
+        pKa shift
+    """
+    diel = UNK_DIELECTRIC1 - (UNK_DIELECTRIC1 - UNK_DIELECTRIC2)*weight
+    dist = max(dist, parameters.coulomb_cutoff1)
+    scale = (dist - parameters.coulomb_cutoff2)/(parameters.coulomb_cutoff1 \
+        - parameters.coulomb_cutoff2)
     scale = max(0.0, scale)
     scale = min(1.0, scale)
-
-    dpka = 244.12/(diel*R) *scale
-
+    dpka = UNK_PKA_SCALING1/(diel*dist)*scale
     return abs(dpka)
 
 
+def backbone_reorganization(parameters, conformation):
+    """Perform calculations related to backbone reorganizations.
 
-def BackBoneReorganization(parameters, conformation):
-    """
-    adding test stuff
+    NOTE - this was described in the code as "adding test stuff"
+    NOTE - this function does not appear to be used
+    TODO - figure out why a similar function exists in version.py
+
+    Args:
+        parameters:  not used
+        conformation:  specific molecule conformation
     """
     titratable_groups = conformation.get_backbone_reorganisation_groups()
-    BBC_groups = conformation.get_backbone_CO_groups()
+    bbc_groups = conformation.get_backbone_CO_groups()
 
     for titratable_group in titratable_groups:
         weight = titratable_group.buried
-        dpKa = 0.00
-        for BBC_group in BBC_groups:
+        dpka = 0.00
+        for bbc_group in bbc_groups:
             center = [titratable_group.x, titratable_group.y, titratable_group.z]
-            distance, f_angle, nada = AngleFactorX(atom2=BBC_group.get_interaction_atoms(titratable_group)[0],
-                                                   atom3=BBC_group.atom,
-                                                   center=center)
-            if distance <  6.0 and f_angle > 0.001:
-                value = 1.0-(distance-3.0)/(6.0-3.0)
-                dpKa += 0.80*min(1.0, value)
+            atom2 = bbc_group.get_interaction_atoms(titratable_group)[0]
+            dist, f_angle, _ = angle_distance_factors(atom2=atom2,
+                                                      atom3=bbc_group.atom,
+                                                      center=center)
+            if dist < UNK_BACKBONE_DISTANCE1 and f_angle > UNK_FANGLE_MIN:
+                value = 1.0 - (dist-UNK_BACKBONE_DISTANCE2) \
+                    / (UNK_BACKBONE_DISTANCE1-UNK_BACKBONE_DISTANCE2)
+                dpka += UNK_PKA_SCALING2*min(1.0, value)
+        titratable_group.Elocl = dpka*weight
 
-        titratable_group.Elocl = dpKa*weight
-    return
 
+def check_exceptions(version, group1, group2):
+    """Checks for atypical behavior in interactions between two groups.
+    Checks are made based on group type.
 
-#
-# Exception methods
-#
+    TODO - figure out why a similar function exists in version.py
 
-def checkExceptions(version, group1, group2):
+    Args:
+        version:  version object
+        group1:  first group for check
+        group2:  second group for check
+    Returns:
+        1. Boolean indicating atypical behavior,
+        2. value associated with atypical interaction (None if Boolean is False)
     """
-    checks for exceptions for this version - using defaults
-    """
-    resType1 = group1.type
-    resType2 = group2.type
-
-    if   (resType1 == "COO" and resType2 == "ARG"):
-        exception, value = checkCooArgException(group1, group2, version)
-    elif (resType1 == "ARG" and resType2 == "COO"):
-        exception, value = checkCooArgException(group2, group1, version)
-    elif (resType1 == "COO" and resType2 == "COO"):
-        exception, value = checkCooCooException(group1, group2, version)
-    elif (resType1 == "CYS" and resType2 == "CYS"):
-        exception, value = checkCysCysException(group1, group2, version)
-    elif (resType1 == "COO" and resType2 == "HIS") or \
-            (resType1 == "HIS" and resType2 == "COO"):
-        exception, value = checkCooHisException(group1, group2, version)
-    elif (resType1 == "OCO" and resType2 == "HIS") or \
-            (resType1 == "HIS" and resType2 == "OCO"):
-        exception, value = checkOcoHisException(group1, group2, version)
-    elif (resType1 == "CYS" and resType2 == "HIS") or \
-            (resType1 == "HIS" and resType2 == "CYS"):
-        exception, value = checkCysHisException(group1, group2, version)
+    res_type1 = group1.type
+    res_type2 = group2.type
+    if (res_type1 == "COO") and (res_type2 == "ARG"):
+        exception, value = check_coo_arg_exception(group1, group2, version)
+    elif (res_type1 == "ARG") and (res_type2 == "COO"):
+        exception, value = check_coo_arg_exception(group2, group1, version)
+    elif (res_type1 == "COO") and (res_type2 == "COO"):
+        exception, value = check_coo_coo_exception(group1, group2, version)
+    elif (res_type1 == "CYS") and (res_type2 == "CYS"):
+        exception, value = check_cys_cys_exception(group1, group2, version)
+    elif (res_type1 == "COO") and (res_type2 == "HIS") or \
+        (res_type1 == "HIS") and (res_type2 == "COO"):
+        exception, value = check_coo_his_exception(group1, group2, version)
+    elif (res_type1 == "OCO") and (res_type2 == "HIS") or \
+        (res_type1 == "HIS") and (res_type2 == "OCO"):
+        exception, value = check_oco_his_exception(group1, group2, version)
+    elif (res_type1 == "CYS") and (res_type2 == "HIS") or \
+        (res_type1 == "HIS") and (res_type2 == "CYS"):
+        exception, value = check_cys_his_exception(group1, group2, version)
     else:
         # do nothing, no exception for this pair
-        exception = False; value = None
-
+        exception = False
+        value = None
     return exception, value
 
 
+def check_coo_arg_exception(group_coo, group_arg, version):
+    """Check for COO-ARG interaction atypical behavior.
 
-def checkCooArgException(group_coo, group_arg, version):
-    """
-    checking Coo-Arg exception: uses the two shortes unique distances (involving 2+2 atoms)
-    """
+    Uses the two shortest unique distances (involving 2+2 atoms)
 
-    str = "xxx"
+    Args:
+        group_coo:  COO group
+        group_arg:  ARG group
+        version:  version object
+    Returns:
+        1. Boolean indicating atypical behavior,
+        2. value associated with atypical interaction (None if Boolean is False)
+    """
     exception = True
     value_tot = 0.00
-
-    #dpka_max = parameters.sidechain_interaction.get_value(group_coo.type,group_arg.type)
-    #cutoff   = parameters.sidechain_cutoffs.get_value(group_coo.type,group_arg.type)
-
     # needs to be this way since you want to find shortest distance first
-    #info("--- exception for %s %s ---" % (group_coo.label, group_arg.label))
     atoms_coo = []
     atoms_coo.extend(group_coo.get_interaction_atoms(group_arg))
     atoms_arg = []
     atoms_arg.extend(group_arg.get_interaction_atoms(group_coo))
-
-
-    for iter in ["shortest", "runner-up"]:
+    for _ in ["shortest", "runner-up"]:
         # find the closest interaction pair
-        [closest_coo_atom, distance, closest_arg_atom] = get_smallest_distance(atoms_coo, atoms_arg)
-        [dpka_max, cutoff] = version.get_hydrogen_bond_parameters(closest_coo_atom,closest_arg_atom)
-     # calculate and sum up interaction energy
+        [closest_coo_atom, dist, closest_arg_atom] = get_smallest_distance(atoms_coo,
+                                                                           atoms_arg)
+        [dpka_max, cutoff] = version.get_hydrogen_bond_parameters(closest_coo_atom,
+                                                                  closest_arg_atom)
+        # calculate and sum up interaction energy
         f_angle = 1.00
         if group_arg.type in version.parameters.angular_dependent_sidechain_interactions:
             atom3 = closest_arg_atom.bonded_atoms[0]
-            distance, f_angle, nada = AngleFactorX(closest_coo_atom, closest_arg_atom, atom3)
-
-        value = HydrogenBondEnergy(distance, dpka_max, cutoff, f_angle)
-        #info(iter, closest_coo_atom, closest_arg_atom,distance,value)
+            dist, f_angle, _ = angle_distance_factors(closest_coo_atom,
+                                                      closest_arg_atom,
+                                                      atom3)
+        value = hydrogen_bond_energy(dist, dpka_max, cutoff, f_angle)
         value_tot += value
         # remove closest atoms before we attemp to find the runner-up pair
         atoms_coo.remove(closest_coo_atom)
         atoms_arg.remove(closest_arg_atom)
-
-
     return exception, value_tot
 
 
-def checkCooCooException(group1, group2, version):
-    """
-    checking Coo-Coo hydrogen-bond exception
+def check_coo_coo_exception(group1, group2, version):
+    """Check for COO-COO hydrogen-bond atypical interaction behavior.
+
+    Args:
+        group1:  first group for check
+        group2:  second group for check
+        version:  version object
+    Returns:
+        1. Boolean indicating atypical behavior,
+        2. value associated with atypical interaction (None if Boolean is False)
     """
     exception = True
-    [closest_atom1, distance, closest_atom2] = get_smallest_distance(group1.get_interaction_atoms(group2),
-                                                                     group2.get_interaction_atoms(group1))
-
-    #dpka_max = parameters.sidechain_interaction.get_value(group1.type,group2.type)
-    #cutoff   = parameters.sidechain_cutoffs.get_value(group1.type,group2.type)
-    [dpka_max, cutoff] = version.get_hydrogen_bond_parameters(closest_atom1,closest_atom2)
+    interact_groups12 = group1.get_interaction_atoms(group2)
+    interact_groups21 = group2.get_interaction_atoms(group1)
+    [closest_atom1, dist, closest_atom2] = get_smallest_distance(interact_groups12,
+                                                                 interact_groups21)
+    [dpka_max, cutoff] = version.get_hydrogen_bond_parameters(closest_atom1,
+                                                              closest_atom2)
     f_angle = 1.00
-    value = HydrogenBondEnergy(distance, dpka_max, cutoff, f_angle)
-    weight = calculatePairWeight(version.parameters, group1.Nmass, group2.Nmass)
+    value = hydrogen_bond_energy(dist, dpka_max, cutoff, f_angle)
+    weight = calculate_pair_weight(version.parameters, group1.Nmass, group2.Nmass)
     value = value * (1.0 + weight)
-
     return exception, value
 
 
+def check_coo_his_exception(group1, group2, version):
+    """Check for COO-HIS atypical interaction behavior
 
-def checkCooHisException(group1, group2, version):
-    """
-    checking Coo-His exception
+    Args:
+        group1:  first group for check
+        group2:  second group for check
+        version:  version object
+    Returns:
+        1. Boolean indicating atypical behavior,
+        2. value associated with atypical interaction (None if Boolean is False)
     """
     exception = False
-    if checkBuried(group1.Nmass, group2.Nmass):
+    if check_buried(group1.Nmass, group2.Nmass):
         exception = True
-
     return exception, version.parameters.COO_HIS_exception
 
 
-def checkOcoHisException(group1, group2, version):
-    """
-    checking Coo-His exception
+def check_oco_his_exception(group1, group2, version):
+    """Check for OCO-HIS atypical interaction behavior
+
+    Args:
+        group1:  first group for check
+        group2:  second group for check
+        version:  version object
+    Returns:
+        1. Boolean indicating atypical behavior,
+        2. value associated with atypical interaction (None if Boolean is False)
     """
     exception = False
-    if checkBuried(group1.Nmass, group2.Nmass):
+    if check_buried(group1.Nmass, group2.Nmass):
         exception = True
-
     return exception, version.parameters.OCO_HIS_exception
 
 
-def checkCysHisException(group1, group2, version):
-    """
-    checking Cys-His exception
+def check_cys_his_exception(group1, group2, version):
+    """Check for CYS-HIS atypical interaction behavior
+
+    Args:
+        group1:  first group for check
+        group2:  second group for check
+        version:  version object
+    Returns:
+        1. Boolean indicating atypical behavior,
+        2. value associated with atypical interaction (None if Boolean is False)
     """
     exception = False
-    if checkBuried(group1.Nmass, group2.Nmass):
+    if check_buried(group1.Nmass, group2.Nmass):
         exception = True
-
     return exception, version.parameters.CYS_HIS_exception
 
 
-def checkCysCysException(group1, group2, version):
-    """
-    checking Cys-Cys exception
+def check_cys_cys_exception(group1, group2, version):
+    """Check for CYS-CYS atypical interaction behavior
+
+    Args:
+        group1:  first group for check
+        group2:  second group for check
+        version:  version object
+    Returns:
+        1. Boolean indicating atypical behavior,
+        2. value associated with atypical interaction (None if Boolean is False)
     """
     exception = False
-    if checkBuried(group1.Nmass, group2.Nmass):
+    if check_buried(group1.Nmass, group2.Nmass):
         exception = True
-
     return exception, version.parameters.CYS_CYS_exception
 
 
+def check_buried(num_volume1, num_volume2):
+    """Check to see if an interaction is buried
 
-
-
-def checkBuried(Nmass1, Nmass2):
+    Args:
+        num_volume1:  number of buried heavy atoms in volume 1
+        num_volume2:  number of buried heavy atoms in volume 2
+    Returns:
+        True if interaction is buried, False otherwise
     """
-    returns True if an interaction is buried
-    """
-
-    if (Nmass1 + Nmass2 <= 900) and (Nmass1 <= 400 or Nmass2 <= 400):
+    if (num_volume1 + num_volume2 <= COMBINED_NUM_BURIED_MAX) \
+        and (num_volume1 <= SEPARATE_NUM_BURIED_MAX \
+            or num_volume2 <= SEPARATE_NUM_BURIED_MAX):
         return False
-    else:
-        return True
+    return True

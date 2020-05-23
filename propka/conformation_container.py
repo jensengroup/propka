@@ -182,7 +182,7 @@ class Conformation_container:
         propka.determinants.setIonDeterminants(self, version)
 
         # calculating the back-bone reorganization/desolvation term
-        version.calculateBackBoneReorganization(self)
+        version.calculatebackbone_reorganization(self)
 
         # setting remaining non-iterative and iterative side-chain & Coulomb interaction determinants
         propka.determinants.setDeterminants(self.get_sidechain_groups(), version=version, options=options)

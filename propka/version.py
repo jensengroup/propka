@@ -18,7 +18,7 @@ class version:
     def calculate_desolvation(self, group):
         return self.desolvation_model(self.parameters, group)
 
-    def calculatePairWeight(self, Nmass1, Nmass2):
+    def calculate_pair_weight(self, Nmass1, Nmass2):
         return self.weight_pair_method(self.parameters, Nmass1, Nmass2)
 
     # side chains
@@ -32,18 +32,18 @@ class version:
     def electrostatic_interaction(self, group1, group2, distance):
         return self.electrostatic_interaction_model(group1, group2, distance, self)
 
-    def calculateCoulombEnergy(self, distance, weight):
+    def calculate_coulomb_energy(self, distance, weight):
         return self.coulomb_interaction_model(distance, weight, self.parameters)
 
-    def checkCoulombPair(self, group1, group2, distance):
+    def check_coulomb_pair(self, group1, group2, distance):
         return self.check_coulomb_pair_method(self.parameters, group1, group2, distance)
 
     # backbone re-organisation
-    def calculateBackBoneReorganization(self, conformation):
+    def calculatebackbone_reorganization(self, conformation):
         return self.backbone_reorganisation_method(self.parameters, conformation)
 
     # exceptions
-    def checkExceptions(self, group1, group2):
+    def check_exceptions(self, group1, group2):
         return self.exception_check_method(self, group1, group2)
 
     def setup_bonding_and_protonation(self, molecular_container):
@@ -66,23 +66,23 @@ class version_A(version):
 
         # desolvation related methods
         self.desolvation_model = calculations.radial_volume_desolvation
-        self.weight_pair_method = calculations.calculatePairWeight
+        self.weight_pair_method = calculations.calculate_pair_weight
 
         # side chain methods
-        self.sidechain_interaction_model = propka.calculations.HydrogenBondEnergy
+        self.sidechain_interaction_model = propka.calculations.hydrogen_bond_energy
         self.hydrogen_bond_interaction_model = propka.calculations.hydrogen_bond_interaction
 
         # colomb methods
         self.electrostatic_interaction_model = propka.calculations.electrostatic_interaction
-        self.check_coulomb_pair_method = propka.calculations.checkCoulombPair
-        self.coulomb_interaction_model = propka.calculations.CoulombEnergy
+        self.check_coulomb_pair_method = propka.calculations.check_coulomb_pair
+        self.coulomb_interaction_model = propka.calculations.coulomb_energy
 
         #backbone
-        self.backbone_interaction_model = propka.calculations.HydrogenBondEnergy
-        self.backbone_reorganisation_method = propka.calculations.BackBoneReorganization
+        self.backbone_interaction_model = propka.calculations.hydrogen_bond_energy
+        self.backbone_reorganisation_method = propka.calculations.backbone_reorganization
 
         # exception methods
-        self.exception_check_method = propka.calculations.checkExceptions
+        self.exception_check_method = propka.calculations.check_exceptions
         return
 
     def get_hydrogen_bond_parameters(self, atom1, atom2):
@@ -188,20 +188,20 @@ class propka30(version):
 
         # desolvation related methods
         self.desolvation_model = calculations.radial_volume_desolvation
-        self.weight_pair_method = calculations.calculatePairWeight
+        self.weight_pair_method = calculations.calculate_pair_weight
 
         # side chain methods
-        self.sidechain_interaction_model = propka.calculations.HydrogenBondEnergy
+        self.sidechain_interaction_model = propka.calculations.hydrogen_bond_energy
 
         # colomb methods
-        self.check_coulomb_pair_method = propka.calculations.checkCoulombPair
-        self.coulomb_interaction_model = propka.calculations.CoulombEnergy
+        self.check_coulomb_pair_method = propka.calculations.check_coulomb_pair
+        self.coulomb_interaction_model = propka.calculations.coulomb_energy
 
         #backbone
-        self.backbone_reorganisation_method = propka.calculations.BackBoneReorganization
+        self.backbone_reorganisation_method = propka.calculations.backbone_reorganization
 
         # exception methods
-        self.exception_check_method = propka.calculations.checkExceptions
+        self.exception_check_method = propka.calculations.check_exceptions
 
 
         return
