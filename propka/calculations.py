@@ -352,26 +352,32 @@ def make_new_h(atom, x,y,z):
     return new_H
 
 
-# TODO - the remaining functions form a dist
+# TODO - the remaining functions form a distinct "module" for desolvation
 
-#
-# Desolvation methods
-#
+
+MYSTERY_MIN_DISTANCE = 2.75
+MIN_DISTANCE_4TH = math.pow(MYSTERY_MIN_DISTANCE, 4)
 
 
 def radial_volume_desolvation(parameters, group):
+    """Calculate desolvation terms for group.
+
+    Args:
+        parameters:  parameters for desolvation calculation
+        group:  group of atoms for calculation
+    """
     all_atoms = group.atom.conformation_container.get_non_hydrogen_atoms()
     volume = 0.0
+    # TODO - Nathan really wants to rename the Nmass variable.
+    # He had to re-read the original paper to figure out what it was.
+    # A better name would be num_volume.
     group.Nmass = 0
-    min_distance_4th = 57.1914 # pow(2.75, 4)
-
+    min_distance_4th = MIN_DISTANCE_4TH
     for atom in all_atoms:
         # ignore atoms in the same residue
         if atom.res_num == group.atom.res_num and atom.chain_id == group.atom.chain_id:
             continue
-
         sq_dist = squared_distance(group, atom)
-
         # desolvation
         if sq_dist < parameters.desolv_cutoff_squared:
             # use a default relative volume of 1.0 if the volume of the element is not found in parameters
@@ -380,79 +386,15 @@ def radial_volume_desolvation(parameters, group):
                 dv = parameters.VanDerWaalsVolume['C4']
             else:
                 dv = parameters.VanDerWaalsVolume.get(atom.element, 1.0)
-
             dv_inc = dv/max(min_distance_4th, sq_dist*sq_dist)
-#            dv_inc = dv/(sq_dist*sq_dist) - dv/(parameters.desolv_cutoff_squared*parameters.desolv_cutoff_squared)
             volume += dv_inc
         # buried
         if sq_dist < parameters.buried_cutoff_squared:
             group.Nmass += 1
-
     group.buried = calculate_weight(parameters, group.Nmass)
     scale_factor = calculate_scale_factor(parameters, group.buried)
     volume_after_allowance = max(0.00, volume-parameters.desolvationAllowance)
-
     group.Emass = group.charge * parameters.desolvationPrefactor * volume_after_allowance * scale_factor
-    # Emass, Nmass
-    # Elocl, Nlocl -> reorganisation energy (count backbone hydorgen bond acceptors, C=O)
-
-
-
-    #info('%s %5.2f %5.2f %4d'%(group, group.buried, group.Emass, group.Nmass))
-    return
-
-
-
-def contactDesolvation(parameters, group):
-    """
-    calculates the desolvation according to the Contact Model, the old default
-    """
-
-    local_radius = {'ASP': 4.5,
-                    'GLU': 4.5,
-                    'HIS': 4.5,
-                    'CYS': 3.5,
-                    'TYR': 3.5,
-                    'LYS': 4.5,
-                    'ARG': 5.0,
-                    'C-': 4.5,
-                    'N+': 4.5}
-
-    all_atoms = group.atom.conformation_container.get_non_hydrogen_atoms()
-    if residue.res_name in version.desolvationRadii:
-        local_cutoff = version.desolvationRadii[residue.res_name]
-    else:
-        local_cutoff = 0.00
-    residue.Nmass = 0
-    residue.Nlocl = 0
-
-    for atom in all_atoms:
-        if atom.res_num != group.atom.res_num or atom.chain_id != group.atom.chain_id:
-            dX = atom.x - residue.x
-            dY = atom.y - residue.y
-            dZ = atom.z - residue.z
-            distance = math.sqrt(dX*dX + dY*dY + dZ*dZ)
-            if distance < local_cutoff:
-                group.Nlocl += 1
-            if distance < parameters.buried_cutoff:
-                group.Nmass += 1
-        if residue.Nmass > 400:
-            group.location = "BURIED "
-        else:
-            group.location = "SURFACE"
-        group.Emass = group.charge * parameters.desolvationPrefactor * max(0.00, group.Nmass-parameters.desolvationAllowance)
-        group.Elocl = group.charge * parameters.desolvationLocal * group.Nlocl
-        # Buried ratio - new feature in propka3.0
-        # Note, there will be an unforseen problem: e.g. if one residue has Nmass > Nmax and
-        # the other Nmass < Nmax, the Npair will not be Nmass1 + Nmass2!
-        residue.buried = calculateWeight(residue.Nmass)
-
-        return 0.00, 0.00, 0.00, 0.00
-
-
-
-
-
 
 
 def calculate_scale_factor(parameters, weight):
