@@ -2,7 +2,6 @@
 import string
 import propka.lib
 import propka.group
-# TODO - what is hybrid36?
 from . import hybrid36
 
 

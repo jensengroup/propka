@@ -1,3 +1,7 @@
+"""Provides an alternative PDB format that can transparently encode larger atom numbers.
+
+http://cci.lbl.gov/hybrid_36/
+"""
 import string
 
 _hybrid36_upper_chars = set(string.ascii_uppercase)
