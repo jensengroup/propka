@@ -7,6 +7,72 @@ import propka.bonds
 from propka.lib import info, warning
 
 
+# TODO - this file should be broken into three separate files:
+# * calculations.py - includes basic functions for calculating distances, etc.
+# * hydrogen.py - includes bonding and protonation functions
+# * energy.py - includes energy functions (dependent on distance functions)
+
+
+# TODO - the next set of functions form a distinct "module" for distance calculation
+
+
+# Maximum distance used to bound calculations of smallest distance
+MAX_DISTANCE = 1e6
+
+
+def squared_distance(atom1, atom2):
+    """Calculate the squared distance between two atoms.
+
+    Args:
+        atom1:  first atom for distance calculation
+        atom2:  second atom for distance calculation
+    Returns:
+        distance squared
+    """
+    dx = atom2.x - atom1.x
+    dy = atom2.y - atom1.y
+    dz = atom2.z - atom1.z
+    res = dx*dx+dy*dy+dz*dz
+    return res
+
+
+def distance(atom1, atom2):
+    """Calculate the distance between two atoms.
+
+    Args:
+        atom1:  first atom for distance calculation
+        atom2:  second atom for distance calculation
+    Returns:
+        distance
+    """
+    return math.sqrt(squared_distance(atom1,atom2))
+
+
+def get_smallest_distance(atoms1, atoms2):
+    """Calculate the smallest distance between two groups of atoms.
+
+    Args:
+        atoms1:  atom group 1
+        atoms2:  atom group 2
+    Returns:
+        smallest distance between groups
+    """
+    res_distance = MAX_DISTANCE
+    res_atom1 = None
+    res_atom2 = None
+    for atom1 in atoms1:
+        for atom2 in atoms2:
+            dist = squared_distance(atom1, atom2)
+            if dist < res_distance:
+                res_distance = dist
+                res_atom1 = atom1
+                res_atom2 = atom2
+    return [res_atom1, math.sqrt(res_distance), res_atom2]
+
+
+# TODO - the next set of functions form a distinct "module" for hydrogen addition
+
+
 def setup_bonding_and_protonation(parameters, molecular_container):
     """Set up bonding and protonation for a molecule.
 
@@ -48,256 +114,245 @@ def set_ligand_atom_names(molecular_container):
         molecular_container.conformations[name].set_ligand_atom_names()
 
 
-def addArgHydrogen(residue):
-    """
-    Adds Arg hydrogen atoms to residues according to the 'old way'.
+def add_arg_hydrogen(residue):
+    """Adds Arg hydrogen atoms to residues according to the 'old way'.
+
+    Args:
+        residue:  arginine residue to protonate
+    Returns:
+        list of hydrogen atoms
     """
     #info('Adding arg H',residue)
     for atom in residue:
-        if   atom.name == "CD":
-            CD  = atom
+        if atom.name == "CD":
+            cd_atom = atom
         elif atom.name == "CZ":
-            CZ  = atom
+            cz_atom = atom
         elif atom.name == "NE":
-            NE  = atom
+            ne_atom = atom
         elif atom.name == "NH1":
-            NH1 = atom
+            nh1_atom = atom
         elif atom.name == "NH2":
-            NH2 = atom
+            nh2_atom = atom
+    h1_atom = protonate_sp2(cd_atom, ne_atom, cz_atom)
+    h1_atom.name = "HE"
+    h2_atom = protonate_direction(nh1_atom, ne_atom, cz_atom)
+    h2_atom.name = "HN1"
+    h3_atom = protonate_direction(nh1_atom, ne_atom, cd_atom)
+    h3_atom.name = "HN2"
+    h4_atom = protonate_direction(nh2_atom, ne_atom, cz_atom)
+    h4_atom.name = "HN3"
+    h5_atom = protonate_direction(nh2_atom, ne_atom, h1_atom)
+    h5_atom.name = "HN4"
+    return [h1_atom, h2_atom, h3_atom, h4_atom, h5_atom]
 
-    H1 = protonateSP2([CD, NE, CZ])
-    H1.name = "HE"
-    H2 = protonateDirection([NH1, NE, CZ])
-    H2.name = "HN1"
-    H3 = protonateDirection([NH1, NE, CD])
-    H3.name = "HN2"
-    H4 = protonateDirection([NH2, NE, CZ])
-    H4.name = "HN3"
-    H5 = protonateDirection([NH2, NE, H1])
-    H5.name = "HN4"
 
-    return [H1,H2,H3,H4,H5]
+def add_his_hydrogen(residue):
+    """Adds His hydrogen atoms to residues according to the 'old way'.
 
-def addHisHydrogen(residue):
-    """
-    Adds His hydrogen atoms to residues according to the 'old way'.
+    Args:
+        residue:  histidine residue to protonate
     """
     for atom in residue:
-        if   atom.name == "CG":
-            CG  = atom
+        if atom.name == "CG":
+            cg_atom = atom
         elif atom.name == "ND1":
-            ND  = atom
+            nd_atom = atom
         elif atom.name == "CD2":
-            CD  = atom
+            cd_atom  = atom
         elif atom.name == "CE1":
-            CE  = atom
+            ce_atom  = atom
         elif atom.name == "NE2":
-            NE  = atom
-    HD = protonateSP2([CG, ND, CE])
-    HD.name = "HND"
-    HE = protonateSP2([CD, NE, CE])
-    HE.name = "HNE"
-    return
+            ne_atom  = atom
+    hd_atom = protonate_sp2(cg_atom, nd_atom, ce_atom)
+    hd_atom.name = "HND"
+    he_atom = protonate_sp2(cd_atom, ne_atom, ce_atom)
+    he_atom.name = "HNE"
 
-def addTrpHydrogen(residue):
+
+def add_trp_hydrogen(residue):
+    """Adds Trp hydrogen atoms to residues according to the 'old way'.
+
+    Args:
+        residue:  tryptophan residue to protonate
     """
-    Adds Trp hydrogen atoms to residues according to the 'old way'.
-    """
-    CD = None
-    NE = None
-    DE = None
+    cd_atom = None
+    ne_atom = None
     for atom in residue:
-        if   atom.name == "CD1":
-            CD  = atom
+        if atom.name == "CD1":
+            cd_atom  = atom
         elif atom.name == "NE1":
-            NE  = atom
+            ne_atom  = atom
         elif atom.name == "CE2":
-            CE  = atom
-    if CD == None or NE == None or CE == None:
-        str = "Did not find all atoms in %s%4d - in %s" % (self.res_name, self.res_num, "addTrpHydrogen()")
-        info(str)
-        sys.exit(0)
+            ce_atom  = atom
+    if (cd_atom is None) or (ne_atom is None) or (ce_atom is None):
+        errstr = "Unable to find all atoms for %s %s" % (residue[0].res_name,
+                                                         residue[0].res_num)
+        raise ValueError(errstr)
+    he_atom = protonate_sp2(cd_atom, ne_atom, ce_atom)
+    he_atom.name = "HNE"
 
-    HE = protonateSP2([CD, NE, CE])
-    HE.name = "HNE"
 
-    return
+def add_amd_hydrogen(residue):
+    """Adds Gln & Asn hydrogen atoms to residues according to the 'old way'.
 
-def addAmdHydrogen(residue):
+    Args:
+        residue:  glutamine or asparagine residue to protonate
     """
-    Adds Gln & Asn hydrogen atoms to residues according to the 'old way'.
-    """
-    C = None
-    O = None
-    N = None
+    c_atom = None
+    o_atom = None
+    n_atom = None
     for atom in residue:
-        if   (atom.res_name == "GLN" and atom.name == "CD")  or (atom.res_name == "ASN" and atom.name == "CG"):
-            C = atom
+        if (atom.res_name == "GLN" and atom.name == "CD") or (atom.res_name == "ASN" and atom.name == "CG"):
+            c_atom = atom
         elif (atom.res_name == "GLN" and atom.name == "OE1") or (atom.res_name == "ASN" and atom.name == "OD1"):
-            O = atom
+            o_atom = atom
         elif (atom.res_name == "GLN" and atom.name == "NE2") or (atom.res_name == "ASN" and atom.name == "ND2"):
-            N = atom
+            n_atom = atom
+    if (c_atom is None) or (o_atom is None) or (n_atom is None):
+        errstr = "Unable to find all atoms for %s %s" % (residue[0].res_name,
+                                                         residue[0].res_num)
+        raise ValueError(errstr)
+    h1_atom = protonate_direction(n_atom, o_atom, c_atom)
+    h1_atom.name = "HN1"
+    h2_atom = protonate_average_direction(n_atom, c_atom, o_atom)
+    h2_atom.name = "HN2"
 
-    if C == None or O == None or N == None:
-        str = "Did not find N, C and/or O in %s%4d - in %s" % (atom.res_name, atom.res_num, "addAmdHydrogen()")
-        info(str)
-        sys.exit(0)
 
-    H1 = protonateDirection([N, O, C])
-    H1.name = "HN1"
-    H2 = protonateAverageDirection([N, C, O])
-    H2.name = "HN2"
+def add_backbone_hydrogen(residue, o_atom, c_atom):
+    """Adds hydrogen backbone atoms to residues according to the old way.
 
-    return
+    dR is wrong for the N-terminus (i.e. first residue) but it doesn't affect
+    anything at the moment. Could be improved, but works for now.
 
-def addBackBoneHydrogen(residue, O, C):
+    Args:
+        residue:  residue to protonate
+        o_atom:  backbone oxygen atom
+        c_atom:  backbone carbon atom
+    Returns:
+        [new backbone oxygen atom, new backbone carbon atom]
     """
-    Adds hydrogen backbone atoms to residues according to the old way; dR is wrong for the N-terminus
-    (i.e. first residue) but it doesn't affect anything at the moment. Could be improved, but works
-    for now.
-    """
-
-    new_C     = None
-    new_O     = None
-    N     = None
-
-
+    new_c_atom = None
+    new_o_atom = None
+    n_atom = None
     for atom in residue:
         if atom.name == "N":
-            N = atom
+            n_atom = atom
         if atom.name == "C":
-            new_C = atom
+            new_c_atom = atom
         if atom.name == "O":
-            new_O = atom
-
-
-
-
-    if None in [C,O,N]:
-        return [new_O,new_C]
-
-
-    if N.res_name == "PRO":
-        """ PRO doesn't have an H-atom; do nothing """
+            new_o_atom = atom
+    if None in [c_atom, o_atom, n_atom]:
+        return [new_o_atom, new_c_atom]
+    if n_atom.res_name == "PRO":
+        """PRO doesn't have an H-atom; do nothing"""
     else:
-        H = protonateDirection([N, O, C])
-        H.name = "H"
-
-    return [new_O,new_C]
-
+        h_atom = protonate_direction(n_atom, o_atom, c_atom)
+        h_atom.name = "H"
+    return [new_o_atom,new_c_atom]
 
 
+def protonate_direction(x1_atom, x2_atom, x3_atom):
+    """Protonates an atom, x1_atom, given a direction.
 
+    New direction for x1_atom proton is (x2_atom -> x3_atom).
 
-def protonateDirection(list):
+    Args:
+        x1_atom:  atom to be protonated
+        x2_atom:  atom for direction
+        x3_atom:  other atom for direction
+    Returns:
+        new hydrogen atom
     """
-    Protonates an atom, X1, given a direction (X2 -> X3) [X1, X2, X3]
-    """
-    X1 = list[0]
-    X2 = list[1]
-    X3 = list[2]
-
-    dX = (X3.x - X2.x)
-    dY = (X3.y - X2.y)
-    dZ = (X3.z - X2.z)
+    dX = (x3_atom.x - x2_atom.x)
+    dY = (x3_atom.y - x2_atom.y)
+    dZ = (x3_atom.z - x2_atom.z)
     length = math.sqrt( dX*dX + dY*dY + dZ*dZ )
-    x = X1.x + dX/length
-    y = X1.y + dY/length
-    z = X1.z + dZ/length
-
-
-    H  = make_new_H(X1,x,y,z)
+    x = x1_atom.x + dX/length
+    y = x1_atom.y + dY/length
+    z = x1_atom.z + dZ/length
+    H  = make_new_h(x1_atom,x,y,z)
     H.name = "H"
-
-
     return H
 
 
-def protonateAverageDirection(list):
-    """
-    Protonates an atom, X1, given a direction (X1/X2 -> X3) [X1, X2, X3]
-    Note, this one uses the average of X1 & X2 (N & O) unlike the previous
-    N - C = O
-    """
-    X1 = list[0]
-    X2 = list[1]
-    X3 = list[2]
+def protonate_average_direction(x1_atom, x2_atom, x3_atom):
+    """Protonates an atom, x1_atom, given a direction.
 
-    dX = (X3.x + X1.x)*0.5 - X2.x
-    dY = (X3.y + X1.y)*0.5 - X2.y
-    dZ = (X3.z + X1.z)*0.5 - X2.z
+    New direction for x1_atom is (x1_atom/x2_atom -> x3_atom).
+    Note, this one uses the average of x1_atom & x2_atom (N & O) unlike
+    the previous N - C = O
 
+    Args:
+        x1_atom:  atom to be protonated
+        x2_atom:  atom for direction
+        x3_atom:  other atom for direction
+    Returns:
+        new hydrogen atom
+    """
+    dX = (x3_atom.x + x1_atom.x)*0.5 - x2_atom.x
+    dY = (x3_atom.y + x1_atom.y)*0.5 - x2_atom.y
+    dZ = (x3_atom.z + x1_atom.z)*0.5 - x2_atom.z
     length = math.sqrt( dX*dX + dY*dY + dZ*dZ )
-    x = X1.x + dX/length
-    y = X1.y + dY/length
-    z = X1.z + dZ/length
-
-    H  = make_new_H(X1,x,y,z)
+    x = x1_atom.x + dX/length
+    y = x1_atom.y + dY/length
+    z = x1_atom.z + dZ/length
+    H  = make_new_h(x1_atom,x,y,z)
     H.name = "H"
-
-
-
     return H
 
 
-def protonateSP2(list):
-    """
-    Protonates a SP2 atom, H2, given a list of [X1, X2, X3]
-    X1-X2-X3
-    """
-    X1 = list[0]
-    X2 = list[1]
-    X3 = list[2]
+def protonate_sp2(x1_atom, x2_atom, x3_atom):
+    """Protonates a SP2 atom, given a list of atoms
 
-    dX = (X1.x + X3.x)*0.5 - X2.x
-    dY = (X1.y + X3.y)*0.5 - X2.y
-    dZ = (X1.z + X3.z)*0.5 - X2.z
+    Args:
+        x1_atom:  atom to set direction
+        x2_atom:  atom to be protonated
+        x3_atom:  other atom to set direction
+    Returns:
+        new hydrogen atom
+    """
+    dX = (x1_atom.x + x3_atom.x)*0.5 - x2_atom.x
+    dY = (x1_atom.y + x3_atom.y)*0.5 - x2_atom.y
+    dZ = (x1_atom.z + x3_atom.z)*0.5 - x2_atom.z
     length = math.sqrt( dX*dX + dY*dY + dZ*dZ )
-    x = X2.x - dX/length
-    y = X2.y - dY/length
-    z = X2.z - dZ/length
-
-    H  = make_new_H(X2,x,y,z)
+    x = x2_atom.x - dX/length
+    y = x2_atom.y - dY/length
+    z = x2_atom.z - dZ/length
+    H  = make_new_h(x2_atom,x,y,z)
     H.name = "H"
-
     return H
 
 
-def make_new_H(atom, x,y,z):
+def make_new_h(atom, x,y,z):
+    """Add a new hydrogen to an atom at the specified position.
 
+    Args:
+        atom:  atom to protonate
+        x:  x position of hydrogen
+        y:  y position of hydrogen
+        z:  z position of hydrogen
+    Returns:
+        new hydrogen atom
+    """
     new_H = propka.atom.Atom()
-    new_H.set_property(numb    = None,
-                      name    = 'H%s'%atom.name[1:],
-                      res_name = atom.res_name,
-                      chain_id = atom.chain_id,
-                      res_num = atom.res_num,
-                      x       = x,
-                      y       = y,
-                      z       = z,
-                      occ     = None,
-                      beta    = None)
+    new_H.set_property(numb=None, name='H%s' % atom.name[1:],
+                       res_name=atom.res_name, chain_id=atom.chain_id,
+                       res_num=atom.res_num, x=x, y=y, z=z, occ=None,
+                       beta=None)
     new_H.element = 'H'
-
-
     new_H.bonded_atoms = [atom]
     new_H.charge = 0
     new_H.steric_number = 0
     new_H.number_of_lone_pairs = 0
     new_H.number_of_protons_to_add = 0
     new_H.num_pi_elec_2_3_bonds = 0
-
     atom.bonded_atoms.append(new_H)
     atom.conformation_container.add_atom(new_H)
-
     return new_H
 
-######## 3.0 style protonation methods end
 
-
-
-
-
-
+# TODO - the remaining functions form a dist
 
 #
 # Desolvation methods
@@ -414,41 +469,6 @@ def calculate_weight(parameters, Nmass):
     weight = max(0.0, weight)
 
     return weight
-
-
-
-def squared_distance(atom1, atom2):
-#    if atom1 in atom2.squared_distances:
-#        return atom2.squared_distances[atom1]
-
-    dx = atom2.x - atom1.x
-    dy = atom2.y - atom1.y
-    dz = atom2.z - atom1.z
-
-    res = dx*dx+dy*dy+dz*dz
-
-    return res
-
-
-def distance(atom1, atom2):
-    return math.sqrt(squared_distance(atom1,atom2))
-
-
-
-def get_smallest_distance(atoms1, atoms2):
-    res_distance =1e6
-    res_atom1 = None
-    res_atom2 = None
-
-    for atom1 in atoms1:
-        for atom2 in atoms2:
-            dist = squared_distance(atom1, atom2)
-            if dist < res_distance:
-                res_distance = dist
-                res_atom1 = atom1
-                res_atom2 = atom2
-
-    return [res_atom1, math.sqrt(res_distance), res_atom2]
 
 
 def calculatePairWeight(parameters, Nmass1, Nmass2):
