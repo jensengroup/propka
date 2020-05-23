@@ -69,8 +69,6 @@ def run_propka(options, pdb_path, tmp_path):
         molecule = propka.molecular_container.Molecular_container(str(pdb_path), args)
         molecule.calculate_pka()
         molecule.write_pka()
-    except Exception as err:
-        raise err
     finally:
         os.chdir(cwd)
 
