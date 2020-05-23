@@ -290,8 +290,9 @@ class Atom(object):
             self.occ = self.occ.replace('LG', 'non_titratable_ligand')
             # try to initialise the group
             try:
-                # TODO - get rid of this exec() statement for security reasons
-                exec('self.group = propka.group.%s_group(self)' % self.occ)
+                group_attr = "%s_group" % self.occ
+                group_attr = getattr(propka.group, group_attr)
+                self.group = group_attr(self)
             except:
                 raise Exception('%s in input_file is not recognized as a group' % self.occ)
         # set the model pKa value
