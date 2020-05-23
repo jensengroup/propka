@@ -114,19 +114,12 @@ class Atom(object):
     def count_bonded_elements(self, element):
         """Count number of bonded atoms with same element.
 
-        TODO - this function is silly.  It should just be the len() of the
-        array returned by get_bonded_elements()
-
         Args:
             element:  element type for test.
         Returns:
             number of bonded atoms.
         """
-        res = 0
-        for bonded_atom in self.bonded_atoms:
-            if element == bonded_atom.element:
-                res += 1
-        return res
+        return len(self.get_bonded_elements(element))
 
     def get_bonded_elements(self, element):
         """Get bonded atoms with same element.
