@@ -215,7 +215,7 @@ def build_parser(parser=None):
     group.add_argument("-k", "--keep-protons", dest="keep_protons", action="store_true",
                        help="Keep protons in input file", default=False)
     group.add_argument("-q", "--quiet", action="store_const", const="WARNING",
-                       dest="log_level", help="supress non-warning messages")
+                       dest="log_level", help="suppress non-warning messages")
     group.add_argument("--protonate-all", dest="protonate_all", action="store_true",
                        help="Protonate all atoms (will not influence pKa calculation)",
                        default=False)
@@ -328,4 +328,3 @@ def debug(*args):
 def warning(*args):
     """Log a WARN message"""
     logger.warning(_args_to_str(args))
-

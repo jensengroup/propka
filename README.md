@@ -45,7 +45,7 @@ from within a virtual environment (e.g., via [virtualenv](https://pypi.org/proje
 
 ## Requirements
 
-* Python 3.1 or higher 
+* Python 3.5 or higher 
 
 ## Getting started
 
