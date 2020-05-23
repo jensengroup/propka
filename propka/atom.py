@@ -200,8 +200,6 @@ class Atom(object):
     def make_copy(self):
         """Make a copy of this atom.
 
-        TODO - this could be a property method/attribute
-
         Returns:
             Another atom object copy of this one.
         """
