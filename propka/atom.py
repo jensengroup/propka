@@ -138,8 +138,6 @@ class Atom(object):
     def get_bonded_heavy_atoms(self):
         """Get the atoms bonded to this one that aren't hydrogen.
 
-        TODO - this could be a @property attribute/method
-
         Returns:
             list of atoms.
         """
