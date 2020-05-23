@@ -136,7 +136,6 @@ class BondMaker:
                     if atom2.name == 'C':
                         self.make_bond(atom1, atom2)
 
-    # TODO - stopped here.
     def connect_backbone(self, residue1, residue2):
         """Sets up bonds in the backbone
 
