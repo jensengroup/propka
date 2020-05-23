@@ -28,9 +28,9 @@ class BondMaker:
         self.distances_squared = {}
         for key in self.distances:
             self.distances_squared[key] = self.distances[key] * self.distances[key]
-        self.h_dist = HYDROGEN_DISTANCE
+        h_dist = HYDROGEN_DISTANCE
         self.default_dist = DEFAULT_DISTANCE
-        self.h_dist_squared = self.h_dist * self.h_dist
+        self.h_dist_squared = h_dist * h_dist
         self.default_dist_squared = self.default_dist * self.default_dist
         distances = list(self.distances_squared.values()) + [self.default_dist_squared]
         self.max_sq_distance = max(distances)
