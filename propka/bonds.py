@@ -1,16 +1,10 @@
 """PROPKA representation of bonds."""
-# TODO - is pickle still used?
-import pickle
-# TODO - eliminate use of sys
-import sys
-# TODO - eliminate use of os
-import os
 import math
 import json
 import pkg_resources
 import propka.calculations
 # TODO - replace the info/warning imports with logging functionality
-from propka.lib import info, warning
+from propka.lib import info
 
 
 # TODO - should these constants be defined higher up in the module?
@@ -32,11 +26,11 @@ class BondMaker:
         # predefined bonding distances
         self.distances = {'S-S' : DISULFIDE_DISTANCE, 'F-F' : FLUORIDE_DISTANCE}
         self.distances_squared = {}
-        for k in self.distances.keys():
-            self.distances_squared[k] = self.distances[k] * self.distances[k]
-        self.H_dist = HYDROGEN_DISTANCE
+        for key in self.distances:
+            self.distances_squared[key] = self.distances[key] * self.distances[key]
+        self.h_dist = HYDROGEN_DISTANCE
         self.default_dist = DEFAULT_DISTANCE
-        self.H_dist_squared = self.H_dist * self.H_dist
+        self.h_dist_squared = self.h_dist * self.h_dist
         self.default_dist_squared = self.default_dist * self.default_dist
         distances = list(self.distances_squared.values()) + [self.default_dist_squared]
         self.max_sq_distance = max(distances)
@@ -74,6 +68,10 @@ class BondMaker:
         self.num_pi_elec_conj_bonds_ligands = {'N.am': 1, 'N.pl3': 1}
         self.backbone_atoms = list(self.intra_residue_backbone_bonds.keys())
         self.terminal_oxygen_names = ['OXT', 'O\'\'']
+        self.boxes = {}
+        self.num_box_x = None
+        self.num_box_y = None
+        self.num_box_z = None
 
     def find_bonds_for_protein(self, protein):
         """Finds bonds proteins based on the way atoms normally bond in proteins.
@@ -289,7 +287,7 @@ class BondMaker:
             return False
         key = '%s-%s' % (atom1.element, atom2.element)
         h_count = key.count('H')
-        if sq_dist < self.H_dist_squared and h_count == 1:
+        if sq_dist < self.h_dist_squared and h_count == 1:
             return True
         if sq_dist < self.default_dist_squared and h_count == 0:
             return True
@@ -370,16 +368,17 @@ class BondMaker:
             z:  box z-coordinates
             atom:  the atom to place in a box
         """
-        for bx in [x, x+1]:
-            for by in [y, y+1]:
-                for bz in [z, z+1]:
-                    key = (bx, by, bz)
+        for box_x in [x, x+1]:
+            for box_y in [y, y+1]:
+                for box_z in [z, z+1]:
+                    key = (box_x, box_y, box_z)
                     try:
                         self.boxes[key].append(atom)
                     except KeyError:
                         pass
 
-    def has_bond(self, atom1, atom2):
+    @classmethod
+    def has_bond(cls, atom1, atom2):
         """Look for bond between two atoms.
 
         Args:
@@ -392,7 +391,8 @@ class BondMaker:
             return True
         return False
 
-    def make_bond(self, atom1, atom2):
+    @classmethod
+    def make_bond(cls, atom1, atom2):
         """Makes a bond between atom1 and atom2
 
         Args:
