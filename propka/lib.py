@@ -185,8 +185,12 @@ def build_parser(parser=None):
     group.add_argument("-p", "--parameters", dest="parameters",
                        default=pkg_resources.resource_filename(__name__, "propka.cfg"),
                        help="set the parameter file [%(default)s]")
-    group.add_argument("--log-level", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-                       help="logging level verbosity", default="INFO")
+    try:
+        group.add_argument("--log-level", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+                           help="logging level verbosity", default="INFO")
+    except argparse.ArgumentError:
+        # It is possible that --log-level has already been set by APBS
+        pass
     group.add_argument("-o", "--pH", dest="pH", type=float, default=7.0,
                        help="setting pH-value used in e.g. stability calculations [7.0]")
     group.add_argument("-w", "--window", dest="window", nargs=3, type=float,
