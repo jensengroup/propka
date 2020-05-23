@@ -377,8 +377,8 @@ class BondMaker:
                     except KeyError:
                         pass
 
-    @classmethod
-    def has_bond(cls, atom1, atom2):
+    @staticmethod
+    def has_bond(atom1, atom2):
         """Look for bond between two atoms.
 
         Args:
@@ -391,8 +391,8 @@ class BondMaker:
             return True
         return False
 
-    @classmethod
-    def make_bond(cls, atom1, atom2):
+    @staticmethod
+    def make_bond(atom1, atom2):
         """Makes a bond between atom1 and atom2
 
         Args:
