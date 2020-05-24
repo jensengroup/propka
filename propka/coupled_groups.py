@@ -33,7 +33,7 @@ class NonCovalentlyCoupledGroups:
             return {'coupling_factor': -1.0}
          # calculate intrinsic pKa's, if not already done
         for group in [group1, group2]:
-            if not hasattr(group, 'intrinsic_pKa'):
+            if group.intrinsic_pka is None:
                 group.calculate_intrinsic_pka()
         use_ph = self.parameters.pH
         if self.parameters.pH == 'variable':
@@ -70,12 +70,12 @@ class NonCovalentlyCoupledGroups:
             and return_on_fail:
             return {'coupling_factor': -1.0}
         # check intrinsic pka diff
-        if abs(group1.intrinsic_pKa - group2.intrinsic_pKa) \
-            > self.parameters.max_intrinsic_pKa_diff and return_on_fail:
+        if abs(group1.intrinsic_pka - group2.intrinsic_pka) \
+            > self.parameters.max_intrinsic_pka_diff and return_on_fail:
             return {'coupling_factor': -1.0}
         # if everything is OK, calculate the coupling factor and return all info
         factor = self.get_free_energy_diff_factor(default_energy, swapped_energy) \
-            * self.get_pka_diff_factor(group1.intrinsic_pKa, group2.intrinsic_pKa) \
+            * self.get_pka_diff_factor(group1.intrinsic_pka, group2.intrinsic_pka) \
             * self.get_interaction_factor(interaction_energy)
         return {'coupling_factor': factor, 'default_energy': default_energy,
                 'swapped_energy': swapped_energy,
@@ -95,8 +95,8 @@ class NonCovalentlyCoupledGroups:
         """
         intrinsic_pka_diff = abs(pka1-pka2)
         res = 0.0
-        if intrinsic_pka_diff <= self.parameters.max_intrinsic_pKa_diff:
-            res = 1-(intrinsic_pka_diff/self.parameters.max_intrinsic_pKa_diff)**2
+        if intrinsic_pka_diff <= self.parameters.max_intrinsic_pka_diff:
+            res = 1-(intrinsic_pka_diff/self.parameters.max_intrinsic_pka_diff)**2
         return res
 
     def get_free_energy_diff_factor(self, energy1, energy2):
@@ -147,7 +147,7 @@ class NonCovalentlyCoupledGroups:
             info(' Detecting non-covalently coupled residues')
             info('-' * 103)
             info('   Maximum pKa difference:     %4.2f pKa units' \
-                % self.parameters.max_intrinsic_pKa_diff)
+                % self.parameters.max_intrinsic_pka_diff)
             info('   Minimum interaction energy: %4.2f pKa units' \
                 % self.parameters.min_interaction_energy)
             info('   Maximum free energy diff.:  %4.2f pKa units' \
@@ -263,7 +263,7 @@ class NonCovalentlyCoupledGroups:
         str_ = ' ' + '-' * 113 + '\n'
         for group in system:
             str_ += self.tagged_format(' %-8s|' % tag,
-                                       group.getDeterminantString(),
+                                       group.get_determinant_string(),
                                        all_labels)
         return str_ + '\n'
 
@@ -355,8 +355,8 @@ class NonCovalentlyCoupledGroups:
      (group1.label, group2.label, data['coupling_factor'],
       data['default_energy'], data['swapped_energy'],
       data['default_energy'] - data['swapped_energy'], data['pH'],
-      data['interaction_energy'], group1.intrinsic_pKa, group2.intrinsic_pKa,
-      group1.intrinsic_pKa-group2.intrinsic_pKa, data['swapped_pka1'],
+      data['interaction_energy'], group1.intrinsic_pka, group2.intrinsic_pka,
+      group1.intrinsic_pka-group2.intrinsic_pka, data['swapped_pka1'],
       data['swapped_pka2'], data['pka_shift1'], data['pka_shift2'])
 
         return str_

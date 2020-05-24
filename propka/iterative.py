@@ -339,8 +339,8 @@ class Iterative:
             coulomb    += value
 
         self.pKa_NonIterative  = group.model_pka
-        self.pKa_NonIterative += group.Emass
-        self.pKa_NonIterative += group.Elocl
+        self.pKa_NonIterative += group.energy_volume
+        self.pKa_NonIterative += group.energy_local
         self.pKa_NonIterative += side_chain
         self.pKa_NonIterative += back_bone
         self.pKa_NonIterative += coulomb

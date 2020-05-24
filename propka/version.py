@@ -18,8 +18,8 @@ class version:
     def calculate_desolvation(self, group):
         return self.desolvation_model(self.parameters, group)
 
-    def calculate_pair_weight(self, Nmass1, Nmass2):
-        return self.weight_pair_method(self.parameters, Nmass1, Nmass2)
+    def calculate_pair_weight(self, num_volume1, num_volume2):
+        return self.weight_pair_method(self.parameters, num_volume1, num_volume2)
 
     # side chains
     def hydrogen_bond_interaction(self, group1, group2):

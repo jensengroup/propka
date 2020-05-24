@@ -133,7 +133,7 @@ def getDeterminantSection(protein, conformation, parameters):
             groups = [g for g in protein.conformations[conformation].groups if g.atom.chain_id == chain]
             for group in groups:
                 if group.residue_type == residue_type:
-                    str += "%s" % ( group.getDeterminantString(parameters.remove_penalised_group) )
+                    str += "%s" % ( group.get_determinant_string(parameters.remove_penalised_group) )
 
     # Add a warning in case of coupled residues
     if protein.conformations[conformation].non_covalently_coupled_groups and not protein.options.display_coupled_residues:
@@ -151,7 +151,7 @@ def getSummarySection(protein, conformation, parameters):
     for residue_type in parameters.write_out_order:
         for group in protein.conformations[conformation].groups:
           if group.residue_type == residue_type:
-            str += "%s" % ( group.getSummaryString(parameters.remove_penalised_group) )
+            str += "%s" % ( group.get_summary_string(parameters.remove_penalised_group) )
 
     return str
 

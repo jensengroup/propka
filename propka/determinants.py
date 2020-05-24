@@ -188,8 +188,8 @@ def set_ion_determinants(conformation_container, version):
         for ion_group in conformation_container.get_ions():
             dist_sq = squared_distance(titratable_group, ion_group)
             if dist_sq < version.parameters.coulomb_cutoff2_squared:
-                weight = version.calculate_pair_weight(titratable_group.Nmass,
-                                                       ion_group.Nmass)
+                weight = version.calculate_pair_weight(titratable_group.num_volume,
+                                                       ion_group.num_volume)
                 # the pKa of both acids and bases are shifted up by negative
                 # ions (and vice versa)
                 value = (-ion_group.charge) \

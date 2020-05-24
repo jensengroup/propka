@@ -89,8 +89,8 @@ def setup_bonding_and_protonation(parameters, molecular_container):
     my_bond_maker.add_pi_electron_information(molecular_container)
     # Protonate atoms
     if molecular_container.options.protonate_all:
-        my_protonator = propka.protonate.Protonate(verbose=False)
-        my_protonator.protonate(molecular_container)
+        PROTONATOR = propka.protonate.Protonate(verbose=False)
+        PROTONATOR.protonate(molecular_container)
 
 
 def setup_bonding(molecular_container):
@@ -386,10 +386,10 @@ def radial_volume_desolvation(parameters, group):
     """
     all_atoms = group.atom.conformation_container.get_non_hydrogen_atoms()
     volume = 0.0
-    # TODO - Nathan really wants to rename the Nmass variable.
+    # TODO - Nathan really wants to rename the num_volume variable.
     # He had to re-read the original paper to figure out what it was.
     # A better name would be num_volume.
-    group.Nmass = 0
+    group.num_volume = 0
     min_dist_4th = MIN_DISTANCE_4TH
     for atom in all_atoms:
         # ignore atoms in the same residue
@@ -410,11 +410,11 @@ def radial_volume_desolvation(parameters, group):
             volume += dv_inc
         # buried
         if sq_dist < parameters.buried_cutoff_squared:
-            group.Nmass += 1
-    group.buried = calculate_weight(parameters, group.Nmass)
+            group.num_volume += 1
+    group.buried = calculate_weight(parameters, group.num_volume)
     scale_factor = calculate_scale_factor(parameters, group.buried)
     volume_after_allowance = max(0.00, volume-parameters.desolvationAllowance)
-    group.Emass = group.charge * parameters.desolvationPrefactor \
+    group.energy_volume = group.charge * parameters.desolvationPrefactor \
         * volume_after_allowance * scale_factor
 
 
@@ -589,7 +589,7 @@ def hydrogen_bond_interaction(group1, group2, version):
             # is closer to the titratable atom than the hydrogen. In either
             # case, we set the angle factor to 0
             f_angle = 0.0
-    weight = version.calculate_pair_weight(group1.Nmass, group2.Nmass)
+    weight = version.calculate_pair_weight(group1.num_volume, group2.num_volume)
     exception, value = version.check_exceptions(group1, group2)
     if exception:
         # Do nothing, value should have been assigned.
@@ -614,7 +614,7 @@ def electrostatic_interaction(group1, group2, dist, version):
     # check if we should do coulomb interaction at all
     if not version.check_coulomb_pair(group1, group2, dist):
         return None
-    weight = version.calculate_pair_weight(group1.Nmass, group2.Nmass)
+    weight = version.calculate_pair_weight(group1.num_volume, group2.num_volume)
     value = version.calculate_coulomb_energy(dist, weight)
     return value
 
@@ -633,7 +633,7 @@ def check_coulomb_pair(parameters, group1, group2, dist):
     Returns:
         Boolean
     """
-    num_volume = group1.Nmass + group2.Nmass
+    num_volume = group1.num_volume + group2.num_volume
     do_coulomb = True
     # check if both groups are titratable (ions are taken care of in
     # determinants::set_ion_determinants)
@@ -695,7 +695,7 @@ def backbone_reorganization(parameters, conformation):
                 value = 1.0 - (dist-UNK_BACKBONE_DISTANCE2) \
                     / (UNK_BACKBONE_DISTANCE1-UNK_BACKBONE_DISTANCE2)
                 dpka += UNK_PKA_SCALING2*min(1.0, value)
-        titratable_group.Elocl = dpka*weight
+        titratable_group.energy_local = dpka*weight
 
 
 def check_exceptions(version, group1, group2):
@@ -799,7 +799,7 @@ def check_coo_coo_exception(group1, group2, version):
                                                               closest_atom2)
     f_angle = 1.00
     value = hydrogen_bond_energy(dist, dpka_max, cutoff, f_angle)
-    weight = calculate_pair_weight(version.parameters, group1.Nmass, group2.Nmass)
+    weight = calculate_pair_weight(version.parameters, group1.num_volume, group2.num_volume)
     value = value * (1.0 + weight)
     return exception, value
 
@@ -816,7 +816,7 @@ def check_coo_his_exception(group1, group2, version):
         2. value associated with atypical interaction (None if Boolean is False)
     """
     exception = False
-    if check_buried(group1.Nmass, group2.Nmass):
+    if check_buried(group1.num_volume, group2.num_volume):
         exception = True
     return exception, version.parameters.COO_HIS_exception
 
@@ -833,7 +833,7 @@ def check_oco_his_exception(group1, group2, version):
         2. value associated with atypical interaction (None if Boolean is False)
     """
     exception = False
-    if check_buried(group1.Nmass, group2.Nmass):
+    if check_buried(group1.num_volume, group2.num_volume):
         exception = True
     return exception, version.parameters.OCO_HIS_exception
 
@@ -850,7 +850,7 @@ def check_cys_his_exception(group1, group2, version):
         2. value associated with atypical interaction (None if Boolean is False)
     """
     exception = False
-    if check_buried(group1.Nmass, group2.Nmass):
+    if check_buried(group1.num_volume, group2.num_volume):
         exception = True
     return exception, version.parameters.CYS_HIS_exception
 
@@ -867,7 +867,7 @@ def check_cys_cys_exception(group1, group2, version):
         2. value associated with atypical interaction (None if Boolean is False)
     """
     exception = False
-    if check_buried(group1.Nmass, group2.Nmass):
+    if check_buried(group1.num_volume, group2.num_volume):
         exception = True
     return exception, version.parameters.CYS_CYS_exception
 

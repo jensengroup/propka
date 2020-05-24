@@ -33,7 +33,7 @@ parameters =          ['Nmin','Nmax','desolvationSurfaceScalingFactor','desolvat
                        'include_H_in_interactions','coupling_max_number_of_bonds',
                        'min_bond_distance_for_hydrogen_bonds','coupling_penalty',
                        'shared_determinants','common_charge_centre','hide_penalised_group', 'remove_penalised_group',
-                       'max_intrinsic_pKa_diff','min_interaction_energy','max_free_energy_diff','min_swap_pka_shift',
+                       'max_intrinsic_pka_diff','min_interaction_energy','max_free_energy_diff','min_swap_pka_shift',
                        'min_pka','max_pka','sidechain_interaction']
 
 strings =             ['version','output_file_tag','ligand_typing','pH','reference']
