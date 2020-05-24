@@ -42,15 +42,14 @@ def set_determinants(propka_groups, version=None, options=None):
                 interaction_type = version.parameters.interaction_matrix.get_value(group1.type,
                                                                                    group2.type)
                 if interaction_type == 'I':
-                    propka.iterative.addtoDeterminantList(group1, group2,
+                    propka.iterative.add_to_determinant_list(group1, group2,
                                                           distance,
                                                           iterative_interactions,
                                                           version=version)
                 elif interaction_type == 'N':
                     add_determinants(group1, group2, distance, version)
     # --- Iterative section ---#
-    propka.iterative.add_determinants(iterative_interactions, version,
-                                      options=options)
+    propka.iterative.add_determinants(iterative_interactions, version)
 
 
 def add_determinants(group1, group2, distance, version):
