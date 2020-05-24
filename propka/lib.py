@@ -1,112 +1,142 @@
-from __future__ import division
-from __future__ import print_function
-
+"""Implements many of the main functions used to call PROPKA."""
 import sys
-import pkg_resources
 import logging
 import argparse
+import pkg_resources
 
 
-logger = logging.getLogger("propka")
-stdout_handler = logging.StreamHandler(sys.stdout)
-stdout_handler.setFormatter(logging.Formatter("%(message)s"))
-logger.addHandler(stdout_handler)
+_LOGGER = logging.getLogger("propka")
+_STDOUT_HANDLER = logging.StreamHandler(sys.stdout)
+_STDOUT_HANDLER.setFormatter(logging.Formatter("%(message)s"))
+_LOGGER.addHandler(_STDOUT_HANDLER)
 
-#
-# file I/O
-#
-def open_file_for_reading(filename):
-    """Open file or file-like stream  *filename* for reading.
 
-    *filename* may be a string and then it is opened but if it is a
-    file-like object (such as an open :class:`file` or
-    :class:`StringIO.StringIO` --- really anything with ``next()``,
-    ``read()``, ``readlines()``, ``readline``, ``close`` methods) then
-    the object is just passed through (the stream is attempted to be
-    reset to the beginning with ``fseek(0)``).
+def open_file_for_reading(input_file):
+    """Open file or file-like stream for reading.
+
+    TODO - convert this to a context manager
+
+    Args:
+        input_file: path to file or file-like object. If file-like object,
+        then will attempt fseek(0).
     """
-    if (hasattr(filename, 'next') or hasattr(filename, '__next__')) \
-        and hasattr(filename, 'read') \
-        and hasattr(filename, 'readline') and hasattr(filename, 'readlines') \
-        and hasattr(filename, 'close'):
-        # already a stream
-        try:
-            filename.fseek(0)
-        except AttributeError:
-            pass
-        return filename
+    try:
+        input_file.fseek(0)
+        return input_file
+    except AttributeError:
+        pass
 
     try:
-        f = open(filename,'r')
+        file_ = open(input_file, 'rt')
     except:
-        raise IOError('Cannot find file %s' %filename)
-    return f
+        raise IOError('Cannot find file %s' % input_file)
+    return file_
 
-def open_file_for_writing(filename):
-    """Open file or file-like stream for writing"""
-    if hasattr(filename, 'write') and hasattr(filename, 'writeline') and hasattr(filename, 'writelines') \
-            and hasattr(filename, 'close'):
-        # already a stream
-        try:
-            mode = filename.mode
-        except AttributeError:
-            mode = "w"
+
+def open_file_for_writing(input_file):
+    """Open file or file-like stream for writing.
+
+    TODO - convert this to a context manager.
+
+    Args:
+        input_file: path to file or file-like object. If file-like object,
+        then will attempt to get file mode.
+    """
+    try:
+        mode = input_file.mode
         if not ("w" in mode or "a" in mode or "+" in mode):
             raise IOError("File/stream not open for writing")
-        return filename
-
+        return input_file
+    except AttributeError:
+        pass
     try:
-        f = open(filename,'w')
-    except:
-        raise Exception('Could not open %s'%filename)
-    return f
+        file_ = open(input_file, 'wt')
+    except FileNotFoundError:
+        raise Exception('Could not open %s' % input_file)
+    return file_
 
-#
-# bookkeeping etc.
-#
+
 def conformation_sorter(conf):
+    """TODO - figure out what this function does."""
     model = int(conf[:-1])
     altloc = conf[-1:]
     return model*100+ord(altloc)
 
+
 def split_atoms_into_molecules(atoms):
+    """Maps atoms into molecules.
+
+    Args:
+        atoms:  list of atoms
+    Returns:
+        list of molecules
+    """
     molecules = []
-
-    while len(atoms)>0:
+    while len(atoms) > 0:
         initial_atom = atoms.pop()
-        molecules.append( make_molecule(initial_atom,atoms))
-
+        molecules.append(make_molecule(initial_atom, atoms))
     return molecules
 
+
 def make_molecule(atom, atoms):
+    """Make a molecule from atoms.
+
+    Args:
+        atom:  one of the atoms
+        atoms:  a list of the remaining atoms
+    Return:
+        list of atoms
+    """
     bonded_atoms = [a for a in atoms if atom in a.bonded_atoms]
     res_atoms = [atom,]
-
-    for ba in bonded_atoms:
-        if ba in atoms:
-            atoms.remove(ba)
-            res_atoms.extend(make_molecule(ba, atoms))
-
+    for bond_atom in bonded_atoms:
+        if bond_atom in atoms:
+            atoms.remove(bond_atom)
+            res_atoms.extend(make_molecule(bond_atom, atoms))
     return res_atoms
 
 
-def make_grid(min,max,step):
-    x = min
-    while x <= max:
+def make_grid(min_, max_, step):
+    """Make a grid across the specified tange.
+
+    TODO - figure out if this duplicates existing generators like `range` or
+    numpy function.
+
+    Args:
+        min_:  minimum value of grid
+        max_:  maximum value of grid
+        step:  grid step size
+    """
+    x = min_
+    while x <= max_:
         yield x
         x += step
-    return
+
 
 def generate_combinations(interactions):
+    """Generate combinations of interactions.
+
+    Args:
+        interactions:  list of interactions
+    Returns:
+        list of combinations
+    """
     res = [[]]
     for interaction in interactions:
         res = make_combination(res, interaction)
     res.remove([])
-
     return res
 
 
 def make_combination(combis, interaction):
+    """Make a specific set of combinations.
+
+    Args:
+        combis:  list of combinations
+        interaction:  interaction to add to combinations
+    Returns:
+        list of combinations
+    """
     res = []
     for combi in combis:
         res.append(combi+[interaction])
@@ -115,10 +145,14 @@ def make_combination(combis, interaction):
 
 
 def parse_res_string(res_str):
-    """
-    Parse the residue string, in format "chain:resnum[inscode]", and return
-    a tuple of (chain, resnum, inscode). Raises ValueError if the input
-    string is invalid.
+    """Parse a residue string.
+
+    Args:
+        res_string:  residue string in format "chain:resnum[inscode]"
+    Returns:
+        a tuple of (chain, resnum, inscode).
+    Raises:
+        ValueError if the input string is invalid.
     """
     try:
         chain, resnum_str = res_str.split(":")
@@ -142,8 +176,8 @@ def build_parser(parser=None):
     """Build an argument parser for PROPKA.
 
     Args:
-        parser_:  existing parser.  If this is not None, then the PROPKA parser will
-                 be created as a subparser to this existing parser.  Otherwise, a 
+        parser:  existing parser. If this is not None, then the PROPKA parser will
+                 be created as a subparser to this existing parser.  Otherwise, a
                  new parser will be created.
     Returns:
         ArgumentParser object.
@@ -158,7 +192,6 @@ def build_parser(parser=None):
         # This is duck-typing at its finest
         group = parser
         group.add_argument("input_pdb", help="read data from <filename>")
-
     group.add_argument("-f", "--file", action="append", dest="filenames", default=[],
                        help="read data from <filename>, i.e. <filename> is added to arguments")
     group.add_argument("-r", "--reference", dest="reference", default="neutral",
@@ -223,31 +256,25 @@ def build_parser(parser=None):
 
 
 def loadOptions(args):
-    """
-    Load the arguments parser with options. Note that verbosity is set as soon
-    as this function is invoked.
+    """Load the arguments parser with options.
+
+    NOTE - verbosity is set as soon as this function is invoked.
 
     Arguments:
         args:  list of arguments
     Returns:
         argparse namespace
     """
-    # defining a 'usage' message
-    usage = "usage: %prog [options] filename"
-
     # loading the parser
     parser = build_parser()
-
     # parsing and returning options and arguments
     if len(args) == 0:
         # command line
         options = parser.parse_args()
     else:
         options = parser.parse_args(args)
-
     # adding specified filenames to arguments
     options.filenames.append(options.input_pdb)
-
     # Convert titrate_only string to a list of (chain, resnum) items:
     if options.titrate_only is not None:
         res_list = []
@@ -255,76 +282,108 @@ def loadOptions(args):
             try:
                 chain, resnum, inscode = parse_res_string(res_str)
             except ValueError:
-                logger.critical('Invalid residue string: "%s"' % res_str)
+                _LOGGER.critical('Invalid residue string: "%s"', res_str)
                 sys.exit(1)
             res_list.append((chain, resnum, inscode))
         options.titrate_only = res_list
-
-
     # Set the no-print variable
     level = getattr(logging, options.log_level)
-    logger.setLevel(level)
-
+    _LOGGER.setLevel(level)
     # done!
     return options
 
 
-def makeTidyAtomLabel(name,element):
-    """
-    Returns a 'tidier' atom label for printing the new pdbfile
-    """
+def make_tidy_atom_label(name, element):
+    """Returns a 'tidier' atom label for printing to the new PDB file.
 
-    if len(name)>4:# if longer than 4, just truncate the name
-        label=name[0:4]
-    elif len(name)==4:# if lenght is 4, otherwise use the name as it is
+    Args:
+        name:  atom name
+        element:  atom element
+    Returns:
+        string
+    """
+    if len(name) > 4: # if longer than 4, just truncate the name
+        label = name[0:4]
+    elif len(name) == 4: # if length is 4, otherwise use the name as it is
         label = name
     else: # if less than 4 characters long, insert white space as needed
-        if len(element)==1:
-            label = ' %-3s'%name
-        else: # The element shoul occupy the two first chars
-            label = '%-4s'%name
-
+        if len(element) == 1:
+            label = ' %-3s' % name
+        else: # The element should occupy the two first chars
+            label = '%-4s' % name
     return label
 
 
-
 def get_sorted_configurations(configuration_keys):
-    """
-    extract and sort configurations
+    """Extract and sort configurations.
+
+    Args:
+        configuration_keys:  list of configuration keys
+    Returns:
+        list of configurations
     """
     configurations = list(configuration_keys)
     configurations.sort(key=configuration_compare)
     return configurations
 
+
 def configuration_compare(conf):
+    """TODO - figure out what this function does."""
     return 100*int(conf[1:-2]) + ord(conf[-1])
 
 
+def write_file(filename, lines):
+    """Writes a new file.
 
-
-def writeFile(filename, lines):
+    Args:
+        filename:  name of file
+        lines:  lines to write to file
     """
-    Writes a new file
-    """
-    f = open_file_for_writing(filename)
-
+    file_ = open_file_for_writing(filename)
     for line in lines:
-        f.write( "%s\n" % (line) )
-    f.close()
-
+        file_.write("%s\n" % (line))
+    file_.close()
 
 
 def _args_to_str(arg_list):
+    """Summarize list of arguments in string.
+
+    Args:
+        arg_list:  list of arguments
+    Returns:
+        string
+    """
     return " ".join(map(str, arg_list))
 
+
 def info(*args):
-    """Log a message. Level defaults to INFO unless overridden."""
-    logger.info(_args_to_str(args))
+    """Log a message to info.
+
+    Level defaults to INFO unless overridden.
+
+    Args:
+        args:  argument list
+    """
+    _LOGGER.info(_args_to_str(args))
+
 
 def debug(*args):
-    """Log a message on the DEBUG level."""
-    logger.debug(_args_to_str(args))
+    """Log a message to debug.
+
+    Level defaults to DEBUG unless overridden.
+
+    Args:
+        args:  argument list
+    """
+    _LOGGER.debug(_args_to_str(args))
+
 
 def warning(*args):
-    """Log a WARN message"""
-    logger.warning(_args_to_str(args))
+    """Log a message to warning.
+
+    Level defaults to WARNING unless overridden.
+
+    Args:
+        args:  argument list
+    """
+    _LOGGER.warning(_args_to_str(args))

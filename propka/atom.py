@@ -240,7 +240,7 @@ class Atom(object):
             if self.group.titratable:
                 model_pka = '%6.2f'%self.group.model_pka
         str_ = "%-6s%5d %s " % (self.type.upper(), self.numb,
-                                propka.lib.makeTidyAtomLabel(self.name, self.element))
+                                propka.lib.make_tidy_atom_label(self.name, self.element))
         str_ += "%s%2s%4d%12.3lf%8.3lf%8.3lf%6s%6s \n" % (self.res_name, self.chain_id,
                                                           self.res_num, self.x, self.y,
                                                           self.z, group, model_pka)
@@ -313,7 +313,7 @@ class Atom(object):
             String with PDB line.
         """
         str_ = "%-6s%5d " % (self.type.upper(), self.numb)
-        str_ += "%s %s" % (propka.lib.makeTidyAtomLabel(self.name, self.element),
+        str_ += "%s %s" % (propka.lib.make_tidy_atom_label(self.name, self.element),
                            self.res_name)
         str_ += "%2s%4d%12.3lf%8.3lf%8.3lf%6s%6s\n" % (self.chain_id, self.res_num,
                                                        self.x, self.y, self.z,
@@ -330,7 +330,7 @@ class Atom(object):
         Returns:
             String with MOL2 line.
         """
-        str_ = "%-4d %-4s " % (id_, propka.lib.makeTidyAtomLabel(self.name,
+        str_ = "%-4d %-4s " % (id_, propka.lib.make_tidy_atom_label(self.name,
                                                                  self.element))
         str_ += "%10.4f %10.4f %10.4f " % (self.x, self.y, self.z)
         str_ += "%6s %6d %10s %10.4f\n" % (self.sybyl_type.replace('-', ''),
@@ -369,7 +369,7 @@ class Atom(object):
             beta = self.beta
         str_ = "ATOM "
         str_ += "%6d" % (numb)
-        str_ += " %s" % (propka.lib.makeTidyAtomLabel(name, self.element))
+        str_ += " %s" % (propka.lib.make_tidy_atom_label(name, self.element))
         str_ += " %s" % (res_name)
         str_ += "%2s" % (chain_id)
         str_ += "%4d" % (res_num)
@@ -388,7 +388,7 @@ class Atom(object):
 
         Returns:
             String with label"""
-        return propka.lib.makeTidyAtomLabel(self.name, self.element)
+        return propka.lib.make_tidy_atom_label(self.name, self.element)
 
     def __str__(self):
         """Return an undefined-format string version of this atom."""
