@@ -4,8 +4,8 @@ import propka.ligand
 from propka.output import make_interaction_map
 from propka.determinant import Determinant
 from propka.coupled_groups import NCCG
-from propka.determinants import setBackBoneDeterminants, setIonDeterminants
-from propka.determinants import setDeterminants
+from propka.determinants import set_backbone_determinants, set_ion_determinants
+from propka.determinants import set_determinants
 from propka.group import Group, is_group
 from propka.lib import info
 
@@ -190,15 +190,15 @@ class ConformationContainer:
         for group in self.get_titratable_groups() + self.get_ions():
             version.calculate_desolvation(group)
         # calculate backbone interactions
-        setBackBoneDeterminants(self.get_titratable_groups(),
+        set_backbone_determinants(self.get_titratable_groups(),
                                 self.get_backbone_groups(), version)
         # setting ion determinants
-        setIonDeterminants(self, version)
+        set_ion_determinants(self, version)
         # calculating the back-bone reorganization/desolvation term
         version.calculatebackbone_reorganization(self)
         # setting remaining non-iterative and iterative side-chain & Coulomb
         # interaction determinants
-        setDeterminants(self.get_sidechain_groups(), version=version,
+        set_determinants(self.get_sidechain_groups(), version=version,
                         options=options)
         # calculating the total pKa values
         for group in self.groups:

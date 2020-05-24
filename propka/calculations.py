@@ -636,7 +636,7 @@ def check_coulomb_pair(parameters, group1, group2, dist):
     num_volume = group1.Nmass + group2.Nmass
     do_coulomb = True
     # check if both groups are titratable (ions are taken care of in
-    # determinants::setIonDeterminants)
+    # determinants::set_ion_determinants)
     if not (group1.titratable and group2.titratable):
         do_coulomb = False
     # check if the distance is not too big

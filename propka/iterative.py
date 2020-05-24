@@ -166,7 +166,7 @@ def addIterativeIonPair(object1, object2, interaction, version):
           object2.determinants['sidechain'].append(interaction)
 
 
-def addDeterminants(iterative_interactions, version, options=None):
+def add_determinants(iterative_interactions, version, options=None):
     """
     The iterative pKa scheme. Later it is all added in 'calculateTotalPKA'
     """
