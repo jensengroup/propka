@@ -9,6 +9,10 @@ import propka.calculations
 from propka.determinant import Determinant
 
 
+# TODO - it is confusing to have both `determinant.py` and `determinants.py`.
+# Should these be merged?
+
+
 def setDeterminants(propka_groups, version=None, options=None):
     """
     adding side-chain and coulomb determinants/perturbations to all residues - note, backbone determinants are set separately
