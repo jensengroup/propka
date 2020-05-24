@@ -8,7 +8,7 @@ import propka.lib
 from propka.lib import info, warning
 
 from propka.atom import Atom
-from propka.conformation_container import Conformation_container
+from propka.conformation_container import ConformationContainer
 
 expected_atom_numbers = {'ALA':5,
                          'ARG':11,
@@ -39,7 +39,7 @@ def read_pdb(pdb_file, parameters, molecule):
     lines = get_atom_lines_from_pdb(pdb_file, ignore_residues = parameters.ignore_residues, keep_protons = molecule.options.keep_protons, chains=molecule.options.chains)
     for (name, atom) in lines:
         if not name in conformations.keys():
-            conformations[name] = Conformation_container(name=name, parameters=parameters, molecular_container=molecule)
+            conformations[name] = ConformationContainer(name=name, parameters=parameters, molecular_container=molecule)
         conformations[name].add_atom(atom)
 
     # make a sorted list of conformation names
@@ -260,7 +260,7 @@ def read_input(input_file, parameters,molecule):
     lines = get_atom_lines_from_input(input_file)
     for (name, atom) in lines:
         if not name in conformations.keys():
-            conformations[name] = Conformation_container(name=name, parameters=parameters, molecular_container=molecule)
+            conformations[name] = ConformationContainer(name=name, parameters=parameters, molecular_container=molecule)
         conformations[name].add_atom(atom)
 
     # make a sorted list of conformation names

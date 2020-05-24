@@ -136,7 +136,7 @@ class Molecular_container:
 
     def average_of_conformations(self):
         # make a new configuration to hold the average values
-        avr_conformation = propka.conformation_container.Conformation_container(name='average',
+        avr_conformation = propka.conformation_container.ConformationContainer(name='average',
                                                                                 parameters=self.conformations[self.conformation_names[0]].parameters,
                                                                                 molecular_container=self)
 
@@ -192,7 +192,7 @@ class Molecular_container:
         # calculate stability profile
         profile = []
         for ph in propka.lib.make_grid(*grid):
-            ddg = self.conformations[conformation].calculate_folding_energy( pH=ph, reference=reference)
+            ddg = self.conformations[conformation].calculate_folding_energy( ph=ph, reference=reference)
             #info(ph,ddg)
             profile.append([ph, ddg])
 
@@ -220,7 +220,7 @@ class Molecular_container:
     def getChargeProfile(self, conformation='AVR', grid=[0., 14., .1]):
         charge_profile = []
         for ph in propka.lib.make_grid(*grid):
-            q_unfolded, q_folded = self.conformations[conformation].calculate_charge(self.version.parameters, pH=ph)
+            q_unfolded, q_folded = self.conformations[conformation].calculate_charge(self.version.parameters, ph=ph)
             charge_profile.append([ph, q_unfolded, q_folded])
 
         return charge_profile

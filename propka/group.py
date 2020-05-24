@@ -557,11 +557,11 @@ class Group:
     # Energy-related methods
     #
 
-    def calculate_folding_energy(self, parameters, pH=None, reference=None):
+    def calculate_folding_energy(self, parameters, ph=None, reference=None):
         """
         returning the electrostatic energy of this residue at pH 'pH'
         """
-        if pH == None:
+        if ph == None:
             pH = parameters.pH
         if reference == None:
             reference = parameters.reference
@@ -582,12 +582,12 @@ class Group:
 
         # calculating the ddG(low-pH --> pH) contribution
         # folded
-        x =  pH - self.pka_value
+        x =  ph - self.pka_value
         y = 10**x
         Q_pro = math.log10(1+y)
 
         # unfolded
-        x =  pH - self.model_pka
+        x =  ph - self.model_pka
         y = 10**x
         Q_mod = math.log10(1+y)
 
@@ -596,12 +596,12 @@ class Group:
 
         return ddG
 
-    def calculate_charge(self, parmaeters, pH=7.0, state='folded'):
+    def calculate_charge(self, parmaeters, ph=7.0, state='folded'):
 
         if state == "unfolded":
-            x =  self.charge * (self.model_pka - pH)
+            x =  self.charge * (self.model_pka - ph)
         else:
-            x =  self.charge * (self.pka_value - pH)
+            x =  self.charge * (self.pka_value - ph)
 
         y = 10**x
         charge = self.charge*(y/(1.0+y))
@@ -1319,8 +1319,8 @@ def is_ligand_group_by_marvin_pkas(parameters, atom):
     if not atom.conformation_container.marvin_pkas_calculated:
         lpka = propka.ligand_pka_values.ligand_pka_values(parameters)
         lpka.get_marvin_pkas_for_molecular_container(atom.molecular_container,
-                                                     min_pH=parameters.min_ligand_model_pka,
-                                                     max_pH=parameters.max_ligand_model_pka)
+                                                     min_ph=parameters.min_ligand_model_pka,
+                                                     max_ph=parameters.max_ligand_model_pka)
 
 
     if atom.marvin_pka:

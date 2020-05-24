@@ -680,7 +680,7 @@ def backbone_reorganization(parameters, conformation):
         conformation:  specific molecule conformation
     """
     titratable_groups = conformation.get_backbone_reorganisation_groups()
-    bbc_groups = conformation.get_backbone_CO_groups()
+    bbc_groups = conformation.get_backbone_co_groups()
 
     for titratable_group in titratable_groups:
         weight = titratable_group.buried

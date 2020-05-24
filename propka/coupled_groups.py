@@ -38,7 +38,7 @@ class non_covalently_couple_groups:
         if self.parameters.pH == 'variable':
             use_pH = min(group1.pka_value, group2.pka_value)
 
-        default_energy = energy_method(pH=use_pH, reference=self.parameters.reference)
+        default_energy = energy_method(ph=use_pH, reference=self.parameters.reference)
         default_pka1 = group1.pka_value
         default_pka2 = group2.pka_value
 
@@ -54,7 +54,7 @@ class non_covalently_couple_groups:
         group2.calculate_total_pka()
 
         # store swapped energy and pka's
-        swapped_energy = energy_method(pH=use_pH, reference=self.parameters.reference)
+        swapped_energy = energy_method(ph=use_pH, reference=self.parameters.reference)
         swapped_pka1 = group1.pka_value
         swapped_pka2 = group2.pka_value
 
