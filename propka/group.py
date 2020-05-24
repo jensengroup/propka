@@ -2,7 +2,7 @@
 import math
 import propka.ligand
 import propka.protonate
-from propka.ligand_pka_values import ligand_pka_values
+from propka.ligand_pka_values import LigandPkaValues
 from propka.determinant import Determinant
 from propka.lib import info, warning
 
@@ -1368,10 +1368,10 @@ def is_ligand_group_by_marvin_pkas(parameters, atom):
     # if not already done
     # TODO - double-check testing coverage of these functions.
     if not atom.conformation_container.marvin_pkas_calculated:
-        lpka = ligand_pka_values(parameters)
+        lpka = LigandPkaValues(parameters)
         lpka.get_marvin_pkas_for_molecular_container(atom.molecular_container,
-                                                     min_pH=parameters.min_ligand_model_pka,
-                                                     max_pH=parameters.max_ligand_model_pka)
+                                                     min_ph=parameters.min_ligand_model_pka,
+                                                     max_ph=parameters.max_ligand_model_pka)
     if atom.marvin_pka:
         return TitratableLigandGroup(atom)
     # Special case of oxygen in carboxyl group not assigned a pka value by marvin
