@@ -3,7 +3,7 @@ import functools
 import propka.ligand
 from propka.output import make_interaction_map
 from propka.determinant import Determinant
-from propka.coupled_groups import nccg
+from propka.coupled_groups import NCCG
 from propka.determinants import setBackBoneDeterminants, setIonDeterminants
 from propka.determinants import setDeterminants
 from propka.group import Group, is_group
@@ -112,7 +112,7 @@ class ConformationContainer:
         if len(list(filter(lambda g: len(g.non_covalently_coupled_groups) > 0,
                            self.get_titratable_groups()))) > 0:
             self.non_covalently_coupled_groups = True
-        nccg.identify_non_covalently_coupled_groups(self, verbose=verbose)
+        NCCG.identify_non_covalently_coupled_groups(self, verbose=verbose)
         # re-do the check
         if len(list(filter(lambda g: len(g.non_covalently_coupled_groups) > 0,
                            self.get_titratable_groups()))) > 0:
