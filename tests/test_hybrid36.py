@@ -1,9 +1,13 @@
+"""Test the hybrid36 module."""
 import unittest
-
 import propka.hybrid36 as hybrid36
 
+
 class Hybrid36Test(unittest.TestCase):
-    def testDecode(self):
+    """Test class for hybrid36."""
+
+    def test_decode(self):
+        """Test decoding functions."""
         test_values = {
             "99999": 99999,
             "A0000": 100000,
@@ -37,11 +41,11 @@ class Hybrid36Test(unittest.TestCase):
             "A001Z": 100071,
             "B0000": 1779616,
         }
+        for key, value in test_values.items():
+            self.assertEqual(hybrid36.decode(key), value)
 
-        for k, v in test_values.items():
-            self.assertEqual(hybrid36.decode(k), v)
-
-    def testErrors(self):
+    def test_errors(self):
+        """Test values that should raise errors."""
         test_values = [
             "99X99",
             "X9-99",
@@ -50,8 +54,7 @@ class Hybrid36Test(unittest.TestCase):
             "-",
             "!NotOk",
         ]
-
-        for v in test_values:
-            with self.assertRaises(ValueError) as e:
-                hybrid36.decode(v)
-            self.assertTrue(v in str(e.exception))
+        for value in test_values:
+            with self.assertRaises(ValueError) as err:
+                hybrid36.decode(value)
+            self.assertTrue(value in str(err.exception))

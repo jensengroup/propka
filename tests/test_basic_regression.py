@@ -100,8 +100,8 @@ def compare_output(pdb, tmp_path, ref_path):
             elif line.startswith("---"):
                 at_pka = False
             else:
-                m = re.search(r'([0-9]+\.[0-9]+)', line)
-                value = float(m.group(0))
+                match = re.search(r'([0-9]+\.[0-9]+)', line)
+                value = float(match.group(0))
                 test_data.append(value)
     errstr = "Error exceeds maximum allowed value (%d decimal places)" % MAX_ERR_DECIMALS
     assert_almost_equal(test_data, ref_data, decimal=MAX_ERR_DECIMALS,
@@ -113,9 +113,10 @@ def compare_output(pdb, tmp_path, ref_path):
     pytest.param('1HPX', [], id="1HPX: no options"),
     pytest.param('4DFR', [], id="4DFR: no options"),
     pytest.param('3SGB', [], id="3SGB: no options"),
-    pytest.param('3SGB-subset', ["--titrate_only", 
-        "E:17,E:18,E:19,E:29,E:44,E:45,E:46,E:118,E:119,E:120,E:139"], 
-        id="3SGB: --titrate_only"),
+    pytest.param('3SGB-subset', [
+        "--titrate_only",
+        "E:17,E:18,E:19,E:29,E:44,E:45,E:46,E:118,E:119,E:120,E:139"],
+                 id="3SGB: --titrate_only"),
     pytest.param('1HPX-warn', ['--quiet'], id="1HPX-warn: --quiet")])
 def test_regression(pdb, options, tmp_path):
     """Basic regression test of PROPKA functionality."""
