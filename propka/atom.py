@@ -8,12 +8,12 @@ from . import hybrid36
 class Atom(object):
     """Atom class - contains all atom information found in the PDB file"""
 
-    def __init__(self, line=None, verbose=False):
+    def __init__(self, line=None, _=False):
         """Initialize Atom object.
 
         Args:
             line:  Line from a PDB file to set properties of atom.
-            verbose:  TODO - this does not appear to be used.  Can we remove it?
+            _:  TODO - this does not appear to be used. Can we remove it?
         """
         self.occ = None
         self.numb = None
@@ -48,7 +48,8 @@ class Atom(object):
         self.num_pi_elec_conj_2_3_bonds = 0
         self.groups_extracted = 0
         self.set_properties(line)
-        self.residue_label = "%-3s%4d%2s" % (self.name, self.res_num, self.chain_id)
+        self.residue_label = "%-3s%4d%2s" % (
+            self.name, self.res_num, self.chain_id)
 
         # ligand atom types
         self.sybyl_type = ''
@@ -101,7 +102,8 @@ class Atom(object):
             if len(self.name) == 4:
                 self.element = self.element[0]
             if len(self.element) == 2:
-                self.element = '%1s%1s' % (self.element[0], self.element[1].lower())
+                self.element = '%1s%1s' % (
+                    self.element[0], self.element[1].lower())
 
     def set_group_type(self, type_):
         """Set group type of atom.
@@ -156,12 +158,14 @@ class Atom(object):
             if ba == other_atom:
                 return True
             if max_bonds > cur_bond:
-                if ba.is_atom_within_bond_distance(other_atom, max_bonds, cur_bond+1):
+                if ba.is_atom_within_bond_distance(other_atom, max_bonds,
+                                                   cur_bond+1):
                     return True
         return False
 
     def set_property(self, numb=None, name=None, res_name=None, chain_id=None,
-                     res_num=None, x=None, y=None, z=None, occ=None, beta=None):
+                     res_num=None, x=None, y=None, z=None, occ=None,
+                     beta=None):
         """Set properties of the atom object.
 
         Args:
@@ -225,7 +229,8 @@ class Atom(object):
         """PDB line for this atom.
 
         TODO - Could be @property method/attribute
-        TODO - figure out difference between make_pdb_line, make_input_line, and make_pdb_line2
+        TODO - figure out difference between make_pdb_line, make_input_line,
+               and make_pdb_line2
 
         Returns:
             String with PDB-format line.
@@ -239,11 +244,12 @@ class Atom(object):
 
             if self.group.titratable:
                 model_pka = '%6.2f'%self.group.model_pka
-        str_ = "%-6s%5d %s " % (self.type.upper(), self.numb,
-                                propka.lib.make_tidy_atom_label(self.name, self.element))
-        str_ += "%s%2s%4d%12.3lf%8.3lf%8.3lf%6s%6s \n" % (self.res_name, self.chain_id,
-                                                          self.res_num, self.x, self.y,
-                                                          self.z, group, model_pka)
+        str_ = "%-6s%5d %s " % (
+            self.type.upper(), self.numb,
+            propka.lib.make_tidy_atom_label(self.name, self.element))
+        str_ += "%s%2s%4d%12.3lf%8.3lf%8.3lf%6s%6s \n" % (
+            self.res_name, self.chain_id, self.res_num, self.x, self.y,
+            self.z, group, model_pka)
         return str_
 
     def make_conect_line(self):
@@ -294,7 +300,9 @@ class Atom(object):
                 group_attr = getattr(propka.group, group_attr)
                 self.group = group_attr(self)
             except:
-                raise Exception('%s in input_file is not recognized as a group' % self.occ)
+                # TODO - be more specific with expection handling here
+                str_ = '%s in input_file is not recognized as a group' % self.occ
+                raise Exception(str_)
         # set the model pKa value
         if self.beta != '-':
             self.group.model_pka = float(self.beta)
@@ -307,7 +315,8 @@ class Atom(object):
         """Create PDB line.
 
         TODO - this could/should be a @property method/attribute
-        TODO - figure out difference between make_pdb_line, make_input_line, and make_pdb_line2
+        TODO - figure out difference between make_pdb_line, make_input_line,
+               and make_pdb_line2
 
         Returns:
             String with PDB line.
@@ -330,11 +339,11 @@ class Atom(object):
         Returns:
             String with MOL2 line.
         """
-        str_ = "%-4d %-4s " % (id_, propka.lib.make_tidy_atom_label(self.name,
-                                                                 self.element))
+        str_ = "%-4d %-4s " % (
+            id_, propka.lib.make_tidy_atom_label(self.name, self.element))
         str_ += "%10.4f %10.4f %10.4f " % (self.x, self.y, self.z)
-        str_ += "%6s %6d %10s %10.4f\n" % (self.sybyl_type.replace('-', ''),
-                                           self.res_num, self.res_name, 0.0)
+        str_ += "%6s %6d %10s %10.4f\n" % (
+            self.sybyl_type.replace('-', ''), self.res_num, self.res_name, 0.0)
         return str_
 
     def make_pdb_line2(self, numb=None, name=None, res_name=None, chain_id=None,
@@ -342,7 +351,8 @@ class Atom(object):
         """Create a PDB line.
 
         TODO - this could/should be a @property method/attribute
-        TODO - figure out difference between make_pdb_line, make_input_line, and make_pdb_line2
+        TODO - figure out difference between make_pdb_line, make_input_line,
+               and make_pdb_line2
 
         Returns:
             String with PDB line.
@@ -392,10 +402,9 @@ class Atom(object):
 
     def __str__(self):
         """Return an undefined-format string version of this atom."""
-        return '%5d-%4s %5d-%3s (%1s) [%8.3f %8.3f %8.3f] %s' % (self.numb, self.name,
-                                                                 self.res_num, self.res_name,
-                                                                 self.chain_id, self.x, self.y,
-                                                                 self.z, self.element)
+        return '%5d-%4s %5d-%3s (%1s) [%8.3f %8.3f %8.3f] %s' % (
+            self.numb, self.name, self.res_num, self.res_name, self.chain_id,
+            self.x, self.y, self.z, self.element)
 
     def set_residue(self, residue):
         """ Makes a reference to the parent residue
