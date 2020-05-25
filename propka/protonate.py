@@ -2,7 +2,7 @@
 import math
 import propka.bonds
 import propka.atom
-from propka.vector_algebra import rotate_vector_around_an_axis, vector
+from propka.vector_algebra import rotate_vector_around_an_axis, Vector
 from propka.lib import warning, debug
 
 
@@ -202,14 +202,14 @@ class Protonate:
         """
         debug('TRIGONAL - %d bonded atoms' % len(atom.bonded_atoms))
         rot_angle = math.radians(120.0)
-        cvec = vector(atom1=atom)
+        cvec = Vector(atom1=atom)
         # 0 bonds
         if len(atom.bonded_atoms) == 0:
             pass
         # 1 bond
         if len(atom.bonded_atoms) == 1 and atom.number_of_protons_to_add > 0:
             # Add another atom with the right angle to the first one
-            avec = vector(atom1=atom, atom2=atom.bonded_atoms[0])
+            avec = Vector(atom1=atom, atom2=atom.bonded_atoms[0])
             # use plane of bonded trigonal atom - e.g. arg
             self.set_steric_number_and_lone_pairs(atom.bonded_atoms[0])
             if (atom.bonded_atoms[0].steric_number == 3
@@ -220,15 +220,15 @@ class Protonate:
                 for i, bonded_atom in enumerate(atom.bonded_atoms[0].bonded_atoms):
                     if bonded_atom != atom:
                         other_atom_indices.append(i)
-                vec1 = vector(atom1=atom, atom2=atom.bonded_atoms[0])
-                vec2 = vector(atom1=atom.bonded_atoms[0],
+                vec1 = Vector(atom1=atom, atom2=atom.bonded_atoms[0])
+                vec2 = Vector(atom1=atom.bonded_atoms[0],
                               atom2=atom.bonded_atoms[0]
                               .bonded_atoms[other_atom_indices[0]])
                 axis = vec1**vec2
                 # this is a trick to make sure that the order of atoms doesn't
                 # influence the final postions of added protons
                 if len(other_atom_indices) > 1:
-                    vec3 = vector(atom1=atom.bonded_atoms[0],
+                    vec3 = Vector(atom1=atom.bonded_atoms[0],
                                   atom2=atom.bonded_atoms[0]
                                   .bonded_atoms[other_atom_indices[1]])
                     axis2 = vec1**vec3
@@ -244,8 +244,8 @@ class Protonate:
         # 2 bonds
         if len(atom.bonded_atoms) == 2 and atom.number_of_protons_to_add > 0:
             # Add another atom with the right angle to the first two
-            avec1 = vector(atom1=atom, atom2=atom.bonded_atoms[0]).rescale(1.0)
-            avec2 = vector(atom1=atom, atom2=atom.bonded_atoms[1]).rescale(1.0)
+            avec1 = Vector(atom1=atom, atom2=atom.bonded_atoms[0]).rescale(1.0)
+            avec2 = Vector(atom1=atom, atom2=atom.bonded_atoms[1]).rescale(1.0)
 
             new_a = -avec1 - avec2
             new_a = self.set_bond_distance(new_a, atom.element)
@@ -260,14 +260,14 @@ class Protonate:
         debug('TETRAHEDRAL - %d bonded atoms' % len(atom.bonded_atoms))
         # TODO - might be good to move tetrahedral angle to constant
         rot_angle = math.radians(109.5)
-        cvec = vector(atom1=atom)
+        cvec = Vector(atom1=atom)
         # 0 bonds
         if len(atom.bonded_atoms) == 0:
             pass
         # 1 bond
         if len(atom.bonded_atoms) == 1 and atom.number_of_protons_to_add > 0:
             # Add another atom with the right angle to the first one
-            avec = vector(atom1=atom, atom2=atom.bonded_atoms[0])
+            avec = Vector(atom1=atom, atom2=atom.bonded_atoms[0])
             axis = avec.orthogonal()
             avec = rotate_vector_around_an_axis(rot_angle, axis, avec)
             avec = self.set_bond_distance(avec, atom.element)
@@ -275,8 +275,8 @@ class Protonate:
         # 2 bonds
         if len(atom.bonded_atoms) == 2 and atom.number_of_protons_to_add > 0:
             # Add another atom with the right angle to the first two
-            avec1 = vector(atom1=atom, atom2=atom.bonded_atoms[0]).rescale(1.0)
-            avec2 = vector(atom1=atom, atom2=atom.bonded_atoms[1]).rescale(1.0)
+            avec1 = Vector(atom1=atom, atom2=atom.bonded_atoms[0]).rescale(1.0)
+            avec2 = Vector(atom1=atom, atom2=atom.bonded_atoms[1]).rescale(1.0)
             axis = avec1 + avec2
             new_a = rotate_vector_around_an_axis(math.radians(90), axis,
                                                  -avec1)
@@ -284,9 +284,9 @@ class Protonate:
             self.add_proton(atom, cvec+new_a)
         # 3 bonds
         if len(atom.bonded_atoms) == 3 and atom.number_of_protons_to_add > 0:
-            avec1 = vector(atom1=atom, atom2=atom.bonded_atoms[0]).rescale(1.0)
-            avec2 = vector(atom1=atom, atom2=atom.bonded_atoms[1]).rescale(1.0)
-            avec3 = vector(atom1=atom, atom2=atom.bonded_atoms[2]).rescale(1.0)
+            avec1 = Vector(atom1=atom, atom2=atom.bonded_atoms[0]).rescale(1.0)
+            avec2 = Vector(atom1=atom, atom2=atom.bonded_atoms[1]).rescale(1.0)
+            avec3 = Vector(atom1=atom, atom2=atom.bonded_atoms[2]).rescale(1.0)
             new_a = -avec1-avec2-avec3
             new_a = self.set_bond_distance(new_a, atom.element)
             self.add_proton(atom, cvec+new_a)
