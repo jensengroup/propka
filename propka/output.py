@@ -76,10 +76,10 @@ def writePKA(protein, parameters, filename=None, conformation ='1A',reference="n
     str += "%s\n" % ( getTheLine() )
 
     # printing Folding Profile
-    str += getFoldingProfileSection(protein, conformation=conformation, reference=reference, direction=direction, window=[0., 14., 1.0], options=options)
+    str += get_folding_profileSection(protein, conformation=conformation, reference=reference, window=[0., 14., 1.0])
 
     # printing Protein Charge Profile
-    str += getChargeProfileSection(protein, conformation=conformation)
+    str += get_charge_profileSection(protein, conformation=conformation)
 
     # now, writing the pka text to file
     file.write(str)
@@ -156,7 +156,7 @@ def getSummarySection(protein, conformation, parameters):
     return str
 
 
-def getFoldingProfileSection(protein, conformation='AVR', direction="folding", reference="neutral", window=[0., 14., 1.0], verbose=False, options=None):
+def get_folding_profileSection(protein, conformation='AVR', direction="folding", reference="neutral", window=[0., 14., 1.0], verbose=False, options=None):
     """
     returns the protein-folding-profile section
     """
@@ -164,9 +164,9 @@ def getFoldingProfileSection(protein, conformation='AVR', direction="folding", r
     str += "\n"
     str += "Free energy of %9s (kcal/mol) as a function of pH (using %s reference)\n" % (direction, reference)
 
-    profile, [pH_opt, dG_opt], [dG_min, dG_max], [pH_min, pH_max] = protein.getFoldingProfile(conformation=conformation,
+    profile, [pH_opt, dG_opt], [dG_min, dG_max], [pH_min, pH_max] = protein.get_folding_profile(conformation=conformation,
                                                                                  reference=reference,
-                                                                                 direction=direction, grid=[0., 14., 0.1], options=options)
+                                                                                 grid=[0., 14., 0.1])
     if profile == None:
       str += "Could not determine folding profile\n"
     else:
@@ -195,13 +195,13 @@ def getFoldingProfileSection(protein, conformation='AVR', direction="folding", r
 
 
 
-def getChargeProfileSection(protein, conformation='AVR', options=None):
+def get_charge_profileSection(protein, conformation='AVR', options=None):
     """
     returns the protein-folding-profile section
     """
     str  = "Protein charge of folded and unfolded state as a function of pH\n"
 
-    profile = protein.getChargeProfile(conformation=conformation,grid=[0., 14., 1.])
+    profile = protein.get_charge_profile(conformation=conformation,grid=[0., 14., 1.])
     if profile == None:
       str += "Could not determine charge profile\n"
     else:
@@ -210,7 +210,7 @@ def getChargeProfileSection(protein, conformation='AVR', options=None):
         str += "%6.2lf%10.2lf%8.2lf\n" % (pH, Q_mod, Q_pro)
 
 
-    pI_pro, pI_mod = protein.getPI(conformation=conformation)
+    pI_pro, pI_mod = protein.get_pi(conformation=conformation)
     if pI_pro == None or pI_mod == None:
       str += "Could not determine the pI\n\n"
     else:
