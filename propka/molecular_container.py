@@ -17,7 +17,11 @@ MAX_ITERATION = 4
 
 
 class Molecular_container:
-    """Container for storing molecular contents of PDB files."""
+    """Container for storing molecular contents of PDB files.
+
+    TODO - this class name does not conform to PEP8 but has external use.
+    We should deprecate and change eventually.
+    """
 
     def __init__(self, input_file, options=None):
         """Initialize molecular container.
@@ -27,7 +31,7 @@ class Molecular_container:
             options:  options object
         """
         # printing out header before parsing input
-        propka.output.printHeader()
+        propka.output.print_header()
         # set up some values
         self.options = options
         self.input_file = input_file
@@ -126,7 +130,7 @@ class Molecular_container:
         # find the average of the conformations
         self.average_of_conformations()
         # print out the conformation-average results
-        propka.output.printResult(self, 'AVR', self.version.parameters)
+        propka.output.print_result(self, 'AVR', self.version.parameters)
 
     def average_of_conformations(self):
         """Generate an average of conformations."""
@@ -179,7 +183,7 @@ class Molecular_container:
             and len(self.version.parameters.output_file_tag) > 0:
             filename = os.path.join('%s_%s.pka' % (self.name,
                                                    self.version.parameters.output_file_tag))
-        propka.output.writePKA(self, self.version.parameters, filename=filename,
+        propka.output.write_pka(self, self.version.parameters, filename=filename,
                                conformation='AVR', reference=reference,
                                direction=direction, options=options)
 
