@@ -184,8 +184,7 @@ class Molecular_container:
             filename = os.path.join('%s_%s.pka' % (self.name,
                                                    self.version.parameters.output_file_tag))
         propka.output.write_pka(self, self.version.parameters, filename=filename,
-                               conformation='AVR', reference=reference,
-                               direction=direction, options=options)
+                               conformation='AVR', reference=reference)
 
     def get_folding_profile(self, conformation='AVR', reference="neutral",
                             grid=[0., 14., 0.1]):

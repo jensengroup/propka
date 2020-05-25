@@ -433,9 +433,9 @@ if __name__ == '__main__':
     my_protein = protein.Protein(pdblist,'test.pdb')
 
     p.remove_all_hydrogen_atoms_from_protein(my_protein)
-    my_protein.writePDB('before_protonation.pdb')
+    my_protein.write_pdb('before_protonation.pdb')
 
     p.protonate_protein(my_protein)
 
     ## write out protonated file
-    my_protein.writePDB('protonated.pdb')
+    my_protein.write_pdb('protonated.pdb')
