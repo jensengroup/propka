@@ -239,7 +239,7 @@ def get_folding_profile_section(protein, conformation='AVR',
         str_ += "Could not determine pH values where the free energy"
         str_ += " is within 80 %s of minimum\n" % ("%")
     else:
-        str_ += "The free energy is within 80 \% of maximum"
+        str_ += "The free energy is within 80 %% of maximum"
         str_ += " at pH %4.1lf to %4.1lf\n" % (dg_min, dg_max)
     if ph_min is None or ph_max is None:
         str_ += "Could not determine the pH-range where the free"
