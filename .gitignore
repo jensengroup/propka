@@ -3,3 +3,5 @@
 *.py[cod]
 # PIP stuff
 *.egg-info
+# Visual studio code
+.vscode
