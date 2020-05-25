@@ -2,7 +2,7 @@
 import math
 import propka.protonate
 import propka.bonds
-from propka.lib import warning
+from propka.lib import warning, info
 
 
 # TODO - this file should be broken into three separate files:
@@ -96,8 +96,6 @@ def setup_bonding_and_protonation(parameters, molecular_container):
 def setup_bonding(molecular_container):
     """Set up bonding for a molecular container.
 
-    TODO - figure out why there is a similar function in version.py
-
     Args:
         molecular_container:  the molecular container in question
     Returns:
@@ -106,6 +104,60 @@ def setup_bonding(molecular_container):
     my_bond_maker = propka.bonds.BondMaker()
     my_bond_maker.find_bonds_for_molecules_using_boxes(molecular_container)
     return my_bond_maker
+
+
+def setup_bonding_and_protonation_30_style(parameters, molecular_container):
+    """Set up bonding for a molecular container.
+
+    Args:
+        parameters:  parameters for calculation
+        molecular_container:  the molecular container in question
+    Returns:
+        BondMaker object
+    """
+    # Protonate atoms
+    protonate_30_style(molecular_container)
+    # make bonds
+    bond_maker = propka.bonds.BondMaker()
+    bond_maker.find_bonds_for_molecules_using_boxes(molecular_container)
+    return bond_maker
+
+
+def protonate_30_style(molecular_container):
+    """Protonate the molecule.
+
+    Args:
+        molecular_container:  molecule
+    """
+    for name in molecular_container.conformation_names:
+        info('Now protonating', name)
+        # split atom into residues
+        curres = -1000000
+        residue = []
+        o_atom = None
+        c_atom = None
+        for atom in molecular_container.conformations[name].atoms:
+            if atom.res_num != curres:
+                curres = atom.res_num
+                if len(residue) > 0:
+                    #backbone
+                    [o_atom, c_atom] = add_backbone_hydrogen(
+                        residue, o_atom, c_atom)
+                    #arginine
+                    if residue[0].res_name == 'ARG':
+                        add_arg_hydrogen(residue)
+                    #histidine
+                    if residue[0].res_name == 'HIS':
+                        add_his_hydrogen(residue)
+                    #tryptophan
+                    if residue[0].res_name == 'TRP':
+                        add_trp_hydrogen(residue)
+                    #amides
+                    if residue[0].res_name in ['GLN', 'ASN']:
+                        add_amd_hydrogen(residue)
+                    residue = []
+            if atom.type == 'atom':
+                residue.append(atom)
 
 
 def set_ligand_atom_names(molecular_container):
