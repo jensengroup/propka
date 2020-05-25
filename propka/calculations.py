@@ -647,7 +647,7 @@ def hydrogen_bond_interaction(group1, group2, version):
         # Do nothing, value should have been assigned.
         pass
     else:
-        value = version.calculateSideChainEnergy(dist, dpka_max, cutoff, weight,
+        value = version.calculate_side_chain_energy(dist, dpka_max, cutoff, weight,
                                                  f_angle)
     return value
 

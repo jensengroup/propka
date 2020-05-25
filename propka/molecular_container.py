@@ -48,7 +48,8 @@ class Molecular_container:
         try:
             version_class = getattr(propka.version, parameters.version)
             self.version = version_class(parameters)
-        except:
+        except AttributeError as err:
+            print(err)
             errstr = 'Error: Version %s does not exist' % parameters.version
             raise Exception(errstr)
         # read the input file

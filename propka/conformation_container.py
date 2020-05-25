@@ -195,7 +195,7 @@ class ConformationContainer:
         # setting ion determinants
         set_ion_determinants(self, version)
         # calculating the back-bone reorganization/desolvation term
-        version.calculatebackbone_reorganization(self)
+        version.calculate_backbone_reorganization(self)
         # setting remaining non-iterative and iterative side-chain & Coulomb
         # interaction determinants
         set_determinants(self.get_sidechain_groups(), version=version,
