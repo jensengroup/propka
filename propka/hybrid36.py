@@ -1,4 +1,4 @@
-"""Provides an alternative PDB format that can transparently encode larger atom numbers.
+"""Provides alternative PDB format that can encode larger atom numbers.
 
 http://cci.lbl.gov/hybrid_36/
 """

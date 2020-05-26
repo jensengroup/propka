@@ -9,40 +9,26 @@ from propka.lib import info, warning
 # Constants that start with "UNK_" are a mystery to me
 UNK_PKA_SCALING = -1.36
 PROTONATOR = propka.protonate.Protonate(verbose=False)
-EXPECTED_ATOMS_ACID_INTERACTIONS = {'COO': {'O': 2}, 'HIS': {'H': 2, 'N': 2},
-                                    'CYS': {'S': 1}, 'TYR': {'O': 1},
-                                    'LYS': {'N': 1}, 'ARG': {'H': 5, 'N': 3},
-                                    'ROH': {'O': 1}, 'AMD': {'H': 2, 'N': 1},
-                                    'TRP': {'H': 1, 'N': 1}, 'N+': {'N': 1},
-                                    'C-': {'O': 2}, 'BBN': {'H': 1, 'N': 1,},
-                                    'BBC': {'O': 1}, 'NAR': {'H': 1, 'N': 1},
-                                    'NAM': {'H': 1, 'N': 1}, 'F': {'F': 1},
-                                    'Cl': {'Cl': 1}, 'OH': {'H': 1, 'O': 1},
-                                    'OP': {'O': 1}, 'O3': {'O': 1},
-                                    'O2': {'O': 1}, 'SH': {'S': 1},
-                                    'CG': {'H': 5, 'N': 3},
-                                    'C2N': {'H': 4, 'N': 2}, 'OCO': {'O': 2},
-                                    'N30': {'H': 4, 'N': 1},
-                                    'N31': {'H': 3, 'N': 1},
-                                    'N32': {'H': 2, 'N': 1},
-                                    'N33': {'H': 1, 'N': 1},
-                                    'NP1': {'H': 2, 'N': 1}, 'N1': {'N': 1}}
-EXPECTED_ATOMS_BASE_INTERACTIONS = {'COO': {'O': 2}, 'HIS': {'N': 2},
-                                    'CYS': {'S': 1}, 'TYR': {'O': 1},
-                                    'LYS': {'N': 1}, 'ARG': {'N': 3},
-                                    'ROH': {'O': 1}, 'AMD': {'O': 1},
-                                    'TRP': {'N': 1}, 'N+': {'N': 1},
-                                    'C-': {'O': 2}, 'BBN': {'H': 1, 'N': 1},
-                                    'BBC': {'O': 1}, 'NAR': {'H': 1, 'N': 1},
-                                    'NAM': {'H': 1, 'N': 1}, 'F': {'F': 1},
-                                    'Cl': {'Cl': 1}, 'OH': {'H': 1, 'O': 1},
-                                    'OP': {'O': 1}, 'O3': {'O': 1},
-                                    'O2': {'O': 1}, 'SH': {'S': 1},
-                                    'CG': {'N': 3}, 'C2N': {'N': 2},
-                                    'OCO': {'O': 2}, 'N30': {'N': 1},
-                                    'N31': {'N': 1}, 'N32': {'N': 1},
-                                    'N33': {'N': 1}, 'NP1': {'N': 1},
-                                    'N1': {'N': 1}}
+EXPECTED_ATOMS_ACID_INTERACTIONS = {
+    'COO': {'O': 2}, 'HIS': {'H': 2, 'N': 2}, 'CYS': {'S': 1}, 'TYR': {'O': 1},
+    'LYS': {'N': 1}, 'ARG': {'H': 5, 'N': 3}, 'ROH': {'O': 1},
+    'AMD': {'H': 2, 'N': 1}, 'TRP': {'H': 1, 'N': 1}, 'N+': {'N': 1},
+    'C-': {'O': 2}, 'BBN': {'H': 1, 'N': 1,}, 'BBC': {'O': 1},
+    'NAR': {'H': 1, 'N': 1}, 'NAM': {'H': 1, 'N': 1}, 'F': {'F': 1},
+    'Cl': {'Cl': 1}, 'OH': {'H': 1, 'O': 1}, 'OP': {'O': 1}, 'O3': {'O': 1},
+    'O2': {'O': 1}, 'SH': {'S': 1}, 'CG': {'H': 5, 'N': 3},
+    'C2N': {'H': 4, 'N': 2}, 'OCO': {'O': 2}, 'N30': {'H': 4, 'N': 1},
+    'N31': {'H': 3, 'N': 1}, 'N32': {'H': 2, 'N': 1}, 'N33': {'H': 1, 'N': 1},
+    'NP1': {'H': 2, 'N': 1}, 'N1': {'N': 1}}
+EXPECTED_ATOMS_BASE_INTERACTIONS = {
+    'COO': {'O': 2}, 'HIS': {'N': 2}, 'CYS': {'S': 1}, 'TYR': {'O': 1},
+    'LYS': {'N': 1}, 'ARG': {'N': 3}, 'ROH': {'O': 1}, 'AMD': {'O': 1},
+    'TRP': {'N': 1}, 'N+': {'N': 1}, 'C-': {'O': 2}, 'BBN': {'H': 1, 'N': 1},
+    'BBC': {'O': 1}, 'NAR': {'H': 1, 'N': 1}, 'NAM': {'H': 1, 'N': 1},
+    'F': {'F': 1}, 'Cl': {'Cl': 1}, 'OH': {'H': 1, 'O': 1}, 'OP': {'O': 1},
+    'O3': {'O': 1}, 'O2': {'O': 1}, 'SH': {'S': 1}, 'CG': {'N': 3},
+    'C2N': {'N': 2}, 'OCO': {'O': 2}, 'N30': {'N': 1}, 'N31': {'N': 1},
+    'N32': {'N': 1}, 'N33': {'N': 1}, 'NP1': {'N': 1}, 'N1': {'N': 1}}
 
 
 class Group:
@@ -93,14 +79,12 @@ class Group:
             self.label = '%-3s%4d%2s' % (self.residue_type, atom.res_num,
                                          atom.chain_id)
         elif self.atom.res_name in ['DA ', 'DC ', 'DG ', 'DT ']:
-            self.label = '%1s%1s%1s%4d%2s' % (self.residue_type[1],
-                                              atom.element,
-                                              atom.name.replace('\'', '')[-1],
-                                              atom.res_num,
-                                              atom.chain_id)
+            self.label = '%1s%1s%1s%4d%2s' % (
+                self.residue_type[1], atom.element,
+                atom.name.replace('\'', '')[-1], atom.res_num, atom.chain_id)
         else:
-            self.label = '%-3s%4s%2s' % (self.residue_type, atom.name,
-                                         atom.chain_id)
+            self.label = '%-3s%4s%2s' % (
+                self.residue_type, atom.name, atom.chain_id)
         # container for squared distances
         self.squared_distances = {}
 
@@ -180,8 +164,8 @@ class Group:
                 added = True
         # otherwise we just add the determinant to our list
         if not added:
-            self.determinants[type_].append(Determinant(new_determinant.group,
-                                                        new_determinant.value))
+            self.determinants[type_].append(
+                Determinant(new_determinant.group, new_determinant.value))
 
     def make_covalently_coupled_line(self):
         """Create line for covalent coupling.
@@ -232,8 +216,9 @@ class Group:
             return self.label == other.label
         else:
             # For heterogene atoms we also need to check the residue number
-            return (self.label == other.label) \
-                and (self.atom.res_num == other.atom.res_num)
+            return (
+                (self.label == other.label)
+                and (self.atom.res_num == other.atom.res_num))
 
     def __hash__(self):
         """Needed for creating sets of groups."""
@@ -241,8 +226,8 @@ class Group:
 
     def __iadd__(self, other):
         if self.type != other.type:
-            errstr = 'Cannot add groups of different types (%s and %s)' \
-                % (self.type, other.type)
+            errstr = ('Cannot add groups of different types (%s and %s)'
+                      % (self.type, other.type))
             raise Exception(errstr)
         # add all values
         self.pka_value += other.pka_value
@@ -301,8 +286,9 @@ class Group:
             labels:  list of labels to remove
         """
         for type_ in ['sidechain', 'backbone', 'coulomb']:
-            matches = list(filter(lambda d: d.label in labels, \
-                [d for d in self.determinants[type_]]))
+            matches = list(
+                filter(lambda d: d.label
+                       in labels, [d for d in self.determinants[type_]]))
             for match in matches:
                 self.determinants[type_].remove(match)
 
@@ -354,7 +340,9 @@ class Group:
             if not self.model_pka_set:
                 self.model_pka = self.parameters.model_pkas[self.residue_type]
                 # check if we should apply a custom model pka
-                key = '%s-%s'%(self.atom.res_name.strip(), self.atom.name.strip())
+                key = (
+                    '%s-%s'
+                    % (self.atom.res_name.strip(), self.atom.name.strip()))
                 if key in self.parameters.custom_model_pkas.keys():
                     self.model_pka = self.parameters.custom_model_pkas[key]
                 self.model_pka_set = True
@@ -392,25 +380,31 @@ class Group:
                                     self.interaction_atoms_for_bases, 'base']]:
             if self.type in expect.keys():
                 for elem in expect[self.type].keys():
-                    if len([a for a in found if a.element == elem]) \
-                        != expect[self.type][elem]:
+                    if (len([a for a in found if a.element == elem])
+                            != expect[self.type][elem]):
                         ok = False
         if not ok:
             str_ = 'Missing atoms or failed protonation for '
-            str_ += '%s (%s) -- please check the structure' % (self.label,
-                                                               self.type)
+            str_ += ('%s (%s) -- please check the structure'
+                     % (self.label, self.type))
             warning(str_)
             warning('%s' % self)
-            num_acid = sum([EXPECTED_ATOMS_ACID_INTERACTIONS[self.type][e] \
-                for e in EXPECTED_ATOMS_ACID_INTERACTIONS[self.type].keys()])
-            num_base = sum([EXPECTED_ATOMS_BASE_INTERACTIONS[self.type][e] \
-                for e in EXPECTED_ATOMS_BASE_INTERACTIONS[self.type].keys()])
-            warning('Expected %d interaction atoms for acids, found:' % num_acid)
+            num_acid = sum(
+                [EXPECTED_ATOMS_ACID_INTERACTIONS[self.type][e]
+                 for e in EXPECTED_ATOMS_ACID_INTERACTIONS[self.type].keys()])
+            num_base = sum(
+                [EXPECTED_ATOMS_BASE_INTERACTIONS[self.type][e]
+                 for e in EXPECTED_ATOMS_BASE_INTERACTIONS[self.type].keys()])
+            warning(
+                'Expected %d interaction atoms for acids, found:' % num_acid)
             for i in range(len(self.interaction_atoms_for_acids)):
-                warning('             %s' % self.interaction_atoms_for_acids[i])
-            warning('Expected %d interaction atoms for bases, found:' % num_base)
+                warning(
+                    '             %s' % self.interaction_atoms_for_acids[i])
+            warning(
+                'Expected %d interaction atoms for bases, found:' % num_base)
             for i in range(len(self.interaction_atoms_for_bases)):
-                warning('             %s' % self.interaction_atoms_for_bases[i])
+                warning(
+                    '             %s' % self.interaction_atoms_for_bases[i])
 
     def get_interaction_atoms(self, interacting_group):
         """Get atoms involved in interaction with other group.
@@ -507,7 +501,8 @@ class Group:
         if self.atom.cysteine_bridge:
             self.pka_value = 99.99
             return
-        self.pka_value = self.model_pka + self.energy_volume + self.energy_local
+        self.pka_value = (
+            self.model_pka + self.energy_volume + self.energy_local)
         for determinant_type in ['sidechain', 'backbone', 'coulomb']:
             for determinant in self.determinants[determinant_type]:
                 self.pka_value += determinant.value
@@ -523,13 +518,14 @@ class Group:
             back_bone += value
         side_chain = 0.0
         for determinant in self.determinants['sidechain']:
-            if determinant.label[0:3] not in ['ASP', 'GLU', 'LYS', 'ARG',
-                                              'HIS', 'CYS', 'TYR', 'C- ',
-                                              'N+ ']:
+            if determinant.label[0:3] not in [
+                    'ASP', 'GLU', 'LYS', 'ARG', 'HIS', 'CYS', 'TYR', 'C- ',
+                    'N+ ']:
                 value = determinant.value
                 side_chain += value
-        self.intrinsic_pka = self.model_pka + self.energy_volume \
-            + self.energy_local + back_bone + side_chain
+        self.intrinsic_pka = (
+            self.model_pka + self.energy_volume + self.energy_local
+            + back_bone + side_chain)
 
     def get_summary_string(self, remove_penalised_group=False):
         """Create summary string for this group.
@@ -546,13 +542,13 @@ class Group:
             ligand_type = self.type
         penalty = ''
         if self.coupled_titrating_group:
-            penalty = ' NB: Discarded due to coupling with %s' \
-                % self.coupled_titrating_group.label
-        str_ = "   %9s %8.2lf %10.2lf %18s   %s\n" % (self.label,
-                                                      self.pka_value,
-                                                      self.model_pka,
-                                                      ligand_type,
-                                                      penalty)
+            penalty = (
+                ' NB: Discarded due to coupling with %s'
+                % self.coupled_titrating_group.label)
+        str_ = (
+            "   %9s %8.2lf %10.2lf %18s   %s\n"
+            % (self.label, self.pka_value, self.model_pka, ligand_type,
+               penalty))
         return str_
 
     def __str__(self):
@@ -621,8 +617,8 @@ class Group:
         titratable and are in that list are included; otherwise all titratable
         residues and CYS residues are included.
         """
-        return self.titratable or (self.residue_type == 'CYS' and \
-                                   not self.exclude_cys_from_results)
+        return self.titratable or (
+            self.residue_type == 'CYS' and not self.exclude_cys_from_results)
 
 
 class COOGroup(Group):
@@ -786,7 +782,8 @@ class CtermGroup(Group):
     """C-terminus group."""
     def __init__(self, atom):
         Group.__init__(self, atom)
-        self.type = 'COO'  # this is to deal with the COO-C- parameter unification.
+        # this is to deal with the COO-C- parameter unification.
+        self.type = 'COO'
 
     def setup_atoms(self):
         """Set up atoms in group."""
@@ -820,7 +817,8 @@ class BBNGroup(Group):
         the_hydrogen = self.atom.get_bonded_elements('H')
         # set the center using the nitrogen
         self.set_center([self.atom])
-        self.set_interaction_atoms(the_hydrogen+[self.atom], the_hydrogen+[self.atom])
+        self.set_interaction_atoms(
+            the_hydrogen+[self.atom], the_hydrogen+[self.atom])
 
 
 class BBCGroup(Group):
@@ -859,7 +857,8 @@ class NARGroup(Group):
         the_hydrogen = self.atom.get_bonded_elements('H')
         # set the center using the nitrogen
         self.set_center([self.atom])
-        self.set_interaction_atoms(the_hydrogen+[self.atom], the_hydrogen+[self.atom])
+        self.set_interaction_atoms(
+            the_hydrogen+[self.atom], the_hydrogen+[self.atom])
 
 
 class NAMGroup(Group):
@@ -881,7 +880,8 @@ class NAMGroup(Group):
         the_hydrogen = self.atom.get_bonded_elements('H')
         # set the center using the nitrogen
         self.set_center([self.atom])
-        self.set_interaction_atoms(the_hydrogen+[self.atom], the_hydrogen+[self.atom])
+        self.set_interaction_atoms(
+            the_hydrogen+[self.atom], the_hydrogen+[self.atom])
 
 
 class FGroup(Group):
@@ -920,7 +920,8 @@ class OHGroup(Group):
         the_hydrogen = self.atom.get_bonded_elements('H')
         # set the center using the nitrogen
         self.set_center([self.atom])
-        self.set_interaction_atoms(the_hydrogen+[self.atom], the_hydrogen+[self.atom])
+        self.set_interaction_atoms(
+            the_hydrogen+[self.atom], the_hydrogen+[self.atom])
 
 
 class OPGroup(Group):
@@ -938,7 +939,6 @@ class OPGroup(Group):
         PROTONATOR.protonate_atom(self.atom)
         # set the center using the oxygen
         self.set_center([self.atom])
-        #self.set_interaction_atoms(the_hydrogen+[self.atom], the_hydrogen+[self.atom])
         self.set_interaction_atoms([self.atom], [self.atom])
 
 
@@ -997,7 +997,8 @@ class CGGroup(Group):
         for nitrogen in the_nitrogens:
             PROTONATOR.protonate_atom(nitrogen)
             the_hydrogens += nitrogen.get_bonded_elements('H')
-        self.set_interaction_atoms(the_hydrogens+the_nitrogens, the_nitrogens)
+        self.set_interaction_atoms(
+            the_hydrogens+the_nitrogens, the_nitrogens)
 
 
 class C2NGroup(Group):
@@ -1013,8 +1014,8 @@ class C2NGroup(Group):
         """Set up atoms in this group."""
         # Identify the nitrogens
         the_nitrogens = self.atom.get_bonded_elements('N')
-        the_nitrogens = [n for n in the_nitrogens \
-            if len(n.get_bonded_heavy_atoms()) == 1]
+        the_nitrogens = [
+            n for n in the_nitrogens if len(n.get_bonded_heavy_atoms()) == 1]
         # set the center using the nitrogen
         self.set_center([self.atom])
         the_hydrogens = []
@@ -1198,12 +1199,14 @@ class TitratableLigandGroup(Group):
             self.type = 'BLG'
             self.residue_type = 'BLG'
         else:
-            raise Exception('Unable to determine type of ligand group - charge not set?')
+            raise Exception('Unable to determine type of ligand group - '
+                            'charge not set?')
         # check if marvin model pka has been calculated
         # this is not true if we are reading an input file
         if atom.marvin_pka:
             self.model_pka = atom.marvin_pka
-            info('Titratable ligand group    ', atom, self.model_pka, self.charge)
+            info('Titratable ligand group    ',
+                 atom, self.model_pka, self.charge)
         self.model_pka_set = True
 
 
@@ -1233,8 +1236,8 @@ def is_group(parameters, atom):
     elif parameters.ligand_typing == 'groups':
         ligand_group = is_ligand_group_by_groups(parameters, atom)
     else:
-        errstr = 'Unknown ligand typing method \'%s\'' % parameters.ligand_typing
-        raise Exception(errstr)
+        raise Exception('Unknown ligand typing method \'%s\''
+                        % parameters.ligand_typing)
     if ligand_group:
         return ligand_group
     return None
@@ -1314,10 +1317,13 @@ def is_ligand_group_by_groups(_, atom):
     if atom.sybyl_type == 'C.2':
         # Guadinium and amidinium groups
         bonded_nitrogens = atom.get_bonded_elements('N')
-        npls = [n for n in bonded_nitrogens if (n.sybyl_type == 'N.pl3' \
-            and len(n.get_bonded_heavy_atoms()) == 1)]
+        npls = [
+            n for n in bonded_nitrogens
+            if (n.sybyl_type == 'N.pl3'
+                and len(n.get_bonded_heavy_atoms()) == 1)]
         if len(npls) == 2:
-            n_with_max_two_heavy_atom_bonds = [n for n in bonded_nitrogens \
+            n_with_max_two_heavy_atom_bonds = [
+                n for n in bonded_nitrogens
                 if len(n.get_bonded_heavy_atoms()) < 3]
             if len(n_with_max_two_heavy_atom_bonds) == 2:
                 return C2NGroup(atom)
@@ -1369,17 +1375,18 @@ def is_ligand_group_by_marvin_pkas(parameters, atom):
     # TODO - double-check testing coverage of these functions.
     if not atom.conformation_container.marvin_pkas_calculated:
         lpka = LigandPkaValues(parameters)
-        lpka.get_marvin_pkas_for_molecular_container(atom.molecular_container,
-                                                     min_ph=parameters.min_ligand_model_pka,
-                                                     max_ph=parameters.max_ligand_model_pka)
+        lpka.get_marvin_pkas_for_molecular_container(
+            atom.molecular_container, min_ph=parameters.min_ligand_model_pka,
+            max_ph=parameters.max_ligand_model_pka)
     if atom.marvin_pka:
         return TitratableLigandGroup(atom)
-    # Special case of oxygen in carboxyl group not assigned a pka value by marvin
+    # Special case of oxygen in carboxyl group not assigned pka value by marvin
     if atom.sybyl_type == 'O.co2':
         atom.charge = -1.0
-        other_oxygen = [o for o \
-            in atom.get_bonded_elements('C')[0].get_bonded_elements('O') \
-                if not o == atom][0]
+        other_oxygen = [
+            o for o
+            in atom.get_bonded_elements('C')[0].get_bonded_elements('O')
+            if not o == atom][0]
         atom.marvin_pka = other_oxygen.marvin_pka
         return TitratableLigandGroup(atom)
     if atom.element in parameters.hydrogen_bonds.elements:
