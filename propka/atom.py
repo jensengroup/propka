@@ -5,6 +5,24 @@ import propka.group
 from . import hybrid36
 
 
+# Format strings that get used in multiple places (or are very complex)
+PKA_FMT = "{:6.2f}"
+INPUT_LINE_FMT = (
+    "{type:6s}{r.numb:>5d} {atom_label} {r.res_name}{r.chain_id:>2s}"
+    "{r.res_num:>4d}{r.x:>12.3f}{r.y:>8.3f}{r.z:>8.3f}{group:>6s}{pka:>6s} ")
+PDB_LINE_FMT1 = (
+    "{type:6s}{r.numb:>5d} {atom_label} {r.res_name}{r.chain_id:>2s}"
+    "{r.res_num:>4d}{r.x:>12.3f}{r.y:>8.3f}{r.z:>8.3f}{r.occ:>6s}{r.beta:>6s}")
+MOL2_LINE_FMT = (
+    "{id:<4d} {atom_label:4s} "
+    "{r.x:>10.4f} {r.y:>10.4f} {r.z:>10.4f} "
+    "{r.sybyl_type:>6s} {r.res_num:>6d} {r.res_name:>10s}     0.0000")
+PDB_LINE_FMT2 = (
+    "ATOM {numb:>6d} {atom_label} {res_name}{chain_id:>2s}{res_num:>4d}"
+    "{x:>12.3f}{y:>8.3f}{z:>8.3f}{occ:>6.2f}{beta:>6.2f}"
+)
+
+
 class Atom(object):
     """Atom class - contains all atom information found in the PDB file"""
 
@@ -48,8 +66,8 @@ class Atom(object):
         self.num_pi_elec_conj_2_3_bonds = 0
         self.groups_extracted = 0
         self.set_properties(line)
-        self.residue_label = "%-3s%4d%2s" % (
-            self.name, self.res_num, self.chain_id)
+        fmt = "{r.name:3s}{r.res_num:>4d}{r.chain_id:>2s}"
+        self.residue_label = fmt.format(r=self)
 
         # ligand atom types
         self.sybyl_type = ''
@@ -90,6 +108,7 @@ class Atom(object):
                 self.chain_id = '_'
             self.type = line[:6].strip().lower()
 
+            # TODO - define nucleic acid residue names elsewhere
             if self.res_name in ['DA ', 'DC ', 'DG ', 'DT ']:
                 self.type = 'hetatm'
 
@@ -243,13 +262,12 @@ class Atom(object):
                 group = 'C-' ## circumventing C-/COO parameter unification
 
             if self.group.titratable:
-                model_pka = '%6.2f'%self.group.model_pka
-        str_ = "%-6s%5d %s " % (
-            self.type.upper(), self.numb,
-            propka.lib.make_tidy_atom_label(self.name, self.element))
-        str_ += "%s%2s%4d%12.3lf%8.3lf%8.3lf%6s%6s \n" % (
-            self.res_name, self.chain_id, self.res_num, self.x, self.y,
-            self.z, group, model_pka)
+                model_pka = PKA_FMT.format(self.group.model_pka)
+        str_ = INPUT_LINE_FMT.format(
+            type=self.type.upper(), r=self,
+            atom_label=propka.lib.make_tidy_atom_label(self.name, self.element),
+            group=group, pka=model_pka)
+        str_ += "\n"
         return str_
 
     def make_conect_line(self):
@@ -321,12 +339,10 @@ class Atom(object):
         Returns:
             String with PDB line.
         """
-        str_ = "%-6s%5d " % (self.type.upper(), self.numb)
-        str_ += "%s %s" % (propka.lib.make_tidy_atom_label(self.name, self.element),
-                           self.res_name)
-        str_ += "%2s%4d%12.3lf%8.3lf%8.3lf%6s%6s\n" % (self.chain_id, self.res_num,
-                                                       self.x, self.y, self.z,
-                                                       self.occ, self.beta)
+        str_ = PDB_LINE_FMT1.format(
+            type=self.type.upper(), r=self,
+            atom_label=propka.lib.make_tidy_atom_label(self.name, self.element))
+        str_ += "\n"
         return str_
 
     def make_mol2_line(self, id_):
@@ -339,11 +355,10 @@ class Atom(object):
         Returns:
             String with MOL2 line.
         """
-        str_ = "%-4d %-4s " % (
-            id_, propka.lib.make_tidy_atom_label(self.name, self.element))
-        str_ += "%10.4f %10.4f %10.4f " % (self.x, self.y, self.z)
-        str_ += "%6s %6d %10s %10.4f\n" % (
-            self.sybyl_type.replace('-', ''), self.res_num, self.res_name, 0.0)
+        str_ = MOL2_LINE_FMT.format(
+            id=id_, r=self,
+            atom_label=propka.lib.make_tidy_atom_label(self.name, self.element))
+        str_ += "\n"
         return str_
 
     def make_pdb_line2(self, numb=None, name=None, res_name=None, chain_id=None,
@@ -377,17 +392,11 @@ class Atom(object):
             occ = self.occ
         if beta is None:
             beta = self.beta
-        str_ = "ATOM "
-        str_ += "%6d" % (numb)
-        str_ += " %s" % (propka.lib.make_tidy_atom_label(name, self.element))
-        str_ += " %s" % (res_name)
-        str_ += "%2s" % (chain_id)
-        str_ += "%4d" % (res_num)
-        str_ += "%12.3lf" % (x)
-        str_ += "%8.3lf" % (y)
-        str_ += "%8.3lf" % (z)
-        str_ += "%6.2lf" % (occ)
-        str_ += "%6.2lf" % (beta)
+        str_ = PDB_LINE_FMT2.format(
+            numb=numb, res_name=res_name, chain_id=chain_id, res_num=res_num,
+            x=x, y=y, z=z, occ=occ, beta=beta,
+            atom_label=propka.lib.make_tidy_atom_label(name, self.element)
+        )
         str_ += '\n'
         return str_
 
