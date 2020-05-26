@@ -57,9 +57,10 @@ class ConformationContainer:
         """Generate interaction map and charge centers."""
         # if a group is coupled and we are reading a .propka_input file, then
         # some more configuration might be needed
-        map_ = make_interaction_map('Covalent coupling map for %s' % self,
-                                    self.get_covalently_coupled_groups(),
-                                    lambda g1, g2: g1 in g2.covalently_coupled_groups)
+        map_ = make_interaction_map(
+            'Covalent coupling map for %s' % self,
+            self.get_covalently_coupled_groups(),
+            lambda g1, g2: g1 in g2.covalently_coupled_groups)
         info(map_)
         # check if we should set a common charge centre as well
         if self.parameters.common_charge_centre:
@@ -67,14 +68,15 @@ class ConformationContainer:
 
     def set_common_charge_centres(self):
         """Assign charge centers to groups."""
-        for system in self.get_coupled_systems(self.get_covalently_coupled_groups(),
-                                               Group.get_covalently_coupled_groups):
+        for system in self.get_coupled_systems(
+                self.get_covalently_coupled_groups(),
+                Group.get_covalently_coupled_groups):
             # make a list of the charge centre coordinates
             all_coordinates = list(map(lambda g: [g.x, g.y, g.z], system))
             # find the common charge center
-            ccc = functools.reduce(lambda g1, g2: [g1[0]+g2[0], g1[1]+g2[1],
-                                                   g1[2]+g2[2]],
-                                   all_coordinates)
+            ccc = functools.reduce(
+                lambda g1, g2: [g1[0]+g2[0], g1[1]+g2[1], g1[2]+g2[2]],
+                all_coordinates)
             ccc = list(map(lambda c: c/len(system), ccc))
             # set the ccc for all coupled groups in this system
             for group in system:
@@ -85,8 +87,8 @@ class ConformationContainer:
         """Find covalently coupled groups and set common charge centres."""
         for group in self.get_titratable_groups():
             # Find covalently bonded groups
-            bonded_groups = self.find_bonded_titratable_groups(group.atom, 1,
-                                                               group.atom)
+            bonded_groups = self.find_bonded_titratable_groups(
+                group.atom, 1, group.atom)
             # coupled groups
             for bond_group in bonded_groups:
                 if bond_group in group.covalently_coupled_groups:
@@ -97,9 +99,10 @@ class ConformationContainer:
         if self.parameters.common_charge_centre:
             self.set_common_charge_centres()
         # print coupling map
-        map_ = make_interaction_map('Covalent coupling map for %s' % self,
-                                    self.get_covalently_coupled_groups(),
-                                    lambda g1, g2: g1 in g2.covalently_coupled_groups)
+        map_ = make_interaction_map(
+            'Covalent coupling map for %s' % self,
+            self.get_covalently_coupled_groups(),
+            lambda g1, g2: g1 in g2.covalently_coupled_groups)
         info(map_)
 
     def find_non_covalently_coupled_groups(self, verbose=False):
@@ -134,14 +137,14 @@ class ConformationContainer:
             if bond_atom == original_atom:
                 continue
             # check if this atom has a titratable group
-            if bond_atom.group and bond_atom.group.titratable \
-                and num_bonds <= self.parameters.coupling_max_number_of_bonds:
+            if (bond_atom.group and bond_atom.group.titratable
+                    and num_bonds
+                    <= self.parameters.coupling_max_number_of_bonds):
                 res.add(bond_atom.group)
             # check for titratable groups bonded to this atom
             if num_bonds < self.parameters.coupling_max_number_of_bonds:
-                res |= self.find_bonded_titratable_groups(bond_atom,
-                                                          num_bonds+1,
-                                                          original_atom)
+                res |= self.find_bonded_titratable_groups(
+                    bond_atom, num_bonds+1, original_atom)
         return res
 
     def setup_and_add_group(self, group):
@@ -190,22 +193,23 @@ class ConformationContainer:
         for group in self.get_titratable_groups() + self.get_ions():
             version.calculate_desolvation(group)
         # calculate backbone interactions
-        set_backbone_determinants(self.get_titratable_groups(),
-                                self.get_backbone_groups(), version)
+        set_backbone_determinants(
+            self.get_titratable_groups(), self.get_backbone_groups(), version)
         # setting ion determinants
         set_ion_determinants(self, version)
         # calculating the back-bone reorganization/desolvation term
         version.calculate_backbone_reorganization(self)
         # setting remaining non-iterative and iterative side-chain & Coulomb
         # interaction determinants
-        set_determinants(self.get_sidechain_groups(), version=version,
-                        options=options)
+        set_determinants(
+            self.get_sidechain_groups(), version=version, options=options)
         # calculating the total pKa values
         for group in self.groups:
             group.calculate_total_pka()
         # take coupling effects into account
         penalised_labels = self.coupling_effects()
-        if self.parameters.remove_penalised_group and len(penalised_labels) > 0:
+        if (self.parameters.remove_penalised_group
+                and len(penalised_labels) > 0):
             info('Removing penalised groups!!!')
             for group in self.get_titratable_groups():
                 group.remove_determinants(penalised_labels)
@@ -227,8 +231,9 @@ class ConformationContainer:
         titrate.
         """
         penalised_labels = []
-        for all_groups in self.get_coupled_systems(self.get_covalently_coupled_groups(),
-                                                   Group.get_covalently_coupled_groups):
+        for all_groups in self.get_coupled_systems(
+                self.get_covalently_coupled_groups(),
+                Group.get_covalently_coupled_groups):
             # check if we should share determinants
             if self.parameters.shared_determinants:
                 self.share_determinants(all_groups)
@@ -236,15 +241,19 @@ class ConformationContainer:
             first_group = max(all_groups, key=lambda g: g.pka_value)
             # In case of acids
             if first_group.charge < 0:
-                first_group.coupled_titrating_group = min(all_groups, key=lambda g: g.pka_value)
-                penalised_labels.append(first_group.label) # group with the highest pKa is penalised
+                first_group.coupled_titrating_group = min(
+                    all_groups, key=lambda g: g.pka_value)
+                # group with the highest pKa is penalised
+                penalised_labels.append(first_group.label)
             # In case of bases
             else:
                 for group in all_groups:
                     if group == first_group:
-                        continue # group with the highest pKa is allowed to titrate...
+                        # group with the highest pKa is allowed to titrate...
+                        continue
                     group.coupled_titrating_group = first_group
-                    penalised_labels.append(group.label) #... and the rest is penalised
+                    #... and the rest are penalised
+                    penalised_labels.append(group.label)
         return penalised_labels
 
     @staticmethod
@@ -287,7 +296,8 @@ class ConformationContainer:
         while len(groups) > 0:
             # extract a system of coupled groups ...
             system = set()
-            self.get_a_coupled_system_of_groups(groups.pop(), system, get_coupled_groups)
+            self.get_a_coupled_system_of_groups(
+                groups.pop(), system, get_coupled_groups)
             # ... and remove them from the list
             groups -= system
             yield system
@@ -356,7 +366,8 @@ class ConformationContainer:
         Returns:
             list of groups
         """
-        return [group for group in self.groups \
+        return [
+            group for group in self.groups
             if ('BB' not in group.type and not group.atom.cysteine_bridge)]
 
     def get_covalently_coupled_groups(self):
@@ -365,7 +376,8 @@ class ConformationContainer:
         Returns:
             list of groups
         """
-        return [g for g in self.groups \
+        return [
+            g for g in self.groups
             if len(g.covalently_coupled_groups) > 0]
 
     def get_non_covalently_coupled_groups(self):
@@ -374,7 +386,8 @@ class ConformationContainer:
         Returns:
             list of groups
         """
-        return [g for g in self.groups \
+        return [
+            g for g in self.groups
             if len(g.non_covalently_coupled_groups) > 0]
 
     def get_backbone_nh_groups(self):
@@ -401,7 +414,8 @@ class ConformationContainer:
         Returns:
             list of groups
         """
-        return [group for group in self.groups if group.residue_type == residue]
+        return [
+            group for group in self.groups if group.residue_type == residue]
 
     def get_titratable_groups(self):
         """Get all titratable groups needed for pKa calculations.
@@ -429,8 +443,9 @@ class ConformationContainer:
         Returns:
             list of groups
         """
-        return [group for group in self.groups \
-            if (group.residue_type in self.parameters.acid_list \
+        return [
+            group for group in self.groups
+            if (group.residue_type in self.parameters.acid_list
                 and not group.atom.cysteine_bridge)]
 
     def get_backbone_reorganisation_groups(self):
@@ -439,8 +454,10 @@ class ConformationContainer:
         Returns:
             list of groups
         """
-        return [group for group in self.groups \
-            if (group.residue_type in self.parameters.backbone_reorganisation_list \
+        return [
+            group for group in self.groups
+            if (group.residue_type
+                in self.parameters.backbone_reorganisation_list
                 and not group.atom.cysteine_bridge)]
 
     def get_ions(self):
@@ -449,7 +466,8 @@ class ConformationContainer:
         Returns:
             list of groups
         """
-        return [group for group in self.groups \
+        return [
+            group for group in self.groups
             if group.residue_type in self.parameters.ions.keys()]
 
     def get_group_names(self, group_list):
@@ -476,7 +494,8 @@ class ConformationContainer:
         Returns:
             list of atoms
         """
-        return [atom for atom in self.atoms \
+        return [
+            atom for atom in self.atoms
             if atom.type == 'hetatm' and atom.element != 'H']
 
     def get_chain(self, chain):
@@ -556,9 +575,9 @@ class ConformationContainer:
 
     def __str__(self):
         """String that lists statistics of atoms and groups."""
-        str_ = 'Conformation container %s with %d atoms and %d groups' % (self.name,
-                                                                          len(self),
-                                                                          len(self.groups))
+        str_ = (
+            'Conformation container %s with %d atoms and %d groups'
+            % (self.name, len(self), len(self.groups)))
         return str_
 
     def __len__(self):
