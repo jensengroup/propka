@@ -27,7 +27,8 @@ def single(pdbfile, optargs=None):
     .. rubric:: Example
 
     ::
-       single("protein.pdb", optargs=["--mutation=N25R/N181D", "-v", "--pH=7.2"])
+       single("protein.pdb", optargs=["--mutation=N25R/N181D", "-v",
+              "--pH=7.2"])
     """
     optargs = optargs if optargs is not None else []
     options = loadOptions(*optargs)
