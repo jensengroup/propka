@@ -123,20 +123,22 @@ def assign_sybyl_type(atom):
                 n_atom = nitrogens[0]
                 o_atom = oxygens[0]
         if c_atom and n_atom and o_atom:
-            # make sure that the Nitrogen is not aromatic and that it has two heavy atom bonds
-            if not is_aromatic_ring(is_ring_member(n_atom)) \
-                and len(n_atom.get_bonded_heavy_atoms()) == 2:
+            # make sure that the Nitrogen is not aromatic and that it has two
+            # heavy atom bonds
+            if (not is_aromatic_ring(is_ring_member(n_atom))
+                    and len(n_atom.get_bonded_heavy_atoms()) == 2):
                 set_type(n_atom, 'N.am')
                 set_type(c_atom, 'C.2')
                 set_type(o_atom, 'O.2')
                 return
     if atom.element == 'C':
         # check for carboxyl
-        if len(atom.bonded_atoms) == 3 and list(bonded_elements.values()).count('O') == 2:
+        if (len(atom.bonded_atoms) == 3
+                and list(bonded_elements.values()).count('O') == 2):
             index1 = list(bonded_elements.values()).index('O')
             index2 = list(bonded_elements.values()).index('O', index1+1)
-            if len(atom.bonded_atoms[index1].bonded_atoms) == 1 \
-                and len(atom.bonded_atoms[index2].bonded_atoms) == 1:
+            if (len(atom.bonded_atoms[index1].bonded_atoms) == 1
+                    and len(atom.bonded_atoms[index2].bonded_atoms) == 1):
                 set_type(atom.bonded_atoms[index1], 'O.co2-')
                 set_type(atom.bonded_atoms[index2], 'O.co2')
                 set_type(atom, 'C.2')
@@ -144,7 +146,8 @@ def assign_sybyl_type(atom):
         # sp carbon
         if len(atom.bonded_atoms) <= 2:
             for bonded_atom in atom.bonded_atoms:
-                if squared_distance(atom, bonded_atom) < MAX_C_TRIPLE_BOND_SQUARED:
+                if (squared_distance(atom, bonded_atom)
+                        < MAX_C_TRIPLE_BOND_SQUARED):
                     set_type(atom, 'C.1')
                     set_type(bonded_atom, bonded_atom.element + '.1')
             if atom.sybyl_assigned:
@@ -155,8 +158,8 @@ def assign_sybyl_type(atom):
             # check for N.pl3
             for bonded_atom in atom.bonded_atoms:
                 if bonded_atom.element == 'N':
-                    if len(bonded_atom.bonded_atoms) < 3 \
-                        or is_planar(bonded_atom):
+                    if (len(bonded_atom.bonded_atoms) < 3
+                            or is_planar(bonded_atom)):
                         set_type(bonded_atom, 'N.pl3')
             return
         # sp3 carbon
@@ -181,16 +184,18 @@ def assign_sybyl_type(atom):
             # check for carboxyl
             if atom.bonded_atoms[0].element == 'C':
                 the_carbon = atom.bonded_atoms[0]
-                if len(the_carbon.bonded_atoms) == 3 \
-                    and the_carbon.count_bonded_elements('O') == 2:
+                if (len(the_carbon.bonded_atoms) == 3
+                        and the_carbon.count_bonded_elements('O') == 2):
                     [oxy1, oxy2] = the_carbon.get_bonded_elements('O')
-                    if len(oxy1.bonded_atoms) == 1 and len(oxy2.bonded_atoms) == 1:
+                    if (len(oxy1.bonded_atoms) == 1
+                            and len(oxy2.bonded_atoms) == 1):
                         set_type(oxy1, 'O.co2-')
                         set_type(oxy2, 'O.co2')
                         set_type(the_carbon, 'C.2')
                         return
             # check for X=O
-            if squared_distance(atom, atom.bonded_atoms[0]) < MAX_C_DOUBLE_BOND_SQUARED:
+            if (squared_distance(atom, atom.bonded_atoms[0])
+                    < MAX_C_DOUBLE_BOND_SQUARED):
                 set_type(atom, 'O.2')
                 if atom.bonded_atoms[0].element == 'C':
                     set_type(atom.bonded_atoms[0], 'C.2')
@@ -262,8 +267,8 @@ def identify_ring(this_atom, original_atom, number, past_atoms):
             these_return_atoms = identify_ring(atom, original_atom, number,
                                                past_atoms)
             if len(these_return_atoms) > 0:
-                if len(return_atoms) > len(these_return_atoms) \
-                    or len(return_atoms) == 0:
+                if (len(return_atoms) > len(these_return_atoms)
+                        or len(return_atoms) == 0):
                     return_atoms = these_return_atoms
     return return_atoms
 
