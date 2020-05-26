@@ -48,9 +48,12 @@ class Vector:
             return self.x * other.x + self.y * other.y + self.z * other.z
         elif isinstance(other, Matrix4x4):
             return Vector(
-                xi=other.a11*self.x + other.a12*self.y + other.a13*self.z + other.a14*1.0,
-                yi=other.a21*self.x + other.a22*self.y + other.a23*self.z + other.a24*1.0,
-                zi=other.a31*self.x + other.a32*self.y + other.a33*self.z + other.a34*1.0
+                xi=other.a11*self.x + other.a12*self.y + other.a13*self.z
+                + other.a14*1.0,
+                yi=other.a21*self.x + other.a22*self.y + other.a23*self.z
+                + other.a24*1.0,
+                zi=other.a31*self.x + other.a32*self.y + other.a33*self.z
+                + other.a34*1.0
                 )
         elif type(other) in [int, float]:
             return Vector(self.x * other, self.y * other, self.z * other)
@@ -405,8 +408,7 @@ def rotate_multi_vector_around_an_axis(theta, axis, vec):
         raise 'Incompatible keys in rotate MultiVector'
     res = MultiVector()
     for i, key in enumerate(vec.keys):
-        res.vectors.append(rotate_vector_around_an_axis(theta,
-                                                        axis.vectors[i],
-                                                        vec.vectors[i]))
+        res.vectors.append(rotate_vector_around_an_axis(
+            theta, axis.vectors[i], vec.vectors[i]))
         res.keys.append(key)
     return res
