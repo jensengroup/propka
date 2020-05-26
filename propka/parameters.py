@@ -7,27 +7,28 @@ from propka.lib import info, warning
 # names and types of all key words in configuration file
 MATRICES = ['interaction_matrix']
 PAIR_WISE_MATRICES = ['sidechain_cutoffs']
-NUMBER_DICTIONARIES = ['VanDerWaalsVolume', 'charge', 'model_pkas', 'ions',
-                       'valence_electrons', 'custom_model_pkas']
+NUMBER_DICTIONARIES = [
+    'VanDerWaalsVolume', 'charge', 'model_pkas', 'ions', 'valence_electrons',
+    'custom_model_pkas']
 LIST_DICTIONARIES = ['backbone_NH_hydrogen_bond', 'backbone_CO_hydrogen_bond']
 STRING_DICTIONARIES = ['protein_group_mapping']
-STRING_LISTS = ['ignore_residues', 'angular_dependent_sidechain_interactions',
-                'acid_list', 'base_list', 'exclude_sidechain_interactions',
-                'backbone_reorganisation_list', 'write_out_order']
+STRING_LISTS = [
+    'ignore_residues', 'angular_dependent_sidechain_interactions',
+    'acid_list', 'base_list', 'exclude_sidechain_interactions',
+    'backbone_reorganisation_list', 'write_out_order']
 DISTANCES = ['desolv_cutoff', 'buried_cutoff', 'coulomb_cutoff1',
              'coulomb_cutoff2']
-PARAMETERS = ['Nmin', 'Nmax', 'desolvationSurfaceScalingFactor',
-              'desolvationPrefactor', 'desolvationAllowance', 'coulomb_diel',
-              'COO_HIS_exception', 'OCO_HIS_exception', 'CYS_HIS_exception',
-              'CYS_CYS_exception', 'min_ligand_model_pka',
-              'max_ligand_model_pka', 'include_H_in_interactions',
-              'coupling_max_number_of_bonds',
-              'min_bond_distance_for_hydrogen_bonds', 'coupling_penalty',
-              'shared_determinants', 'common_charge_centre',
-              'hide_penalised_group', 'remove_penalised_group',
-              'max_intrinsic_pka_diff', 'min_interaction_energy',
-              'max_free_energy_diff', 'min_swap_pka_shift', 'min_pka',
-              'max_pka', 'sidechain_interaction']
+PARAMETERS = [
+    'Nmin', 'Nmax', 'desolvationSurfaceScalingFactor', 'desolvationPrefactor',
+    'desolvationAllowance', 'coulomb_diel', 'COO_HIS_exception',
+    'OCO_HIS_exception', 'CYS_HIS_exception', 'CYS_CYS_exception',
+    'min_ligand_model_pka', 'max_ligand_model_pka',
+    'include_H_in_interactions', 'coupling_max_number_of_bonds',
+    'min_bond_distance_for_hydrogen_bonds', 'coupling_penalty',
+    'shared_determinants', 'common_charge_centre', 'hide_penalised_group',
+    'remove_penalised_group', 'max_intrinsic_pka_diff',
+    'min_interaction_energy', 'max_free_energy_diff', 'min_swap_pka_shift',
+    'min_pka', 'max_pka', 'sidechain_interaction']
 STRINGS = ['version', 'output_file_tag', 'ligand_typing', 'pH', 'reference']
 
 
@@ -44,7 +45,7 @@ class Parameters:
         self.model_pkas = {}
         self.interaction_matrix = InteractionMatrix("interaction_matrix")
         self.sidechain_cutoffs = None
-        # TODO - it would be nice to rename these but they're defined everywhere
+        # TODO - it would be nice to rename these; they're defined everywhere
         self.COO_HIS_exception = None
         self.OCO_HIS_exception = None
         self.CYS_HIS_exception = None
@@ -184,10 +185,11 @@ class Parameters:
     def set_up_data_structures(self):
         """Set up internal data structures.
 
-        TODO - it would be better to make these assignments explicit in __init__.
+        TODO - it would be better to make these assignments explicit in
+        __init__.
         """
-        for key_word in NUMBER_DICTIONARIES + LIST_DICTIONARIES \
-            + STRING_DICTIONARIES:
+        for key_word in (NUMBER_DICTIONARIES + LIST_DICTIONARIES
+                         + STRING_DICTIONARIES):
             setattr(self, key_word, {})
         for key_word in STRING_LISTS:
             setattr(self, key_word, [])
@@ -208,44 +210,52 @@ class Parameters:
 
         info('')
         info('--------------- Interactions --------------------------')
-        agroups = ['COO', 'HIS', 'CYS', 'TYR', 'SER', 'N+', 'LYS', 'AMD',
-                   'ARG', 'TRP', 'ROH', 'CG', 'C2N', 'N30', 'N31', 'N32',
-                   'N33', 'NAR', 'OCO', 'NP1', 'OH', 'O3', 'CL', 'F', 'NAM',
-                   'N1', 'O2', 'OP', 'SH']
-        lgroups = ['CG', 'C2N', 'N30', 'N31', 'N32', 'N33', 'NAR', 'OCO',
-                   'NP1', 'OH', 'O3', 'CL', 'F', 'NAM', 'N1', 'O2', 'OP', 'SH']
-        map_ = {'CG': ['ARG'], 'C2N': ['ARG'], 'N30': ['N+', 'LYS'],
-                'N31': ['N+', 'LYS'], 'N32': ['N+', 'LYS'], 'N33': ['N+', 'LYS'],
-                'NAR': ['HIS'], 'OCO': ['COO'], 'OP': [], 'SH': ['CYS'],
-                'NP1': [], 'OH': ['ROH'], 'O3': [], 'CL': [], 'F': [],
-                'NAM': ['AMD'], 'N1': [], 'O2': []}
+        agroups = [
+            'COO', 'HIS', 'CYS', 'TYR', 'SER', 'N+', 'LYS', 'AMD', 'ARG',
+            'TRP', 'ROH', 'CG', 'C2N', 'N30', 'N31', 'N32', 'N33', 'NAR',
+            'OCO', 'NP1', 'OH', 'O3', 'CL', 'F', 'NAM', 'N1', 'O2', 'OP', 'SH']
+        lgroups = [
+            'CG', 'C2N', 'N30', 'N31', 'N32', 'N33', 'NAR', 'OCO', 'NP1',
+            'OH', 'O3', 'CL', 'F', 'NAM', 'N1', 'O2', 'OP', 'SH']
+        map_ = {
+            'CG': ['ARG'], 'C2N': ['ARG'], 'N30': ['N+', 'LYS'],
+            'N31': ['N+', 'LYS'], 'N32': ['N+', 'LYS'], 'N33': ['N+', 'LYS'],
+            'NAR': ['HIS'], 'OCO': ['COO'], 'OP': [], 'SH': ['CYS'],
+            'NP1': [], 'OH': ['ROH'], 'O3': [], 'CL': [], 'F': [],
+            'NAM': ['AMD'], 'N1': [], 'O2': []}
         for group1 in agroups:
             for group2 in lgroups:
-                interaction = '%3s %3s %1s %4s %4s' \
-                    % (group1, group2, self.interaction_matrix[group1][group2], \
-                        self.sidechain_cutoffs.get_value(group1, group2)[0], \
-                            self.sidechain_cutoffs.get_value(group1, group2)[1])
+                interaction = '%3s %3s %1s %4s %4s' % (
+                    group1, group2, self.interaction_matrix[group1][group2],
+                    self.sidechain_cutoffs.get_value(group1, group2)[0],
+                    self.sidechain_cutoffs.get_value(group1, group2)[1])
                 map_interaction = ''
                 if group2 in map_:
                     for val in map_[group2]:
-                        map_interaction += '|%3s %3s %1s %4s %4s' \
-                            % (group1, val, \
-                                self.interaction_matrix[group1][val], \
-                                    self.sidechain_cutoffs.get_value(group1, val)[0], \
-                                         self.sidechain_cutoffs.get_value(group1, val)[1])
-                        if self.interaction_matrix[group1][val] \
-                            != self.interaction_matrix[group1][group2]:
+                        map_interaction += '|%3s %3s %1s %4s %4s' % (
+                            group1, val, self.interaction_matrix[group1][val],
+                            self.sidechain_cutoffs.get_value(group1, val)[0],
+                            self.sidechain_cutoffs.get_value(group1, val)[1])
+                        if (self.interaction_matrix[group1][val]
+                                != self.interaction_matrix[group1][group2]):
                             map_interaction += '* '
-                        if self.sidechain_cutoffs.get_value(group1, val)[0] \
-                            != self.sidechain_cutoffs.get_value(group1, group2)[0] \
-                                or self.sidechain_cutoffs.get_value(group1, val)[1] \
-                                    != self.sidechain_cutoffs.get_value(group1, group2)[1]:
+                        if (self.sidechain_cutoffs.get_value(group1, val)[0]
+                                != self.sidechain_cutoffs.get_value(group1,
+                                                                    group2)[0]
+                                or self.sidechain_cutoffs.get_value(group1,
+                                                                    val)[1]
+                                != self.sidechain_cutoffs.get_value(group1,
+                                                                    group2)[1]):
                             map_interaction += '! '
                         else:
                             map_interaction += '  '
-                    if len(map_[group2]) == 0 \
-                        and (self.sidechain_cutoffs.get_value(group1, group2)[0] \
-                            != 3 or self.sidechain_cutoffs.get_value(group1, group2)[1] != 4):
+                    if (len(map_[group2]) == 0
+                            and (self.sidechain_cutoffs.get_value(group1,
+                                                                  group2)[0]
+                                 != 3
+                                 or self.sidechain_cutoffs.get_value(group1,
+                                                                     group2)[1]
+                                 != 4)):
                         map_interaction += '?  '
                 info(interaction, map_interaction)
                 if group1 == group2:
@@ -321,14 +331,16 @@ Group1 & Group2 & Interaction & c1 &c2 \\\\
             for group2 in lgroups:
                 if self.interaction_matrix[group1][group2] == '-':
                     continue
-                if self.sidechain_cutoffs.get_value(group1, group2) \
-                    == self.sidechain_cutoffs.default:
+                if (self.sidechain_cutoffs.get_value(group1, group2)
+                        == self.sidechain_cutoffs.default):
                     continue
-                str_ += '%3s & %3s & %1s & %4s & %4s\\\\ \n'\
-                    % (group1, group2, \
-                        self.interaction_matrix[group1][group2], \
-                            self.sidechain_cutoffs.get_value(group1, group2)[0], \
-                                self.sidechain_cutoffs.get_value(group1, group2)[1])
+                str_ += ('%3s & %3s & %1s & %4s & %4s\\\\ \n'
+                         % (group1, group2,
+                            self.interaction_matrix[group1][group2],
+                            self.sidechain_cutoffs.get_value(group1,
+                                                             group2)[0],
+                            self.sidechain_cutoffs.get_value(group1,
+                                                             group2)[1]))
                 if group1 == group2:
                     break
         str_ += '  \\end{longtable}\n'
@@ -367,11 +379,13 @@ Group1 & Group2 & Interaction & c1 &c2 \\\\
 """ % ('l'*len(agroups), self.sidechain_cutoffs.default)
         for group1 in agroups:
             for group2 in agroups:
-                str_ += '%3s & %3s & %1s & %4s & %4s\\\\ \n' \
-                    % (group1, group2, \
-                        self.interaction_matrix[group1][group2], \
-                            self.sidechain_cutoffs.get_value(group1, group2)[0], \
-                                self.sidechain_cutoffs.get_value(group1, group2)[1])
+                str_ += ('%3s & %3s & %1s & %4s & %4s\\\\ \n'
+                         % (group1, group2,
+                            self.interaction_matrix[group1][group2],
+                            self.sidechain_cutoffs.get_value(
+                                group1, group2)[0],
+                            self.sidechain_cutoffs.get_value(
+                                group1, group2)[1]))
                 if group1 == group2:
                     break
         str_ += '  \\end{longtable}\n'
@@ -499,8 +513,8 @@ class PairwiseMatrix:
         """
         if key1 in self.dictionary and key2 in self.dictionary[key1]:
             if key1 != key2:
-                str_ = 'Parameter value for %s, %s defined more than once' \
-                    % (key1, key2)
+                str_ = ('Parameter value for %s, %s defined more than once'
+                        % (key1, key2))
                 warning(str_)
         if not key1 in self.dictionary:
             self.dictionary[key1] = {}
