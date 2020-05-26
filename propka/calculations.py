@@ -259,14 +259,14 @@ def add_amd_hydrogen(residue):
     o_atom = None
     n_atom = None
     for atom in residue:
-        if (atom.res_name == "GLN" and atom.name == "CD") \
-            or (atom.res_name == "ASN" and atom.name == "CG"):
+        if ((atom.res_name == "GLN" and atom.name == "CD")
+                or (atom.res_name == "ASN" and atom.name == "CG")):
             c_atom = atom
-        elif (atom.res_name == "GLN" and atom.name == "OE1") \
-            or (atom.res_name == "ASN" and atom.name == "OD1"):
+        elif ((atom.res_name == "GLN" and atom.name == "OE1")
+              or (atom.res_name == "ASN" and atom.name == "OD1")):
             o_atom = atom
-        elif (atom.res_name == "GLN" and atom.name == "NE2") \
-            or (atom.res_name == "ASN" and atom.name == "ND2"):
+        elif ((atom.res_name == "GLN" and atom.name == "NE2")
+              or (atom.res_name == "ASN" and atom.name == "ND2")):
             n_atom = atom
     if (c_atom is None) or (o_atom is None) or (n_atom is None):
         errstr = "Unable to find all atoms for %s %s" % (residue[0].res_name,
@@ -445,8 +445,8 @@ def radial_volume_desolvation(parameters, group):
     min_dist_4th = MIN_DISTANCE_4TH
     for atom in all_atoms:
         # ignore atoms in the same residue
-        if atom.res_num == group.atom.res_num \
-            and atom.chain_id == group.atom.chain_id:
+        if (atom.res_num == group.atom.res_num
+                and atom.chain_id == group.atom.chain_id):
             continue
         sq_dist = squared_distance(group, atom)
         # desolvation
@@ -466,8 +466,9 @@ def radial_volume_desolvation(parameters, group):
     group.buried = calculate_weight(parameters, group.num_volume)
     scale_factor = calculate_scale_factor(parameters, group.buried)
     volume_after_allowance = max(0.00, volume-parameters.desolvationAllowance)
-    group.energy_volume = group.charge * parameters.desolvationPrefactor \
-        * volume_after_allowance * scale_factor
+    group.energy_volume = (
+        group.charge * parameters.desolvationPrefactor 
+        * volume_after_allowance * scale_factor)
 
 
 def calculate_scale_factor(parameters, weight):
@@ -494,8 +495,9 @@ def calculate_weight(parameters, num_volume):
     Returns:
         desolvation weight
     """
-    weight = float(num_volume - parameters.Nmin) \
-        / float(parameters.Nmax - parameters.Nmin)
+    weight = (
+        float(num_volume - parameters.Nmin) 
+        / float(parameters.Nmax - parameters.Nmin))
     weight = min(1.0, weight)
     weight = max(0.0, weight)
     return weight
@@ -647,8 +649,8 @@ def hydrogen_bond_interaction(group1, group2, version):
         # Do nothing, value should have been assigned.
         pass
     else:
-        value = version.calculate_side_chain_energy(dist, dpka_max, cutoff, weight,
-                                                 f_angle)
+        value = version.calculate_side_chain_energy(
+            dist, dpka_max, cutoff, weight, f_angle)
     return value
 
 
@@ -712,15 +714,16 @@ def coulomb_energy(dist, weight, parameters):
     """
     diel = UNK_DIELECTRIC1 - (UNK_DIELECTRIC1 - UNK_DIELECTRIC2)*weight
     dist = max(dist, parameters.coulomb_cutoff1)
-    scale = (dist - parameters.coulomb_cutoff2)/(parameters.coulomb_cutoff1 \
-        - parameters.coulomb_cutoff2)
+    scale = (
+        (dist - parameters.coulomb_cutoff2)
+        / (parameters.coulomb_cutoff1 - parameters.coulomb_cutoff2))
     scale = max(0.0, scale)
     scale = min(1.0, scale)
     dpka = UNK_PKA_SCALING1/(diel*dist)*scale
     return abs(dpka)
 
 
-def backbone_reorganization(parameters, conformation):
+def backbone_reorganization(_, conformation):
     """Perform calculations related to backbone reorganizations.
 
     NOTE - this was described in the code as "adding test stuff"
@@ -728,7 +731,7 @@ def backbone_reorganization(parameters, conformation):
     TODO - figure out why a similar function exists in version.py
 
     Args:
-        parameters:  not used
+        _:  not used
         conformation:  specific molecule conformation
     """
     titratable_groups = conformation.get_backbone_reorganisation_groups()
@@ -744,9 +747,10 @@ def backbone_reorganization(parameters, conformation):
                                                       atom3=bbc_group.atom,
                                                       center=center)
             if dist < UNK_BACKBONE_DISTANCE1 and f_angle > UNK_FANGLE_MIN:
-                value = 1.0 - (dist-UNK_BACKBONE_DISTANCE2) \
-                    / (UNK_BACKBONE_DISTANCE1-UNK_BACKBONE_DISTANCE2)
-                dpka += UNK_PKA_SCALING2*min(1.0, value)
+                value = (
+                    1.0 - (dist-UNK_BACKBONE_DISTANCE2)
+                    / (UNK_BACKBONE_DISTANCE1-UNK_BACKBONE_DISTANCE2))
+                dpka += UNK_PKA_SCALING2 * min(1.0, value)
         titratable_group.energy_local = dpka*weight
 
 
@@ -774,14 +778,14 @@ def check_exceptions(version, group1, group2):
         exception, value = check_coo_coo_exception(group1, group2, version)
     elif (res_type1 == "CYS") and (res_type2 == "CYS"):
         exception, value = check_cys_cys_exception(group1, group2, version)
-    elif (res_type1 == "COO") and (res_type2 == "HIS") or \
-        (res_type1 == "HIS") and (res_type2 == "COO"):
+    elif ((res_type1 == "COO") and (res_type2 == "HIS")
+          or (res_type1 == "HIS") and (res_type2 == "COO")):
         exception, value = check_coo_his_exception(group1, group2, version)
-    elif (res_type1 == "OCO") and (res_type2 == "HIS") or \
-        (res_type1 == "HIS") and (res_type2 == "OCO"):
+    elif ((res_type1 == "OCO") and (res_type2 == "HIS")
+          or (res_type1 == "HIS") and (res_type2 == "OCO")):
         exception, value = check_oco_his_exception(group1, group2, version)
-    elif (res_type1 == "CYS") and (res_type2 == "HIS") or \
-        (res_type1 == "HIS") and (res_type2 == "CYS"):
+    elif ((res_type1 == "CYS") and (res_type2 == "HIS")
+          or (res_type1 == "HIS") and (res_type2 == "CYS")):
         exception, value = check_cys_his_exception(group1, group2, version)
     else:
         # do nothing, no exception for this pair
@@ -933,8 +937,8 @@ def check_buried(num_volume1, num_volume2):
     Returns:
         True if interaction is buried, False otherwise
     """
-    if (num_volume1 + num_volume2 <= COMBINED_NUM_BURIED_MAX) \
-        and (num_volume1 <= SEPARATE_NUM_BURIED_MAX \
-            or num_volume2 <= SEPARATE_NUM_BURIED_MAX):
+    if ((num_volume1 + num_volume2 <= COMBINED_NUM_BURIED_MAX)
+            and (num_volume1 <= SEPARATE_NUM_BURIED_MAX
+                 or num_volume2 <= SEPARATE_NUM_BURIED_MAX)):
         return False
     return True
