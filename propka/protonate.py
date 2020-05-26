@@ -16,23 +16,23 @@ class Protonate:
             verbose:  True for verbose output
         """
         self.verbose = verbose
-        self.valence_electrons = {'H': 1, 'He': 2, 'Li': 1, 'Be': 2, 'B': 3,
-                                  'C': 4, 'N': 5, 'O': 6, 'F': 7, 'Ne': 8,
-                                  'Na': 1, 'Mg': 2, 'Al': 3, 'Si': 4, 'P': 5,
-                                  'S': 6, 'Cl': 7, 'Ar': 8, 'K': 1, 'Ca': 2,
-                                  'Sc': 2, 'Ti': 2, 'Va': 2, 'Cr': 1, 'Mn': 2,
-                                  'Fe': 2, 'Co': 2, 'Ni': 2, 'Cu': 1, 'Zn': 2,
-                                  'Ga': 3, 'Ge': 4, 'As': 5, 'Se': 6, 'Br': 7,
-                                  'Kr': 8, 'I': 7}
+        self.valence_electrons = {
+            'H': 1, 'He': 2, 'Li': 1, 'Be': 2, 'B': 3, 'C': 4, 'N': 5,
+            'O': 6, 'F': 7, 'Ne': 8, 'Na': 1, 'Mg': 2, 'Al': 3, 'Si': 4,
+            'P': 5, 'S': 6, 'Cl': 7, 'Ar': 8, 'K': 1, 'Ca': 2, 'Sc': 2,
+            'Ti': 2, 'Va': 2, 'Cr': 1, 'Mn': 2, 'Fe': 2, 'Co': 2, 'Ni': 2,
+            'Cu': 1, 'Zn': 2, 'Ga': 3, 'Ge': 4, 'As': 5, 'Se': 6, 'Br': 7,
+            'Kr': 8, 'I': 7}
         # TODO - consider putting charges in a configuration file
-        self.standard_charges = {'ARG-NH1': 1.0, 'ASP-OD2': -1.0,
-                                 'GLU-OE2': -1.0, 'HIS-ND1': 1.0,
-                                 'LYS-NZ': 1.0, 'N+': 1.0, 'C-': -1.0}
-        self.sybyl_charges = {'N.pl3': 1, 'N.3': 1, 'N.4': 1, 'N.ar': 1,
-                              'O.co2-': 1}
+        self.standard_charges = {
+            'ARG-NH1': 1.0, 'ASP-OD2': -1.0, 'GLU-OE2': -1.0, 'HIS-ND1': 1.0,
+            'LYS-NZ': 1.0, 'N+': 1.0, 'C-': -1.0}
+        self.sybyl_charges = {
+            'N.pl3': 1, 'N.3': 1, 'N.4': 1, 'N.ar': 1, 'O.co2-': 1}
         # TODO - consider putting bond lengths in a configuration file
-        self.bond_lengths = {'C': 1.09, 'N': 1.01, 'O': 0.96, 'F': 0.92,
-                             'Cl': 1.27, 'Br': 1.41, 'I': 1.61, 'S': 1.35}
+        self.bond_lengths = {
+            'C': 1.09, 'N': 1.01, 'O': 0.96, 'F': 0.92, 'Cl': 1.27,
+            'Br': 1.41, 'I': 1.61, 'S': 1.35}
         self.protonation_methods = {4: self.tetrahedral, 3: self.trigonal}
 
     def protonate(self, molecules):
@@ -217,7 +217,8 @@ class Protonate:
                 # use other atoms bonded to the neighbour to establish the
                 # plane, if possible
                 other_atom_indices = []
-                for i, bonded_atom in enumerate(atom.bonded_atoms[0].bonded_atoms):
+                for i, bonded_atom in enumerate(
+                        atom.bonded_atoms[0].bonded_atoms):
                     if bonded_atom != atom:
                         other_atom_indices.append(i)
                 vec1 = Vector(atom1=atom, atom2=atom.bonded_atoms[0])
@@ -333,9 +334,8 @@ class Protonate:
             i = 1
             for proton in atom.get_bonded_elements('H'):
                 proton.name = 'H%s%d' % (atom.name[1:], i)
-                proton.residue_label = "%-3s%4d%2s" % (proton.name,
-                                                       proton.res_num,
-                                                       proton.chain_id)
+                proton.residue_label = "%-3s%4d%2s" % (
+                    proton.name, proton.res_num, proton.chain_id)
                 i += 1
         debug('added', new_h, 'to', atom)
 
