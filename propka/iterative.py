@@ -10,12 +10,14 @@ from propka.lib import info, debug
 UNK_MIN_VALUE = 0.005
 
 
-def add_to_determinant_list(group1, group2, distance, iterative_interactions, version):
+def add_to_determinant_list(group1, group2, distance, iterative_interactions,
+                            version):
     """Add iterative determinantes to the list.
 
     [[R1, R2], [side-chain, coulomb], [A1, A2]], ...
 
-    NOTE - the sign is determined when the interaction is added to the iterative object!
+    NOTE - sign is determined when the interaction is added to the iterative
+           object!
     NOTE - distance < coulomb_cutoff here
 
     Args:
@@ -141,14 +143,18 @@ def add_iterative_ion_pair(object1, object2, interaction, version):
     q2 = object2.q
     comp1 = object1.pka_old + annihilation[0] + q1*coulomb_value
     comp2 = object2.pka_old + annihilation[1] + q2*coulomb_value
-    if object1.res_name not in version.parameters.exclude_sidechain_interactions:
+    if (object1.res_name
+            not in version.parameters.exclude_sidechain_interactions):
         comp1 += q1*hbond_value
-    if object2.res_name not in version.parameters.exclude_sidechain_interactions:
+    if (object2.res_name
+            not in version.parameters.exclude_sidechain_interactions):
         comp2 += q2*hbond_value
     if q1 == -1.0 and comp1 < comp2:
-        add_term = True  # pKa(acid) < pKa(base)
+        # pKa(acid) < pKa(base)
+        add_term = True
     elif q1 == 1.0 and comp1 > comp2:
-        add_term = True  # pKa(base) > pKa(acid)
+        # pKa(base) > pKa(acid)
+        add_term = True
     else:
         add_term = False
     annihilation[0] = 0.00
@@ -167,12 +173,14 @@ def add_iterative_ion_pair(object1, object2, interaction, version):
         # Side-chain
         if hbond_value > UNK_MIN_VALUE:
             # residue1
-            if object1.res_name not in version.parameters.exclude_sidechain_interactions:
+            if (object1.res_name
+                    not in version.parameters.exclude_sidechain_interactions):
                 interaction = [object2, q1*hbond_value]
                 annihilation[0] += -q1*hbond_value
                 object1.determinants['sidechain'].append(interaction)
             # residue2
-            if object2.res_name not in version.parameters.exclude_sidechain_interactions:
+            if (object2.res_name
+                    not in version.parameters.exclude_sidechain_interactions):
                 interaction = [object1, q2*hbond_value]
                 annihilation[1] += -q2*hbond_value
                 object2.determinants['sidechain'].append(interaction)
@@ -191,7 +199,7 @@ def add_determinants(iterative_interactions, version, _=None):
     # --- setup ---
     iteratives = []
     done_group = []
-    # creating iterative objects with references to their real group counterparts
+    # create iterative objects with references to their real group counterparts
     for interaction in iterative_interactions:
         pair = interaction[0]
         for group in pair:
@@ -354,8 +362,9 @@ class Iterative:
             return self.label == other.label
         else:
             # For heterogene atoms we also need to check the residue number
-            return self.label == other.label \
-                and self.atom.res_num == other.atom.res_num
+            return (
+                self.label == other.label
+                and self.atom.res_num == other.atom.res_num)
 
     def __hash__(self):
         """Needed to use objects in sets."""
