@@ -82,9 +82,9 @@ def write_pka(protein, parameters, filename=None, conformation='1A',
     str_ += get_summary_section(protein, conformation, parameters)
     str_ += "%s\n" % get_the_line()
     # printing Folding Profile
-    str_ += get_folding_profile_section(protein, conformation=conformation,
-                                        reference=reference,
-                                        window=[0., 14., 1.0])
+    str_ += get_folding_profile_section(
+        protein, conformation=conformation, reference=reference,
+        window=[0., 14., 1.0])
     # printing Protein Charge Profile
     str_ += get_charge_profile_section(protein, conformation=conformation)
     # now, writing the pka text to file
@@ -116,8 +116,9 @@ def print_tm_profile(protein, reference="neutral", window=[0., 14., 1.],
     else:
         str_ = " suggested Tm-profile for %s\n" % (protein.name)
         for (ph, tm_) in profile:
-            if ph >= window[0] and ph <= window[1] and (ph%window[2] < 0.01 \
-                or ph%window[2] > 0.99*window[2]):
+            if (ph >= window[0] and ph <= window[1]
+                    and (ph%window[2] < 0.01
+                         or ph%window[2] > 0.99*window[2])):
                 str_ += "%6.2lf%10.2lf\n" % (ph, tm_)
         info(str_)
 
@@ -163,15 +164,16 @@ def get_determinant_section(protein, conformation, parameters):
     # printing determinants
     for chain in protein.conformations[conformation].chains:
         for residue_type in parameters.write_out_order:
-            groups = [g for g in protein.conformations[conformation].groups \
+            groups = [
+                g for g in protein.conformations[conformation].groups
                 if g.atom.chain_id == chain]
             for group in groups:
                 if group.residue_type == residue_type:
-                    str_ += "%s" \
-                        % group.get_determinant_string(parameters.remove_penalised_group)
+                    str_ += "%s" % group.get_determinant_string(
+                        parameters.remove_penalised_group)
     # Add a warning in case of coupled residues
-    if protein.conformations[conformation].non_covalently_coupled_groups \
-        and not protein.options.display_coupled_residues:
+    if (protein.conformations[conformation].non_covalently_coupled_groups
+            and not protein.options.display_coupled_residues):
         str_ += 'Coupled residues (marked *) were detected.'
         str_ += 'Please rerun PropKa with the --display-coupled-residues \n'
         str_ += 'or -d option for detailed information.\n'
@@ -193,8 +195,8 @@ def get_summary_section(protein, conformation, parameters):
     for residue_type in parameters.write_out_order:
         for group in protein.conformations[conformation].groups:
             if group.residue_type == residue_type:
-                str_ += "%s" \
-                    % group.get_summary_string(parameters.remove_penalised_group)
+                str_ += "%s" % group.get_summary_string(
+                    parameters.remove_penalised_group)
     return str_
 
 
@@ -219,9 +221,10 @@ def get_folding_profile_section(protein, conformation='AVR',
     str_ += "\n"
     str_ += "Free energy of %9s (kcal/mol) as a function" % direction
     str_ += " of pH (using %s reference)\n" %  reference
-    profile, [ph_opt, dg_opt], [dg_min, dg_max], [ph_min, ph_max] \
-        = protein.get_folding_profile(conformation=conformation,
-                                      reference=reference, grid=[0., 14., 0.1])
+    profile, [ph_opt, dg_opt], [dg_min, dg_max], [ph_min, ph_max] = (
+        protein.get_folding_profile(
+            conformation=conformation, reference=reference,
+            grid=[0., 14., 0.1]))
     if profile is None:
         str_ += "Could not determine folding profile\n"
     else:
@@ -234,7 +237,8 @@ def get_folding_profile_section(protein, conformation='AVR',
         str_ += "Could not determine pH optimum\n"
     else:
         str_ += "The pH of optimum stability is %4.1lf" % ph_opt
-        str_ += " for which the free energy is %6.1lf kcal/mol at 298K\n" % dg_opt
+        str_ += (" for which the free energy is %6.1lf kcal/mol at 298K\n"
+                 % dg_opt)
     if dg_min is None or dg_max is None:
         str_ += "Could not determine pH values where the free energy"
         str_ += " is within 80 %s of minimum\n" % ("%")
@@ -273,8 +277,7 @@ def get_charge_profile_section(protein, conformation='AVR', _=None):
     if pi_pro is None or pi_mod is None:
         str_ += "Could not determine the pI\n\n"
     else:
-        str_ += "The pI is %5.2lf (folded) and %5.2lf (unfolded)\n" % (pi_pro,
-                                                                       pi_mod)
+        str_ += ("The pI is %5.2lf (folded) and %5.2lf (unfolded)\n")
     return str_
 
 
@@ -311,23 +314,39 @@ def get_propka_header():
     """
     today = date.today()
     str_ = "propka3.1 %93s\n" % (today)
-    str_ += "-------------------------------------------------------------------------------------------------------\n"
-    str_ += "--                                                                                                   --\n"
-    str_ += "--                                   PROPKA: A PROTEIN PKA PREDICTOR                                 --\n"
-    str_ += "--                                                                                                   --\n"
-    str_ += "--                                 VERSION 1.0,  04/25/2004, IOWA CITY                               --\n"
-    str_ += "--                                             BY HUI LI                                             --\n"
-    str_ += "--                                                                                                   --\n"
-    str_ += "--                            VERSION 2.0,  11/05/2007, IOWA CITY/COPENHAGEN                         --\n"
-    str_ += "--                                BY DELPHINE C. BAS AND DAVID M. ROGERS                             --\n"
-    str_ += "--                                                                                                   --\n"
-    str_ += "--                                VERSION 3.0,  01/06/2011, COPENHAGEN                               --\n"
-    str_ += "--                            BY MATS H.M. OLSSON AND CHRESTEN R. SONDERGARD                         --\n"
-    str_ += "--                                                                                                   --\n"
-    str_ += "--                                VERSION 3.1,  07/01/2011, COPENHAGEN                               --\n"
-    str_ += "--                            BY CHRESTEN R. SONDERGARD AND MATS H.M. OLSSON                         --\n"
-    str_ += "-------------------------------------------------------------------------------------------------------\n"
-    str_ += "\n"
+    str_ += ("---------------------------------------------------------------"
+             "----------------------------------------\n")
+    str_ += ("--                                                             "
+             "                                      --\n")
+    str_ += ("--                                   PROPKA: A PROTEIN PKA "
+             "PREDICTOR                                 --\n")
+    str_ += ("--                                                             "
+             "                                      --\n")
+    str_ += ("--                                 VERSION 1.0,  04/25/2004, "
+             "IOWA CITY                               --\n")
+    str_ += ("--                                             BY HUI LI       "
+             "                                      --\n")
+    str_ += ("--                                                             "
+             "                                      --\n")
+    str_ += ("--                            VERSION 2.0,  11/05/2007, IOWA "
+             "CITY/COPENHAGEN                         --\n")
+    str_ += ("--                                BY DELPHINE C. BAS AND DAVID "
+             "M. ROGERS                             --\n")
+    str_ += ("--                                                             "
+             "                                      --\n")
+    str_ += ("--                                VERSION 3.0,  01/06/2011, "
+             "COPENHAGEN                               --\n")
+    str_ += ("--                            BY MATS H.M. OLSSON AND CHRESTEN "
+             "R. SONDERGARD                         --\n")
+    str_ += ("--                                                             "
+             "                                      --\n")
+    str_ += ("--                                VERSION 3.1,  07/01/2011, "
+             "COPENHAGEN                               --\n")
+    str_ += ("--                            BY CHRESTEN R. SONDERGARD AND "
+             "MATS H.M. OLSSON                         --\n")
+    str_ += ("---------------------------------------------------------------"
+             "----------------------------------------\n")
+    str_ += ("\n")
     return str_
 
 
@@ -338,27 +357,38 @@ def get_references_header():
         string
     """
     str_ = ""
-    str_ += "-------------------------------------------------------------------------------------------------------\n"
-    str_ += " References:\n"
-    str_ += "\n"
-    str_ += "   Very Fast Empirical Prediction and Rationalization of Protein pKa Values\n"
-    str_ += "   Hui Li, Andrew D. Robertson and Jan H. Jensen\n"
-    str_ += "   PROTEINS: Structure, Function, and Bioinformatics 61:704-721 (2005)\n"
-    str_ += "   \n"
-    str_ += "   Very Fast Prediction and Rationalization of pKa Values for Protein-Ligand Complexes\n"
-    str_ += "   Delphine C. Bas, David M. Rogers and Jan H. Jensen\n"
-    str_ += "   PROTEINS: Structure, Function, and Bioinformatics 73:765-783 (2008)\n"
-    str_ += "   \n"
-    str_ += "   PROPKA3: Consistent Treatment of Internal and Surface Residues in Empirical pKa predictions\n"
-    str_ += "   Mats H.M. Olsson, Chresten R. Sondergard, Michal Rostkowski, and Jan H. Jensen\n"
-    str_ += "   Journal of Chemical Theory and Computation, 7(2):525-537 (2011)\n"
-    str_ += "   \n"
-    str_ += "   Improved Treatment of Ligands and Coupling Effects in Empirical Calculation\n"
-    str_ += "    and Rationalization of pKa Values\n"
-    str_ += "   Chresten R. Sondergaard, Mats H.M. Olsson, Michal Rostkowski, and Jan H. Jensen\n"
-    str_ += "   Journal of Chemical Theory and Computation, (2011)\n"
-    str_ += "   \n"
-    str_ += "-------------------------------------------------------------------------------------------------------\n"
+    str_ += ("---------------------------------------------------------------"
+             "----------------------------------------\n")
+    str_ += (" References:\n")
+    str_ += ("\n")
+    str_ += ("   Very Fast Empirical Prediction and Rationalization of "
+             "Protein pKa Values\n")
+    str_ += ("   Hui Li, Andrew D. Robertson and Jan H. Jensen\n")
+    str_ += ("   PROTEINS: Structure, Function, and Bioinformatics 61:704-721"
+             " (2005)\n")
+    str_ += ("   \n")
+    str_ += ("   Very Fast Prediction and Rationalization of pKa Values for "
+             "Protein-Ligand Complexes\n")
+    str_ += ("   Delphine C. Bas, David M. Rogers and Jan H. Jensen\n")
+    str_ += ("   PROTEINS: Structure, Function, and Bioinformatics 73:765-"
+             "783 (2008)\n")
+    str_ += ("   \n")
+    str_ += ("   PROPKA3: Consistent Treatment of Internal and Surface "
+             "Residues in Empirical pKa predictions\n")
+    str_ += ("   Mats H.M. Olsson, Chresten R. Sondergard, Michal Rostkowski, "
+             "and Jan H. Jensen\n")
+    str_ += ("   Journal of Chemical Theory and Computation, 7(2):525-537 "
+             "(2011)\n")
+    str_ += ("   \n")
+    str_ += ("   Improved Treatment of Ligands and Coupling Effects in "
+             "Empirical Calculation\n")
+    str_ += ("    and Rationalization of pKa Values\n")
+    str_ += ("   Chresten R. Sondergaard, Mats H.M. Olsson, Michal "
+             "Rostkowski, and Jan H. Jensen\n")
+    str_ += ("   Journal of Chemical Theory and Computation, (2011)\n")
+    str_ += ("   \n")
+    str_ += ("--------------------------------------------------------------"
+             "-----------------------------------------\n")
     return str_
 
 
@@ -381,10 +411,14 @@ def get_determinants_header():
         string
     """
     str_ = ""
-    str_ += "---------  -----   ------   ---------------------    --------------    --------------    --------------\n"
-    str_ += "                            DESOLVATION  EFFECTS       SIDECHAIN          BACKBONE        COULOMBIC    \n"
-    str_ += " RESIDUE    pKa    BURIED     REGULAR      RE        HYDROGEN BOND     HYDROGEN BOND      INTERACTION  \n"
-    str_ += "---------  -----   ------   ---------   ---------    --------------    --------------    --------------\n"
+    str_ += ("---------  -----   ------   ---------------------    "
+             "--------------    --------------    --------------\n")
+    str_ += ("                            DESOLVATION  EFFECTS       "
+             "SIDECHAIN          BACKBONE        COULOMBIC    \n")
+    str_ += (" RESIDUE    pKa    BURIED     REGULAR      RE        "
+             "HYDROGEN BOND     HYDROGEN BOND      INTERACTION  \n")
+    str_ += ("---------  -----   ------   ---------   ---------    "
+             "--------------    --------------    --------------\n")
     return str_
 
 
@@ -402,7 +436,7 @@ def get_summary_header():
 
 
 def get_the_line():
-    """Draw the line - Johnny Cash would have been proud - or actually Aerosmith!
+    """Draw the line-Johnny Cash would have been proud-or actually Aerosmith!
 
     NOTE - Johnny Cash walked the line.
 
