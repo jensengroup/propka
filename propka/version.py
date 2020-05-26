@@ -40,31 +40,38 @@ class Version:
 
     def calculate_pair_weight(self, num_volume1, num_volume2):
         """Calculate pair weight using assigned model."""
-        return self.weight_pair_method(self.parameters, num_volume1, num_volume2)
+        return self.weight_pair_method(
+            self.parameters, num_volume1, num_volume2)
 
     def hydrogen_bond_interaction(self, group1, group2):
         """Calculate H-bond energy using assigned model."""
         return self.hydrogen_bond_interaction_model(group1, group2, self)
 
-    def calculate_side_chain_energy(self, distance, dpka_max, cutoff, _, f_angle):
+    def calculate_side_chain_energy(self, distance, dpka_max, cutoff, _,
+                                    f_angle):
         """Calculate sidechain energy using assigned model."""
-        return self.sidechain_interaction_model(distance, dpka_max, cutoff, f_angle)
+        return self.sidechain_interaction_model(
+            distance, dpka_max, cutoff, f_angle)
 
     def electrostatic_interaction(self, group1, group2, distance):
         """Calculate electrostatic energy using assigned model."""
-        return self.electrostatic_interaction_model(group1, group2, distance, self)
+        return self.electrostatic_interaction_model(
+            group1, group2, distance, self)
 
     def calculate_coulomb_energy(self, distance, weight):
         """Calculate Coulomb energy using assigned model."""
-        return self.coulomb_interaction_model(distance, weight, self.parameters)
+        return self.coulomb_interaction_model(
+            distance, weight, self.parameters)
 
     def check_coulomb_pair(self, group1, group2, distance):
         """Check Coulomb pair using assigned model."""
-        return self.check_coulomb_pair_method(self.parameters, group1, group2, distance)
+        return self.check_coulomb_pair_method(
+            self.parameters, group1, group2, distance)
 
     def calculate_backbone_reorganization(self, conformation):
         """Calculate backbone reorganization using assigned model."""
-        return self.backbone_reorganisation_method(self.parameters, conformation)
+        return self.backbone_reorganisation_method(
+            self.parameters, conformation)
 
     def check_exceptions(self, group1, group2):
         """Calculate exceptions using assigned model."""
@@ -72,7 +79,8 @@ class Version:
 
     def setup_bonding_and_protonation(self, molecular_container):
         """Setup bonding and protonation using assigned model."""
-        return self.molecular_preparation_method(self.parameters, molecular_container)
+        return self.molecular_preparation_method(
+            self.parameters, molecular_container)
 
     def setup_bonding(self, molecular_container):
         """Setup bonding using assigned model."""
@@ -242,8 +250,9 @@ class ElementBasedLigandInteractions(VersionA):
             res = self.parameters.hydrogen_bonds.get_value(
                 elements[0], elements[1])
             if not res:
-                info('Could not determine backbone interaction parameters for:',
-                     backbone_atom, atom)
+                info(
+                    'Could not determine backbone interaction parameters for:',
+                    backbone_atom, atom)
             return None
         return None
 
