@@ -56,10 +56,11 @@ class Molecular_container:
         if input_file_extension[0:4] == '.pdb':
             # input is a pdb file. read in atoms and top up containers to make
             # sure that all atoms are present in all conformations
-            [self.conformations, self.conformation_names] \
-                = propka.pdb.read_pdb(input_file, self.version.parameters, self)
+            [self.conformations, self.conformation_names] = (
+                propka.pdb.read_pdb(input_file, self.version.parameters, self))
             if len(self.conformations) == 0:
-                info('Error: The pdb file does not seems to contain any molecular conformations')
+                info('Error: The pdb file does not seems to contain any '
+                     'molecular conformations')
                 sys.exit(-1)
             self.top_up_conformations()
             # make a structure precheck
@@ -79,9 +80,9 @@ class Molecular_container:
             propka.pdb.write_input(self, filename)
         elif input_file_extension == '.propka_input':
             #input is a propka_input file
-            [self.conformations, self.conformation_names] \
-                = propka.pdb.read_input(input_file, self.version.parameters,
-                                        self)
+            [self.conformations, self.conformation_names] = (
+                propka.pdb.read_input(input_file, self.version.parameters,
+                                      self))
             # Extract groups - this merely sets up the groups found in the
             # input file
             self.extract_groups()
@@ -94,8 +95,8 @@ class Molecular_container:
     def top_up_conformations(self):
         """Makes sure that all atoms are present in all conformations."""
         for name in self.conformation_names:
-            if name != '1A' and (len(self.conformations[name]) \
-                < len(self.conformations['1A'])):
+            if (name != '1A' and (len(self.conformations[name])
+                                  < len(self.conformations['1A']))):
                 self.conformations[name].top_up(self.conformations['1A'])
 
     def find_covalently_coupled_groups(self):
@@ -109,7 +110,8 @@ class Molecular_container:
         info('-' * 103)
         verbose = self.options.display_coupled_residues
         for name in self.conformation_names:
-            self.conformations[name].find_non_covalently_coupled_groups(verbose=verbose)
+            self.conformations[name].find_non_covalently_coupled_groups(
+                verbose=verbose)
 
     def extract_groups(self):
         """Identify the groups needed for pKa calculation."""
@@ -125,7 +127,8 @@ class Molecular_container:
         """Calculate pKa values."""
         # calculate for each conformation
         for name in self.conformation_names:
-            self.conformations[name].calculate_pka(self.version, self.options)
+            self.conformations[name].calculate_pka(
+                self.version, self.options)
         # find non-covalently coupled groups
         self.find_non_covalently_coupled_groups()
         # find the average of the conformations
@@ -137,9 +140,8 @@ class Molecular_container:
         """Generate an average of conformations."""
         parameters = self.conformations[self.conformation_names[0]].parameters
         # make a new configuration to hold the average values
-        avr_conformation = ConformationContainer(name='average',
-                                                 parameters=parameters,
-                                                 molecular_container=self)
+        avr_conformation = ConformationContainer(
+            name='average', parameters=parameters, molecular_container=self)
         container = self.conformations[self.conformation_names[0]]
         for group in container.get_groups_for_calculations():
             # new group to hold average values
@@ -150,8 +152,8 @@ class Molecular_container:
                 if group_to_add:
                     avr_group += group_to_add
                 else:
-                    str_ = 'Group %s could not be found in conformation %s.' \
-                        % (group.atom.residue_label, name)
+                    str_ = ('Group %s could not be found in conformation %s.'
+                            % (group.atom.residue_label, name))
                     warning(str_)
             # ... and store the average value
             avr_group = avr_group / len(self.conformation_names)
@@ -161,7 +163,8 @@ class Molecular_container:
                            self.conformations.values()))):
             avr_conformation.non_covalently_coupled_groups = True
         # store chain info
-        avr_conformation.chains = self.conformations[self.conformation_names[0]].chains
+        avr_conformation.chains = self.conformations[
+            self.conformation_names[0]].chains
         self.conformations['AVR'] = avr_conformation
 
     def write_pka(self, filename=None, reference="neutral",
@@ -180,12 +183,14 @@ class Molecular_container:
         # to an alternative pka file
         if self.options.display_coupled_residues:
             filename = os.path.join('%s_alt_state.pka' % (self.name))
-        if hasattr(self.version.parameters, 'output_file_tag') \
-            and len(self.version.parameters.output_file_tag) > 0:
-            filename = os.path.join('%s_%s.pka' % (self.name,
-                                                   self.version.parameters.output_file_tag))
-        propka.output.write_pka(self, self.version.parameters, filename=filename,
-                               conformation='AVR', reference=reference)
+        if (hasattr(self.version.parameters, 'output_file_tag')
+                and len(self.version.parameters.output_file_tag) > 0):
+            filename = os.path.join(
+                '%s_%s.pka' % (self.name,
+                               self.version.parameters.output_file_tag))
+        propka.output.write_pka(
+            self, self.version.parameters, filename=filename,
+            conformation='AVR', reference=reference)
 
     def get_folding_profile(self, conformation='AVR', reference="neutral",
                             grid=[0., 14., 0.1]):
@@ -238,8 +243,8 @@ class Molecular_container:
         charge_profile = []
         for ph in propka.lib.make_grid(*grid):
             conf = self.conformations[conformation]
-            q_unfolded, q_folded = conf.calculate_charge(self.version.parameters,
-                                                         ph=ph)
+            q_unfolded, q_folded = conf.calculate_charge(
+                self.version.parameters, ph=ph)
             charge_profile.append([ph, q_unfolded, q_folded])
         return charge_profile
 
@@ -254,8 +259,8 @@ class Molecular_container:
             1. Folded state PI
             2. Unfolded state PI
         """
-        charge_profile = self.get_charge_profile(conformation=conformation,
-                                                 grid=grid)
+        charge_profile = self.get_charge_profile(
+            conformation=conformation, grid=grid)
         pi_folded = pi_unfolded = [None, 1e6, 1e6]
         for point in charge_profile:
             pi_folded = min(pi_folded, point, key=lambda v: abs(v[2]))
@@ -266,16 +271,14 @@ class Molecular_container:
         pi_unfolded_value = pi_unfolded[0]
         step = grid[2]
         # TODO - need to warn if maximum number of iterations is exceeded
-        if (pi_folded[2] > UNK_PI_CUTOFF or pi_unfolded[1] > UNK_PI_CUTOFF) \
-            and iteration < MAX_ITERATION:
-            pi_folded_value, _ = self.get_pi(conformation=conformation,
-                                             grid=[pi_folded[0]-step,
-                                                   pi_folded[0]+step,
-                                                   step/10.0],
-                                             iteration=iteration+1)
-            _, pi_unfolded_value = self.get_pi(conformation=conformation,
-                                               grid=[pi_unfolded[0]-step,
-                                                     pi_unfolded[0]+step,
-                                                     step/10.0],
-                                               iteration=iteration+1)
+        if ((pi_folded[2] > UNK_PI_CUTOFF
+             or pi_unfolded[1] > UNK_PI_CUTOFF) and iteration < MAX_ITERATION):
+            pi_folded_value, _ = self.get_pi(
+                conformation=conformation,
+                grid=[pi_folded[0]-step, pi_folded[0]+step, step/10.0],
+                iteration=iteration+1)
+            _, pi_unfolded_value = self.get_pi(
+                conformation=conformation,
+                grid=[pi_unfolded[0]-step, pi_unfolded[0]+step, step/10.0],
+                iteration=iteration+1)
         return pi_folded_value, pi_unfolded_value
