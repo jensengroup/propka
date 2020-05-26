@@ -28,8 +28,8 @@ class NonCovalentlyCoupledGroups:
         # check if the interaction energy is high enough
         interaction_energy = max(self.get_interaction(group1, group2),
                                  self.get_interaction(group2, group1))
-        if interaction_energy <= self.parameters.min_interaction_energy \
-            and return_on_fail:
+        if (interaction_energy <= self.parameters.min_interaction_energy
+                and return_on_fail):
             return {'coupling_factor': -1.0}
          # calculate intrinsic pKa's, if not already done
         for group in [group1, group2]:
@@ -43,8 +43,8 @@ class NonCovalentlyCoupledGroups:
         default_pka1 = group1.pka_value
         default_pka2 = group2.pka_value
         # check that pka values are within relevant limits
-        if max(default_pka1, default_pka2) < self.parameters.min_pka or \
-                min(default_pka1, default_pka2) > self.parameters.max_pka:
+        if (max(default_pka1, default_pka2) < self.parameters.min_pka
+                or min(default_pka1, default_pka2) > self.parameters.max_pka):
             if return_on_fail:
                 return {'coupling_factor': -1.0}
         # Swap interactions and re-calculate pKa values
@@ -52,7 +52,8 @@ class NonCovalentlyCoupledGroups:
         group1.calculate_total_pka()
         group2.calculate_total_pka()
         # store swapped energy and pka's
-        swapped_energy = energy_method(ph=use_ph, reference=self.parameters.reference)
+        swapped_energy = energy_method(
+            ph=use_ph, reference=self.parameters.reference)
         swapped_pka1 = group1.pka_value
         swapped_pka2 = group2.pka_value
         pka_shift1 = swapped_pka1 - default_pka1
@@ -62,21 +63,23 @@ class NonCovalentlyCoupledGroups:
         group1.calculate_total_pka()
         group2.calculate_total_pka()
         # check difference in free energy
-        if abs(default_energy - swapped_energy) > self.parameters.max_free_energy_diff \
-            and return_on_fail:
+        if (abs(default_energy - swapped_energy)
+                > self.parameters.max_free_energy_diff and return_on_fail):
             return {'coupling_factor': -1.0}
         # check pka shift
-        if max(abs(pka_shift1), abs(pka_shift2)) < self.parameters.min_swap_pka_shift \
-            and return_on_fail:
+        if (max(abs(pka_shift1), abs(pka_shift2))
+                < self.parameters.min_swap_pka_shift and return_on_fail):
             return {'coupling_factor': -1.0}
         # check intrinsic pka diff
-        if abs(group1.intrinsic_pka - group2.intrinsic_pka) \
-            > self.parameters.max_intrinsic_pka_diff and return_on_fail:
+        if (abs(group1.intrinsic_pka - group2.intrinsic_pka)
+                > self.parameters.max_intrinsic_pka_diff and return_on_fail):
             return {'coupling_factor': -1.0}
         # if everything is OK, calculate the coupling factor and return all info
-        factor = self.get_free_energy_diff_factor(default_energy, swapped_energy) \
-            * self.get_pka_diff_factor(group1.intrinsic_pka, group2.intrinsic_pka) \
-            * self.get_interaction_factor(interaction_energy)
+        factor = (
+            self.get_free_energy_diff_factor(default_energy, swapped_energy)
+            * self.get_pka_diff_factor(group1.intrinsic_pka,
+                                       group2.intrinsic_pka)
+            * self.get_interaction_factor(interaction_energy))
         return {'coupling_factor': factor, 'default_energy': default_energy,
                 'swapped_energy': swapped_energy,
                 'interaction_energy': interaction_energy,
@@ -96,7 +99,9 @@ class NonCovalentlyCoupledGroups:
         intrinsic_pka_diff = abs(pka1-pka2)
         res = 0.0
         if intrinsic_pka_diff <= self.parameters.max_intrinsic_pka_diff:
-            res = 1-(intrinsic_pka_diff/self.parameters.max_intrinsic_pka_diff)**2
+            res = (
+                1-(intrinsic_pka_diff
+                   /self.parameters.max_intrinsic_pka_diff)**2)
         return res
 
     def get_free_energy_diff_factor(self, energy1, energy2):
@@ -125,8 +130,10 @@ class NonCovalentlyCoupledGroups:
         res = 0.0
         interaction_energy = abs(interaction_energy)
         if interaction_energy >= self.parameters.min_interaction_energy:
-            res = (interaction_energy-self.parameters.min_interaction_energy) \
-                / (1.0+interaction_energy-self.parameters.min_interaction_energy)
+            res = (
+                (interaction_energy-self.parameters.min_interaction_energy)
+                / (1.0+interaction_energy
+                   -self.parameters.min_interaction_energy))
         return res
 
     def identify_non_covalently_coupled_groups(self, conformation,
@@ -140,24 +147,29 @@ class NonCovalentlyCoupledGroups:
         self.parameters = conformation.parameters
         if verbose:
             info('')
-            info(' Warning: When using the -d option, pKa values based on \'swapped\' interactions')
+            info(' Warning: When using the -d option, pKa values based on '
+                 '\'swapped\' interactions')
             info('          will be writting to the output .pka file')
             info('')
             info('-' * 103)
             info(' Detecting non-covalently coupled residues')
             info('-' * 103)
-            info('   Maximum pKa difference:     %4.2f pKa units' \
-                % self.parameters.max_intrinsic_pka_diff)
-            info('   Minimum interaction energy: %4.2f pKa units' \
-                % self.parameters.min_interaction_energy)
-            info('   Maximum free energy diff.:  %4.2f pKa units' \
-                % self.parameters.max_free_energy_diff)
-            info('   Minimum swap pKa shift:     %4.2f pKa units' \
-                % self.parameters.min_swap_pka_shift)
-            info('   pH:                         %6s ' % str(self.parameters.pH))
-            info('   Reference:                  %s' % self.parameters.reference)
-            info('   Min pKa:                    %4.2f' % self.parameters.min_pka)
-            info('   Max pKa:                    %4.2f' % self.parameters.max_pka)
+            info('   Maximum pKa difference:     %4.2f pKa units'
+                 % self.parameters.max_intrinsic_pka_diff)
+            info('   Minimum interaction energy: %4.2f pKa units'
+                 % self.parameters.min_interaction_energy)
+            info('   Maximum free energy diff.:  %4.2f pKa units'
+                 % self.parameters.max_free_energy_diff)
+            info('   Minimum swap pKa shift:     %4.2f pKa units'
+                 % self.parameters.min_swap_pka_shift)
+            info('   pH:                         %6s '
+                 % str(self.parameters.pH))
+            info('   Reference:                  %s'
+                 % self.parameters.reference)
+            info('   Min pKa:                    %4.2f'
+                 % self.parameters.min_pka)
+            info('   Max pKa:                    %4.2f'
+                 % self.parameters.max_pka)
             info('')
         # find coupled residues
         titratable_groups = conformation.get_titratable_groups()
@@ -166,13 +178,13 @@ class NonCovalentlyCoupledGroups:
                 for group2 in titratable_groups:
                     if group1 == group2:
                         break
-                    if not group1 in group2.non_covalently_coupled_groups \
-                        and self.do_prot_stat:
-                        data = self.\
-                            is_coupled_protonation_state_probability(group1,
-                                                                     group2,
-                                                                     conformation.\
-                                                                         calculate_folding_energy)
+                    if (group1 not in group2.non_covalently_coupled_groups
+                            and self.do_prot_stat):
+                        data = (
+                            self
+                            .is_coupled_protonation_state_probability(
+                                group1, group2,
+                                conformation.calculate_folding_energy))
                         if data['coupling_factor'] > 0.0:
                             group1.couple_non_covalently(group2)
         if verbose:
@@ -184,12 +196,13 @@ class NonCovalentlyCoupledGroups:
         Args:
             conformation:  conformation to print
         """
-        map_ = make_interaction_map('Non-covalent coupling map for %s' % conformation,
-                                    conformation.get_non_covalently_coupled_groups(),
-                                    lambda g1, g2: g1 in g2.non_covalently_coupled_groups)
+        map_ = make_interaction_map(
+            'Non-covalent coupling map for %s' % conformation,
+            conformation.get_non_covalently_coupled_groups(),
+            lambda g1, g2: g1 in g2.non_covalently_coupled_groups)
         info(map_)
-        for system in conformation.get_coupled_systems(conformation.\
-            get_non_covalently_coupled_groups(), \
+        for system in conformation.get_coupled_systems(
+                conformation.get_non_covalently_coupled_groups(),
                 Group.get_non_covalently_coupled_groups):
             self.print_system(conformation, list(system))
 
@@ -206,11 +219,14 @@ class NonCovalentlyCoupledGroups:
         # print out coupling info for each interaction
         coup_info = ''
         for interaction in interactions:
-            data = self.is_coupled_protonation_state_probability(interaction[0], \
-                interaction[1], conformation.calculate_folding_energy, \
-                    return_on_fail=False)
-            coup_info += self.make_data_to_string(data, interaction[0], \
-                interaction[1]) + '\n\n'
+            data = (
+                self.is_coupled_protonation_state_probability(
+                    interaction[0], interaction[1],
+                    conformation.calculate_folding_energy,
+                    return_on_fail=False))
+            coup_info += (
+                self.make_data_to_string(data, interaction[0], interaction[1])
+                + '\n\n')
         info(coup_info)
         # make list of possible combinations of swap to try out
         combinations = propka.lib.generate_combinations(interactions)
@@ -236,14 +252,15 @@ class NonCovalentlyCoupledGroups:
         Args:
             group1:  first group for interaction
             group2:  second group for interaction
-            include_side_chain_hbs:  include side-chain hydrogen bonds in energy
+            include_side_chain_hbs:  include sidechain hydrogen bonds in energy
         Returns:
             interaction energy (float)
         """
         determinants = group1.determinants['coulomb']
         if include_side_chain_hbs:
-            determinants = group1.determinants['sidechain'] \
-                + group1.determinants['coulomb']
+            determinants = (
+                group1.determinants['sidechain']
+                + group1.determinants['coulomb'])
         interaction_energy = 0.0
         for det in determinants:
             if group2 == det.group:
@@ -346,19 +363,21 @@ class NonCovalentlyCoupledGroups:
         Returns:
             formatted string with information.
         """
-        str_ = \
+        str_ = (
             """ %s and %s coupled (prot.state): %5.2f
  Energy levels:       %6.2f, %6.2f  (difference: %6.2f) at pH %6.2f
  Interaction energy:  %6.2f
  Intrinsic pka's:     %6.2f, %6.2f  (difference: %6.2f)
- Swapped pKa's:       %6.2f, %6.2f  (difference: %6.2f, %6.2f)""" % \
-     (group1.label, group2.label, data['coupling_factor'],
-      data['default_energy'], data['swapped_energy'],
-      data['default_energy'] - data['swapped_energy'], data['pH'],
-      data['interaction_energy'], group1.intrinsic_pka, group2.intrinsic_pka,
-      group1.intrinsic_pka-group2.intrinsic_pka, data['swapped_pka1'],
-      data['swapped_pka2'], data['pka_shift1'], data['pka_shift2'])
-
+ Swapped pKa's:       %6.2f, %6.2f  (difference: %6.2f, %6.2f)"""
+            % (
+                group1.label, group2.label, data['coupling_factor'],
+                data['default_energy'], data['swapped_energy'],
+                data['default_energy'] - data['swapped_energy'],
+                data['pH'], data['interaction_energy'],
+                group1.intrinsic_pka, group2.intrinsic_pka,
+                group1.intrinsic_pka-group2.intrinsic_pka,
+                data['swapped_pka1'], data['swapped_pka2'],
+                data['pka_shift1'], data['pka_shift2']))
         return str_
 
 
