@@ -25,15 +25,14 @@ def read_pdb(pdb_file, parameters, molecule):
     """
     conformations = {}
     # read in all atoms in the file
-    lines = get_atom_lines_from_pdb(pdb_file,
-                                    ignore_residues=parameters.ignore_residues,
-                                    keep_protons=molecule.options.keep_protons,
-                                    chains=molecule.options.chains)
+    lines = get_atom_lines_from_pdb(
+        pdb_file, ignore_residues=parameters.ignore_residues,
+        keep_protons=molecule.options.keep_protons,
+        chains=molecule.options.chains)
     for (name, atom) in lines:
         if not name in conformations.keys():
-            conformations[name] = ConformationContainer(name=name,
-                                                        parameters=parameters,
-                                                        molecular_container=molecule)
+            conformations[name] = ConformationContainer(
+                name=name, parameters=parameters, molecular_container=molecule)
         conformations[name].add_atom(atom)
     # make a sorted list of conformation names
     names = sorted(conformations.keys(), key=propka.lib.conformation_sorter)
@@ -150,7 +149,8 @@ def get_atom_lines_from_pdb(pdb_file, ignore_residues=[], keep_protons=False,
             # and yield the atom
             atom = Atom(line=line)
             atom.terminal = terminal
-            if not (atom.element == 'H' and not keep_protons): #ignore hydrogen
+            #ignore hydrogen
+            if not (atom.element == 'H' and not keep_protons):
                 yield (conformation, atom)
             terminal = None
 
@@ -255,10 +255,12 @@ def write_input(molecular_container, filename):
         for atom in molecular_container.conformations[conformation_name].atoms:
             out.write(atom.make_conect_line())
         # write covalently coupled groups
-        for group in molecular_container.conformations[conformation_name].groups:
+        for group in (
+                molecular_container.conformations[conformation_name].groups):
             out.write(group.make_covalently_coupled_line())
         # write non-covalently coupled groups
-        for group in molecular_container.conformations[conformation_name].groups:
+        for group in (
+                molecular_container.conformations[conformation_name].groups):
             out.write(group.make_non_covalently_coupled_line())
         out.write('ENDMDL\n')
     out.close()
