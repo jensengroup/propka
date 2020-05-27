@@ -20,8 +20,10 @@ MOL2_LINE_FMT = (
     "{r.sybyl_type:>6s} {r.res_num:>6d} {r.res_name:>10s}     0.0000\n")
 PDB_LINE_FMT2 = (
     "ATOM {numb:>6d} {atom_label} {res_name}{chain_id:>2s}{res_num:>4d}"
-    "{x:>12.3f}{y:>8.3f}{z:>8.3f}{occ:>6.2f}{beta:>6.2f}\n"
-)
+    "{x:>12.3f}{y:>8.3f}{z:>8.3f}{occ:>6.2f}{beta:>6.2f}\n")
+STR_FMT = (
+    "{r.numb:>5d}-{r.name:>4s} {r.res_num:>5d}-{r.res_name:>3s} "
+    "({r.chain_id:1s}) [{r.x:>8.3f} {r.y:>8.3f} {r.z:>8.3f}] {r.element:s}")
 
 
 class Atom(object):
@@ -152,9 +154,9 @@ class Atom(object):
             array of bonded atoms.
         """
         res = []
-        for ba in self.bonded_atoms:
-            if ba.element == element:
-                res.append(ba)
+        for bond_atom in self.bonded_atoms:
+            if bond_atom.element == element:
+                res.append(bond_atom)
         return res
 
     def get_bonded_heavy_atoms(self):
@@ -284,7 +286,7 @@ class Atom(object):
         bonded.sort()
 
         for b in bonded:
-            res += '%5d'%b
+            res += '%5d' % b
         res += '\n'
         return res
 
@@ -409,9 +411,7 @@ class Atom(object):
 
     def __str__(self):
         """Return an undefined-format string version of this atom."""
-        return '%5d-%4s %5d-%3s (%1s) [%8.3f %8.3f %8.3f] %s' % (
-            self.numb, self.name, self.res_num, self.res_name, self.chain_id,
-            self.x, self.y, self.z, self.element)
+        return STR_FMT.format(r=self)
 
     def set_residue(self, residue):
         """ Makes a reference to the parent residue
