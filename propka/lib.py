@@ -232,17 +232,11 @@ def loadOptions(args=None):
     Returns:
         argparse namespace
     """
-    if args == None:
-        args = []
     # loading the parser
     parser = build_parser()
 
     # parsing and returning options and arguments
-    if len(args) == 0:
-        # command line
-        options = parser.parse_args()
-    else:
-        options = parser.parse_args(args)
+    options = parser.parse_args(args)
 
     # adding specified filenames to arguments
     options.filenames.append(options.input_pdb)
