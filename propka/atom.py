@@ -9,17 +9,18 @@ from . import hybrid36
 PKA_FMT = "{:6.2f}"
 INPUT_LINE_FMT = (
     "{type:6s}{r.numb:>5d} {atom_label} {r.res_name}{r.chain_id:>2s}"
-    "{r.res_num:>4d}{r.x:>12.3f}{r.y:>8.3f}{r.z:>8.3f}{group:>6s}{pka:>6s} ")
+    "{r.res_num:>4d}{r.x:>12.3f}{r.y:>8.3f}{r.z:>8.3f}{group:>6s}{pka:>6s} \n")
 PDB_LINE_FMT1 = (
     "{type:6s}{r.numb:>5d} {atom_label} {r.res_name}{r.chain_id:>2s}"
-    "{r.res_num:>4d}{r.x:>12.3f}{r.y:>8.3f}{r.z:>8.3f}{r.occ:>6s}{r.beta:>6s}")
+    "{r.res_num:>4d}{r.x:>12.3f}{r.y:>8.3f}{r.z:>8.3f}{r.occ:>6s}"
+    "{r.beta:>6s}\n")
 MOL2_LINE_FMT = (
     "{id:<4d} {atom_label:4s} "
     "{r.x:>10.4f} {r.y:>10.4f} {r.z:>10.4f} "
-    "{r.sybyl_type:>6s} {r.res_num:>6d} {r.res_name:>10s}     0.0000")
+    "{r.sybyl_type:>6s} {r.res_num:>6d} {r.res_name:>10s}     0.0000\n")
 PDB_LINE_FMT2 = (
     "ATOM {numb:>6d} {atom_label} {res_name}{chain_id:>2s}{res_num:>4d}"
-    "{x:>12.3f}{y:>8.3f}{z:>8.3f}{occ:>6.2f}{beta:>6.2f}"
+    "{x:>12.3f}{y:>8.3f}{z:>8.3f}{occ:>6.2f}{beta:>6.2f}\n"
 )
 
 
@@ -267,7 +268,6 @@ class Atom(object):
             type=self.type.upper(), r=self,
             atom_label=propka.lib.make_tidy_atom_label(self.name, self.element),
             group=group, pka=model_pka)
-        str_ += "\n"
         return str_
 
     def make_conect_line(self):
@@ -342,7 +342,6 @@ class Atom(object):
         str_ = PDB_LINE_FMT1.format(
             type=self.type.upper(), r=self,
             atom_label=propka.lib.make_tidy_atom_label(self.name, self.element))
-        str_ += "\n"
         return str_
 
     def make_mol2_line(self, id_):
@@ -358,11 +357,11 @@ class Atom(object):
         str_ = MOL2_LINE_FMT.format(
             id=id_, r=self,
             atom_label=propka.lib.make_tidy_atom_label(self.name, self.element))
-        str_ += "\n"
         return str_
 
     def make_pdb_line2(self, numb=None, name=None, res_name=None, chain_id=None,
-                       res_num=None, x=None, y=None, z=None, occ=None, beta=None):
+                       res_num=None, x=None, y=None, z=None, occ=None,
+                       beta=None):
         """Create a PDB line.
 
         TODO - this could/should be a @property method/attribute
@@ -397,7 +396,6 @@ class Atom(object):
             x=x, y=y, z=z, occ=occ, beta=beta,
             atom_label=propka.lib.make_tidy_atom_label(name, self.element)
         )
-        str_ += '\n'
         return str_
 
     def get_tidy_label(self):
