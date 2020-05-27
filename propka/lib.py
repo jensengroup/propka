@@ -222,7 +222,7 @@ def build_parser(parser=None):
     return parser
 
 
-def loadOptions(args):
+def loadOptions(args=None):
     """
     Load the arguments parser with options. Note that verbosity is set as soon
     as this function is invoked.
@@ -232,9 +232,8 @@ def loadOptions(args):
     Returns:
         argparse namespace
     """
-    # defining a 'usage' message
-    usage = "usage: %prog [options] filename"
-
+    if args == None:
+        args = []
     # loading the parser
     parser = build_parser()
 
