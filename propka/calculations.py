@@ -242,8 +242,8 @@ def add_trp_hydrogen(residue):
         elif atom.name == "CE2":
             ce_atom = atom
     if (cd_atom is None) or (ne_atom is None) or (ce_atom is None):
-        errstr = "Unable to find all atoms for %s %s" % (residue[0].res_name,
-                                                         residue[0].res_num)
+        errstr = "Unable to find all atoms for %s %s" % (
+            residue[0].res_name, residue[0].res_num)
         raise ValueError(errstr)
     he_atom = protonate_sp2(cd_atom, ne_atom, ce_atom)
     he_atom.name = "HNE"
@@ -269,8 +269,8 @@ def add_amd_hydrogen(residue):
               or (atom.res_name == "ASN" and atom.name == "ND2")):
             n_atom = atom
     if (c_atom is None) or (o_atom is None) or (n_atom is None):
-        errstr = "Unable to find all atoms for %s %s" % (residue[0].res_name,
-                                                         residue[0].res_num)
+        errstr = "Unable to find all atoms for %s %s" % (
+            residue[0].res_name, residue[0].res_num)
         raise ValueError(errstr)
     h1_atom = protonate_direction(n_atom, o_atom, c_atom)
     h1_atom.name = "HN1"
@@ -604,8 +604,8 @@ def hydrogen_bond_interaction(group1, group2, version):
     atoms2 = group2.get_interaction_atoms(group1)
     [closest_atom1, dist, closest_atom2] = get_smallest_distance(atoms1, atoms2)
     if None in [closest_atom1, closest_atom2]:
-        warning('Side chain interaction failed for %s and %s' % (group1.label,
-                                                                 group2.label))
+        warning('Side chain interaction failed for %s and %s' % (
+            group1.label, group2.label))
         return None
     # get the parameters
     [dpka_max, cutoff] = version.get_hydrogen_bond_parameters(closest_atom1,

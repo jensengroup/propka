@@ -113,7 +113,7 @@ class LigandPkaValues:
         # do one molecule at the time so we don't confuse marvin
         molecules = propka.lib.split_atoms_into_molecules(atoms)
         for i, molecule in enumerate(molecules):
-            filename = '%s_%d.mol2'%(name, i+1)
+            filename = '%s_%d.mol2' % (name, i+1)
             self.get_marvin_pkas_for_molecule(
                 molecule, filename=filename, reuse=reuse, num_pkas=num_pkas,
                 min_ph=min_ph, max_ph=max_ph)
@@ -141,8 +141,12 @@ class LigandPkaValues:
             warning(errstr)
             propka.pdb.write_mol2_for_atoms(atoms, filename)
         # Marvin calculate pKa values
-        options = ('pka -a %d -b %d --min %f --max %f -d large'
-                   % (num_pkas, num_pkas, min_ph, max_ph))
+        fmt = (
+            'pka -a {num1} -b {num2} --min {min_ph} '
+            '--max {max_ph} -d large')
+        options = (
+            fmt.format(
+                num1=num_pkas, num2=num_pkas, min_ph=min_ph, max_ph=max_ph))
         (output, errors) = subprocess.Popen(
             [self.cxcalc, filename]+options.split(), stdout=subprocess.PIPE,
             stderr=subprocess.PIPE).communicate()

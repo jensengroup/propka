@@ -270,9 +270,10 @@ def get_charge_profile_section(protein, conformation='AVR', _=None):
     if profile is None:
         str_ += "Could not determine charge profile\n"
     else:
-        str_ += "%6s%10s%8s\n" % ("pH", "unfolded", "folded")
+        str_ += '    pH  unfolded  folded\n'
         for (ph, q_mod, q_pro) in profile:
-            str_ += "%6.2lf%10.2lf%8.2lf\n" % (ph, q_mod, q_pro)
+            str_ += "{ph:6.2f}{qm:10.2f}{qp:8.2f}\n".format(
+                ph=ph, qm=q_mod, qp=q_pro)
     pi_pro, pi_mod = protein.get_pi(conformation=conformation)
     if pi_pro is None or pi_mod is None:
         str_ += "Could not determine the pI\n\n"

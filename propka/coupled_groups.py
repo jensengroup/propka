@@ -146,31 +146,27 @@ class NonCovalentlyCoupledGroups:
         """
         self.parameters = conformation.parameters
         if verbose:
-            info('')
-            info(' Warning: When using the -d option, pKa values based on '
-                 '\'swapped\' interactions')
-            info('          will be writting to the output .pka file')
-            info('')
-            info('-' * 103)
-            info(' Detecting non-covalently coupled residues')
-            info('-' * 103)
-            info('   Maximum pKa difference:     %4.2f pKa units'
-                 % self.parameters.max_intrinsic_pka_diff)
-            info('   Minimum interaction energy: %4.2f pKa units'
-                 % self.parameters.min_interaction_energy)
-            info('   Maximum free energy diff.:  %4.2f pKa units'
-                 % self.parameters.max_free_energy_diff)
-            info('   Minimum swap pKa shift:     %4.2f pKa units'
-                 % self.parameters.min_swap_pka_shift)
-            info('   pH:                         %6s '
-                 % str(self.parameters.pH))
-            info('   Reference:                  %s'
-                 % self.parameters.reference)
-            info('   Min pKa:                    %4.2f'
-                 % self.parameters.min_pka)
-            info('   Max pKa:                    %4.2f'
-                 % self.parameters.max_pka)
-            info('')
+            info_fmt = (
+                '\n'
+                ' Warning: When using the -d option, pKa values based on \n'
+                '\'swapped\' interactions\n'
+                '          will be writting to the output .pka file\n'
+                '\n'
+                '{sep}\n'
+                '\n'
+                ' Detecting non-covalently coupled residues\n'
+                '{sep}\n'
+                '   Maximum pKa difference:     {c.max_intrinsic_pka_diff:>4.2f} pKa units\n'
+                '   Minimum interaction energy: {c.min_interaction_energy:>4.2f} pKa units\n'
+                '   Maximum free energy diff.:  {c.max_free_energy_diff:>4.2f} pKa units\n'
+                '   Minimum swap pKa shift:     {c.min_swap_pka_shift:>4.2f} pKa units\n'
+                '   pH:                         {c.pH:>6} \n'
+                '   Reference:                  {c.reference}\n'
+                '   Min pKa:                    {c.min_pka:>4.2f}\n'
+                '   Max pKa:                    {c.max_pka:>4.2f}\n'
+                '\n')
+            sep = "-" * 103
+            info(info_fmt.format(sep=sep, c=self))
         # find coupled residues
         titratable_groups = conformation.get_titratable_groups()
         if not conformation.non_covalently_coupled_groups:
@@ -364,20 +360,24 @@ class NonCovalentlyCoupledGroups:
             formatted string with information.
         """
         str_ = (
-            """ %s and %s coupled (prot.state): %5.2f
- Energy levels:       %6.2f, %6.2f  (difference: %6.2f) at pH %6.2f
- Interaction energy:  %6.2f
- Intrinsic pka's:     %6.2f, %6.2f  (difference: %6.2f)
- Swapped pKa's:       %6.2f, %6.2f  (difference: %6.2f, %6.2f)"""
-            % (
-                group1.label, group2.label, data['coupling_factor'],
-                data['default_energy'], data['swapped_energy'],
-                data['default_energy'] - data['swapped_energy'],
-                data['pH'], data['interaction_energy'],
-                group1.intrinsic_pka, group2.intrinsic_pka,
-                group1.intrinsic_pka-group2.intrinsic_pka,
-                data['swapped_pka1'], data['swapped_pka2'],
-                data['pka_shift1'], data['pka_shift2']))
+            " {label1} and {label2} coupled (prot.state): {coupl_fact:>5.2f}\n"
+            " Energy levels:       {def_energy:>6.2f}, {swap_energy:>6.2f}  "
+            "(difference: {diff_energy:>6.2f}) at pH {ph:>6.2f}\n"
+            " Interaction energy:  {int_energy:>6.2f}\n"
+            " Intrinsic pka's:     {pka1:>6.2f}, {pka2:>6.2f}  "
+            "(difference: {diff_pka:>6.2f})\n"
+            " Swapped pKa's:       {swap1:>6.2f}, {swap2:>6.2f}  "
+            "(difference: {shift1:>6.2f}, {shift2:>6.2f})"
+ ).format(
+     label1=group1.label, label2=group2.label,
+     coupl_fact=data['coupling_factor'], def_energy=data['default_energy'],
+     swap_energy=data['swapped_energy'],
+     diff_energy=data['default_energy']-data['swapped_energy'], ph=data['pH'],
+     int_energy=data['interaction_energy'], pka1=group1.intrinsic_pka,
+     pka2=group2.intrinsic_pka,
+     diff_pka=group1.intrinsic_pka-group2.intrinsic_pka, 
+     swap1=data['swapped_pka1'], swap2=data['swapped_pka2'],
+     shift1=data['pka_shift1'], shift2=data['pka_shift2'])
         return str_
 
 

@@ -575,9 +575,11 @@ class ConformationContainer:
 
     def __str__(self):
         """String that lists statistics of atoms and groups."""
-        str_ = (
-            'Conformation container %s with %d atoms and %d groups'
-            % (self.name, len(self), len(self.groups)))
+        fmt = (
+            "Conformation container {name} with {natoms:d} atoms and "
+            "{ngroups:d} groups")
+        str_ = fmt.format(
+            name=self.name, natoms=len(self), ngroups=len(self.groups))
         return str_
 
     def __len__(self):

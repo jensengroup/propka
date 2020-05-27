@@ -225,14 +225,17 @@ class Parameters:
             'NAM': ['AMD'], 'N1': [], 'O2': []}
         for group1 in agroups:
             for group2 in lgroups:
-                interaction = '%3s %3s %1s %4s %4s' % (
-                    group1, group2, self.interaction_matrix[group1][group2],
-                    self.sidechain_cutoffs.get_value(group1, group2)[0],
-                    self.sidechain_cutoffs.get_value(group1, group2)[1])
+                fmt = "{grp1:>3s} {grp2:>3s} {mat:1s} {val1:4} {val2:4}"
+                interaction = fmt.format(
+                        grp1=group1, grp2=group2,
+                        mat=self.interaction_matrix[group1][group2],
+                        val1=self.sidechain_cutoffs.get_value(group1, group2)[0],
+                        val2=self.sidechain_cutoffs.get_value(group1, group2)[1])
                 map_interaction = ''
                 if group2 in map_:
                     for val in map_[group2]:
-                        map_interaction += '|%3s %3s %1s %4s %4s' % (
+                        fmt = "|{grp1:>3s} {grp2:>3s} {mat:1s} {val1:4} {val2:4}"
+                        map_interaction += fmt.format(
                             group1, val, self.interaction_matrix[group1][val],
                             self.sidechain_cutoffs.get_value(group1, val)[0],
                             self.sidechain_cutoffs.get_value(group1, val)[1])
@@ -334,13 +337,14 @@ Group1 & Group2 & Interaction & c1 &c2 \\\\
                 if (self.sidechain_cutoffs.get_value(group1, group2)
                         == self.sidechain_cutoffs.default):
                     continue
-                str_ += ('%3s & %3s & %1s & %4s & %4s\\\\ \n'
-                         % (group1, group2,
-                            self.interaction_matrix[group1][group2],
-                            self.sidechain_cutoffs.get_value(group1,
-                                                             group2)[0],
-                            self.sidechain_cutoffs.get_value(group1,
-                                                             group2)[1]))
+                fmt = (
+                    "{grp1:>3s} & {grp2:>3s} & {mat:1s} & {val1:4} & "
+                    "{val2:4}\\\\ \n")
+                str_ += fmt.format(
+                    group1, group2,
+                    self.interaction_matrix[group1][group2],
+                    self.sidechain_cutoffs.get_value(group1, group2)[0],
+                    self.sidechain_cutoffs.get_value(group1, group2)[1])
                 if group1 == group2:
                     break
         str_ += '  \\end{longtable}\n'

@@ -76,15 +76,18 @@ class Group:
         if self.atom.terminal:
             self.residue_type = self.atom.terminal
         if self.atom.type == 'atom':
-            self.label = '%-3s%4d%2s' % (self.residue_type, atom.res_num,
-                                         atom.chain_id)
+            fmt = "{g.residue_type:<3s}{a.res_num:>4d}{a.chain_id:>2s}"
+            self.label = fmt.format(g=self, a=atom)
         elif self.atom.res_name in ['DA ', 'DC ', 'DG ', 'DT ']:
-            self.label = '%1s%1s%1s%4d%2s' % (
-                self.residue_type[1], atom.element,
-                atom.name.replace('\'', '')[-1], atom.res_num, atom.chain_id)
+            fmt = "{type:1s}{elem:1s}{name:1s}{res_num:>4d}{chain:>2s}"
+            self.label = fmt.format(
+                type=self.residue_type[1], elem=atom.element,
+                name=atom.name.replace('\'', '')[-1], res_num=atom.res_num,
+                chain=atom.chain_id)
         else:
-            self.label = '%-3s%4s%2s' % (
-                self.residue_type, atom.name, atom.chain_id)
+            fmt = "{type:<3s}{name:>4s}{chain:>2s}"
+            self.label = fmt.format(
+                type=self.residue_type, name=atom.name, chain=atom.chain_id)
         # container for squared distances
         self.squared_distances = {}
 
@@ -545,11 +548,10 @@ class Group:
             penalty = (
                 ' NB: Discarded due to coupling with %s'
                 % self.coupled_titrating_group.label)
-        str_ = (
-            "   %9s %8.2lf %10.2lf %18s   %s\n"
-            % (self.label, self.pka_value, self.model_pka, ligand_type,
-               penalty))
-        return str_
+        fmt = (
+            "   {g.label:>9s} {g.pka_value:8.2f} {g.model_pka:10.2f} "
+            "{type:>18s}   {penalty:s}\n")
+        return fmt.format(g=self, type=ligand_type, penalty=penalty)
 
     def __str__(self):
         return 'Group (%s) for %s' % (self.type, self.atom)
