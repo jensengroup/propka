@@ -58,7 +58,7 @@ class ConformationContainer:
         # if a group is coupled and we are reading a .propka_input file, then
         # some more configuration might be needed
         map_ = make_interaction_map(
-            'Covalent coupling map for %s' % self,
+            'Covalent coupling map for {0:s}'.format(str(self)),
             self.get_covalently_coupled_groups(),
             lambda g1, g2: g1 in g2.covalently_coupled_groups)
         info(map_)
@@ -100,7 +100,7 @@ class ConformationContainer:
             self.set_common_charge_centres()
         # print coupling map
         map_ = make_interaction_map(
-            'Covalent coupling map for %s' % self,
+            'Covalent coupling map for {0:s}'.format(str(self)),
             self.get_covalently_coupled_groups(),
             lambda g1, g2: g1 in g2.covalently_coupled_groups)
         info(map_)

@@ -191,7 +191,7 @@ class BondMaker:
             atoms:  list of atoms to check for bonds
         """
         for atom1 in atoms:
-            key = '%s-%s' % (atom1.res_name, atom1.name)
+            key = '{0:s}-{1:s}'.format(atom1.res_name, atom1.name)
             if key in list(self.num_pi_elec_bonds_sidechains.keys()):
                 atom1.num_pi_elec_2_3_bonds = (
                     self.num_pi_elec_bonds_sidechains[key])
@@ -235,7 +235,7 @@ class BondMaker:
                         self.num_pi_elec_conj_bonds_ligands[atom.sybyl_type])
             # for protein
             if atom.type == 'atom':
-                key = '%s-%s' % (atom.res_name, atom.name)
+                key = '{0:s}-{1:s}'.format(atom.res_name, atom.name)
                 if key in list(self.num_pi_elec_bonds_sidechains.keys()):
                     atom.num_pi_elec_2_3_bonds = (
                         self.num_pi_elec_bonds_sidechains[key])
@@ -300,7 +300,7 @@ class BondMaker:
         sq_dist = propka.calculations.squared_distance(atom1, atom2)
         if sq_dist > self.max_sq_distance:
             return False
-        key = '%s-%s' % (atom1.element, atom2.element)
+        key = '{0:s}-{1:s}'.format(atom1.element, atom2.element)
         h_count = key.count('H')
         if sq_dist < self.h_dist_squared and h_count == 1:
             return True

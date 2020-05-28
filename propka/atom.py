@@ -104,7 +104,7 @@ class Atom(object):
             self.y = float(line[38:46].strip())
             self.z = float(line[46:54].strip())
             self.res_num = int(line[22:26].strip())
-            self.res_name = "%-3s" % (line[17:20].strip())
+            self.res_name = "{0:<3s}".format(line[17:20].strip())
             self.chain_id = line[21]
             # Set chain id to "_" if it is just white space.
             if not self.chain_id.strip():
@@ -124,7 +124,7 @@ class Atom(object):
             if len(self.name) == 4:
                 self.element = self.element[0]
             if len(self.element) == 2:
-                self.element = '%1s%1s' % (
+                self.element = '{0:1s}{1:1s}'.format(
                     self.element[0], self.element[1].lower())
 
     def set_group_type(self, type_):
@@ -278,15 +278,15 @@ class Atom(object):
         Returns:
             String with PDB line.
         """
-        res = 'CONECT%5d' % self.numb
+        res = 'CONECT{0:5d}'.format(self.numb)
 
         bonded = []
         for atom in self.bonded_atoms:
             bonded.append(atom.numb)
         bonded.sort()
 
-        for b in bonded:
-            res += '%5d' % b
+        for bond in bonded:
+            res += '{0:5d}'.format(bond)
         res += '\n'
         return res
 
@@ -316,12 +316,14 @@ class Atom(object):
             self.occ = self.occ.replace('LG', 'non_titratable_ligand')
             # try to initialise the group
             try:
-                group_attr = "%s_group" % self.occ
+                group_attr = "{0:s}_group".format(self.occ)
                 group_attr = getattr(propka.group, group_attr)
                 self.group = group_attr(self)
             except:
                 # TODO - be more specific with expection handling here
-                str_ = '%s in input_file is not recognized as a group' % self.occ
+                str_ = (
+                    '{0:s} in input_file is not recognized as a group'.format(
+                        self.occ))
                 raise Exception(str_)
         # set the model pKa value
         if self.beta != '-':

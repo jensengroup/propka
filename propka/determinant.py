@@ -34,4 +34,4 @@ class Determinant:
         self.value += value
 
     def __str__(self):
-        return '%s: %8.2f' % (self.label, self.value)
+        return '{0:s}: {1:8.2f}'.format(self.label, self.value)

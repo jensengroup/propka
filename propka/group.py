@@ -179,7 +179,7 @@ class Group:
         # first check if there are any coupled groups at all
         if len(self.covalently_coupled_groups) == 0:
             return ''
-        line = 'CCOUPL%5d' % self.atom.numb
+        line = 'CCOUPL{0:5d}'.format(self.atom.numb)
         # extract and sort numbers of coupled groups
         coupled = []
         for group in self.covalently_coupled_groups:
@@ -187,7 +187,7 @@ class Group:
         coupled.sort()
         # write 'em out
         for num in coupled:
-            line += '%5d' % num
+            line += '{0:5d}'.format(num)
         line += '\n'
         return line
 
@@ -200,7 +200,7 @@ class Group:
         # first check if there are any coupled groups at all
         if len(self.non_covalently_coupled_groups) == 0:
             return ''
-        line = 'NCOUPL%5d' % self.atom.numb
+        line = 'NCOUPL{0:5d}'.format(self.atom.numb)
         # extract and sort numbers of coupled groups
         coupled = []
         for group in self.non_covalently_coupled_groups:
@@ -208,7 +208,7 @@ class Group:
         coupled.sort()
         # write 'em out
         for num in coupled:
-            line += '%5d' % num
+            line += '{0:5d}'.format(num)
         line += '\n'
         return line
 
@@ -229,9 +229,10 @@ class Group:
 
     def __iadd__(self, other):
         if self.type != other.type:
-            errstr = ('Cannot add groups of different types (%s and %s)'
-                      % (self.type, other.type))
-            raise Exception(errstr)
+            str_ = (
+                'Cannot add groups of different types '
+                '({0:s} and {1:s})'.format(self.type, other.type))
+            raise Exception(str_)
         # add all values
         self.pka_value += other.pka_value
         self.num_volume += other.num_volume
@@ -343,9 +344,9 @@ class Group:
             if not self.model_pka_set:
                 self.model_pka = self.parameters.model_pkas[self.residue_type]
                 # check if we should apply a custom model pka
-                key = (
-                    '%s-%s'
-                    % (self.atom.res_name.strip(), self.atom.name.strip()))
+                key = '{0:s}-{1:s}'.format(
+                    self.atom.res_name.strip(),
+                    self.atom.name.strip())
                 if key in self.parameters.custom_model_pkas.keys():
                     self.model_pka = self.parameters.custom_model_pkas[key]
                 self.model_pka_set = True
@@ -388,10 +389,10 @@ class Group:
                         ok = False
         if not ok:
             str_ = 'Missing atoms or failed protonation for '
-            str_ += ('%s (%s) -- please check the structure'
-                     % (self.label, self.type))
+            str_ += '{0:s} ({1:s}) -- please check the structure'.format(
+                self.label, self.type)
             warning(str_)
-            warning('%s' % self)
+            warning('{0:s}'.format(str(self)))
             num_acid = sum(
                 [EXPECTED_ATOMS_ACID_INTERACTIONS[self.type][e]
                  for e in EXPECTED_ATOMS_ACID_INTERACTIONS[self.type].keys()])
@@ -399,15 +400,19 @@ class Group:
                 [EXPECTED_ATOMS_BASE_INTERACTIONS[self.type][e]
                  for e in EXPECTED_ATOMS_BASE_INTERACTIONS[self.type].keys()])
             warning(
-                'Expected %d interaction atoms for acids, found:' % num_acid)
+                'Expected {0:d} interaction atoms for acids, found:'.format(
+                    num_acid))
             for i in range(len(self.interaction_atoms_for_acids)):
                 warning(
-                    '             %s' % self.interaction_atoms_for_acids[i])
+                    '             {0:s}'.format(
+                        str(self.interaction_atoms_for_acids[i])))
             warning(
-                'Expected %d interaction atoms for bases, found:' % num_base)
+                'Expected {0:d} interaction atoms for bases, found:'.format(
+                    num_base))
             for i in range(len(self.interaction_atoms_for_bases)):
                 warning(
-                    '             %s' % self.interaction_atoms_for_bases[i])
+                    '             {0:s}'.format(
+                        str(self.interaction_atoms_for_bases[i])))
 
     def get_interaction_atoms(self, interacting_group):
         """Get atoms involved in interaction with other group.
@@ -461,14 +466,14 @@ class Group:
                               number_of_coulomb)
         str_ = ""
         for line_number in range(number_of_lines):
-            str_ += "%s" % (self.label)
+            str_ += "{0:s}".format(self.label)
             if line_number == 0:
-                str_ += " %6.2lf" %(self.pka_value)
+                str_ += " {0:6.2f}".format(self.pka_value)
                 if len(self.non_covalently_coupled_groups) > 0:
                     str_ += '*'
                 else:
                     str_ += ' '
-                str_ += " %4d%2s " % (int(100.0*self.buried), "%")
+                str_ += " {0:4d}{1:>2s} ".format(int(100.0*self.buried), "%")
                 str_ += " %6.2lf %4d" % (self.energy_volume, self.num_volume)
                 str_ += " %6.2lf %4d" % (self.energy_local, self.num_local)
             else:

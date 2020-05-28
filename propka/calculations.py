@@ -242,9 +242,9 @@ def add_trp_hydrogen(residue):
         elif atom.name == "CE2":
             ce_atom = atom
     if (cd_atom is None) or (ne_atom is None) or (ce_atom is None):
-        errstr = "Unable to find all atoms for %s %s" % (
+        str_ = "Unable to find all atoms for {0:s} {1:s}".format(
             residue[0].res_name, residue[0].res_num)
-        raise ValueError(errstr)
+        raise ValueError(str_)
     he_atom = protonate_sp2(cd_atom, ne_atom, ce_atom)
     he_atom.name = "HNE"
 
@@ -269,9 +269,9 @@ def add_amd_hydrogen(residue):
               or (atom.res_name == "ASN" and atom.name == "ND2")):
             n_atom = atom
     if (c_atom is None) or (o_atom is None) or (n_atom is None):
-        errstr = "Unable to find all atoms for %s %s" % (
+        str_ = "Unable to find all atoms for {0:s} {1:s}".format(
             residue[0].res_name, residue[0].res_num)
-        raise ValueError(errstr)
+        raise ValueError(str_)
     h1_atom = protonate_direction(n_atom, o_atom, c_atom)
     h1_atom.name = "HN1"
     h2_atom = protonate_average_direction(n_atom, c_atom, o_atom)
@@ -396,10 +396,10 @@ def make_new_h(atom, x, y, z):
         new hydrogen atom
     """
     new_h = propka.atom.Atom()
-    new_h.set_property(numb=None, name='H%s' % atom.name[1:],
-                       res_name=atom.res_name, chain_id=atom.chain_id,
-                       res_num=atom.res_num, x=x, y=y, z=z, occ=None,
-                       beta=None)
+    new_h.set_property(
+        numb=None, name='H{0:s}'.format(atom.name[1:]),
+        res_name=atom.res_name, chain_id=atom.chain_id,
+        res_num=atom.res_num, x=x, y=y, z=z, occ=None, beta=None)
     new_h.element = 'H'
     new_h.bonded_atoms = [atom]
     new_h.charge = 0
@@ -604,8 +604,9 @@ def hydrogen_bond_interaction(group1, group2, version):
     atoms2 = group2.get_interaction_atoms(group1)
     [closest_atom1, dist, closest_atom2] = get_smallest_distance(atoms1, atoms2)
     if None in [closest_atom1, closest_atom2]:
-        warning('Side chain interaction failed for %s and %s' % (
-            group1.label, group2.label))
+        warning(
+            'Side chain interaction failed for {0:s} and {1:s}'.format(
+                group1.label, group2.label))
         return None
     # get the parameters
     [dpka_max, cutoff] = version.get_hydrogen_bond_parameters(closest_atom1,

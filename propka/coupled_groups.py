@@ -193,7 +193,7 @@ class NonCovalentlyCoupledGroups:
             conformation:  conformation to print
         """
         map_ = make_interaction_map(
-            'Non-covalent coupling map for %s' % conformation,
+            'Non-covalent coupling map for {0:s}'.format(str(conformation)),
             conformation.get_non_covalently_coupled_groups(),
             lambda g1, g2: g1 in g2.non_covalently_coupled_groups)
         info(map_)
@@ -209,7 +209,8 @@ class NonCovalentlyCoupledGroups:
             conformation:  conformation to print
             system:  system to print
         """
-        info('System containing %d groups:' % len(system))
+        info(
+            'System containing {0:d} groups:'.format(len(system)))
         # make list of interactions within this system
         interactions = list(itertools.combinations(system, 2))
         # print out coupling info for each interaction
@@ -233,8 +234,8 @@ class NonCovalentlyCoupledGroups:
             # Tell the user what is swap in this combination
             swap_info += 'Swapping the following interactions:\n'
             for interaction in combination:
-                swap_info += ' %s %s\n' % (interaction[0].label,
-                                           interaction[1].label)
+                swap_info += ' {0:s} {1:s}\n'.format(
+                    interaction[0].label, interaction[1].label)
             # swap...
             for interaction in combination:
                 self.swap_interactions([interaction[0]], [interaction[1]])
@@ -275,9 +276,9 @@ class NonCovalentlyCoupledGroups:
         all_labels = [g.label for g in system]
         str_ = ' ' + '-' * 113 + '\n'
         for group in system:
-            str_ += self.tagged_format(' %-8s|' % tag,
-                                       group.get_determinant_string(),
-                                       all_labels)
+            str_ += self.tagged_format(
+                ' {0:<8s}|'.format(tag), group.get_determinant_string(),
+                all_labels)
         return str_ + '\n'
 
     def swap_interactions(self, groups1, groups2, include_side_chain_hbs=True):
@@ -342,10 +343,10 @@ class NonCovalentlyCoupledGroups:
         Returns:
             tagged string
         """
-        str_ = "%s %s" % (tag, str_)
-        str_ = str_.replace('\n', '\n%s ' % tag)
+        str_ = "{0:s} {1:s}".format(tag, str_)
+        str_ = str_.replace('\n', '\n{0:s} '.format(tag))
         for label in labels:
-            str_ = str_.replace(label, '\033[31m%s\033[30m' % label)
+            str_ = str_.replace(label, '\033[31m{0:s}\033[30m'.format(label))
         return str_ + '\n'
 
     @staticmethod
