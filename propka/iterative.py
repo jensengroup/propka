@@ -211,8 +211,9 @@ def add_determinants(iterative_interactions, version, _=None):
                 iteratives.append(new_iterative)
                 done_group.append(group)
     # Initialize iterative scheme
-    debug("\n   --- pKa iterations (%d groups, %d interactions) ---" %
-          (len(iteratives), len(iterative_interactions)))
+    debug(
+        "\n   --- pKa iterations ({0:d} groups, {1:d} interactions) ---".format(
+            len(iteratives), len(iterative_interactions)))
     converged = False
     iteration = 0
     # set non-iterative pka values as first step
@@ -262,18 +263,18 @@ def add_determinants(iterative_interactions, version, _=None):
             itres.pka_iter.append(itres.pka_new)
 
         if iteration == 10:
-            info("did not converge in %d iterations" % (iteration))
+            info("did not converge in {0:d} iterations".format(iteration))
             break
     # printing pKa iterations
     # formerly was conditioned on if options.verbosity >= 2 - now unnecessary
-    str_ = "%12s" % (" ")
+    str_ = '            '
     for index in range(iteration+1):
-        str_ += "%8d" % (index)
+        str_ += "{0:>8d}".format(index)
     debug(str_)
     for itres in iteratives:
-        str_ = "%s   " % (itres.label)
+        str_ = "{0:s}   ".format(itres.label)
         for pka in itres.pka_iter:
-            str_ += "%8.2lf" % (pka)
+            str_ += "{0:>8.2f}".format(pka)
         if not itres.converged:
             str_ += " *"
         debug(str_)

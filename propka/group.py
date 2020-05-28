@@ -473,11 +473,13 @@ class Group:
                     str_ += '*'
                 else:
                     str_ += ' '
-                str_ += " {0:4d}{1:>2s} ".format(int(100.0*self.buried), "%")
-                str_ += " %6.2lf %4d" % (self.energy_volume, self.num_volume)
-                str_ += " %6.2lf %4d" % (self.energy_local, self.num_local)
+                str_ += " {0:4d}{1:>2s} ".format(int(100.0*self.buried), "%%")
+                str_ += " {0:6.2f} {1:4d}".format(
+                    self.energy_volume, int(self.num_volume))
+                str_ += " {0:6.2f} {1:4d}".format(
+                    self.energy_local, int(self.num_local))
             else:
-                str_ += "%40s" % (" ")
+                str_ += "{0:>40s}".format(" ")
             # add the determinants
             for type_ in ['sidechain', 'backbone', 'coulomb']:
                 str_ += self.get_determinant_for_string(type_, line_number)
@@ -496,11 +498,11 @@ class Group:
             string
         """
         if number >= len(self.determinants[type_]):
-            empty_determinant = "%s%4d%2s" % ("XXX", 0, "X")
-            return "%8.2lf %s" % (0.0, empty_determinant)
+            return "    0.00 XXX   0 X"
         else:
             determinant = self.determinants[type_][number]
-            return "%8.2lf %s" % (determinant.value, determinant.label)
+            return "{0:8.2f} {1:s}".format(
+                determinant.value, determinant.label)
 
     def calculate_total_pka(self):
         """Calculate total pKa based on determinants associated with this
@@ -551,15 +553,16 @@ class Group:
         penalty = ''
         if self.coupled_titrating_group:
             penalty = (
-                ' NB: Discarded due to coupling with %s'
-                % self.coupled_titrating_group.label)
+                ' NB: Discarded due to coupling with {0:s}'.format(
+                    self.coupled_titrating_group.label))
         fmt = (
             "   {g.label:>9s} {g.pka_value:8.2f} {g.model_pka:10.2f} "
             "{type:>18s}   {penalty:s}\n")
         return fmt.format(g=self, type=ligand_type, penalty=penalty)
 
     def __str__(self):
-        return 'Group (%s) for %s' % (self.type, self.atom)
+        str_ = 'Group ({0:s}) for {1:s}'.format(self.type, str(self.atom))
+        return str_
 
     def calculate_folding_energy(self, parameters, ph=None, reference=None):
         """Return the electrostatic energy of this residue at specified pH.
@@ -1243,8 +1246,9 @@ def is_group(parameters, atom):
     elif parameters.ligand_typing == 'groups':
         ligand_group = is_ligand_group_by_groups(parameters, atom)
     else:
-        raise Exception('Unknown ligand typing method \'%s\''
-                        % parameters.ligand_typing)
+        raise Exception(
+            'Unknown ligand typing method \'{0.s}\''.format(
+                parameters.ligand_typing))
     if ligand_group:
         return ligand_group
     return None
@@ -1276,9 +1280,9 @@ def is_protein_group(parameters, atom):
         if atom.count_bonded_elements('O') == 1:
             return BBCGroup(atom)
     ### Filters for side chains based on PDB protein atom names
-    key = '%s-%s' % (atom.res_name, atom.name)
+    key = '{0:s}-{1:s}'.format(atom.res_name, atom.name)
     if key in parameters.protein_group_mapping.keys():
-        class_str = "%sGroup" % parameters.protein_group_mapping[key]
+        class_str = "{0:s}Group".format(parameters.protein_group_mapping[key])
         group_class = globals()[class_str]
         return group_class(atom)
     return None

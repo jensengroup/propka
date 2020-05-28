@@ -42,7 +42,7 @@ class LigandPkaValues:
                               map(lambda dir: os.path.join(dir, program),
                                   path))]
         if len(locs) == 0:
-            str_ = "'Error: Could not find %s." % program
+            str_ = "'Error: Could not find {0:s}.".format(program)
             str_ += ' Please make sure that it is found in the path.'
             info(str_)
             sys.exit(-1)
@@ -73,7 +73,7 @@ class LigandPkaValues:
             max_ph:  maximum pH value
         """
         for name in molecule.conformation_names:
-            filename = '%s_%s' % (molecule.name, name)
+            filename = '{0:s}_{1:s}'.format(molecule.name, name)
             self.get_marvin_pkas_for_conformation_container(
                 molecule.conformations[name], name=filename,
                 reuse=molecule.options.reuse_ligand_mol2_file,
@@ -113,7 +113,7 @@ class LigandPkaValues:
         # do one molecule at the time so we don't confuse marvin
         molecules = propka.lib.split_atoms_into_molecules(atoms)
         for i, molecule in enumerate(molecules):
-            filename = '%s_%d.mol2' % (name, i+1)
+            filename = '{0:s}_{1:d}.mol2'.format(name, i+1)
             self.get_marvin_pkas_for_molecule(
                 molecule, filename=filename, reuse=reuse, num_pkas=num_pkas,
                 min_ph=min_ph, max_ph=max_ph)
@@ -136,8 +136,10 @@ class LigandPkaValues:
             propka.pdb.write_mol2_for_atoms(atoms, filename)
         # check that we actually have a file to work with
         if not os.path.isfile(filename):
-            errstr = ("Didn't find a user-modified file '%s' - generating one"
-                      % filename)
+            errstr = (
+                "Didn't find a user-modified file '{0:s}' "
+                "- generating one".format(
+                    filename))
             warning(errstr)
             propka.pdb.write_mol2_for_atoms(atoms, filename)
         # Marvin calculate pKa values
@@ -155,11 +157,11 @@ class LigandPkaValues:
                  '*********************************************')
             info('* Warning: Marvin execution failed:                        '
                  '                                            *')
-            info('* %-100s *' % errors)
+            info('* {0:<100s} *'.format(errors))
             info('*                                                          '
                  '                                            *')
             info('* Please edit the ligand mol2 file and re-run PropKa with '
-                 'the -l option: %29s *' % filename)
+                 'the -l option: {0:>29s} *'.format(filename))
             info('***********************************************************'
                  '*********************************************')
             sys.exit(-1)
@@ -169,7 +171,7 @@ class LigandPkaValues:
         for i, index in enumerate(indices):
             atoms[index].marvin_pka = pkas[i]
             atoms[index].charge = {'a': -1, 'b': 1}[types[i]]
-            info('%s model pKa: %.2f' % (atoms[index], pkas[i]))
+            info('{0:s} model pKa: {1:<.2f}'.format(atoms[index], pkas[i]))
 
     @staticmethod
     def extract_pkas(output):
@@ -188,7 +190,7 @@ class LigandPkaValues:
         values = values.split('\t')
         # format values
         types = [
-            tags[i][0] for i in range(1, len(tags)-1) 
+            tags[i][0] for i in range(1, len(tags)-1)
             if len(values) > i and values[i] != '']
         indices = [int(a)-1 for a in values[-1].split(',') if a != '']
         values = [float(v.replace(',', '.')) for v in values[1:-1] if v != '']

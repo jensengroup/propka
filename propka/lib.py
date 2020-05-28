@@ -29,7 +29,7 @@ def open_file_for_reading(input_file):
     try:
         file_ = open(input_file, 'rt')
     except:
-        raise IOError('Cannot find file %s' % input_file)
+        raise IOError('Cannot find file {0:s}'.format(input_file))
     return file_
 
 
@@ -52,7 +52,7 @@ def open_file_for_writing(input_file):
     try:
         file_ = open(input_file, 'wt')
     except FileNotFoundError:
-        raise Exception('Could not open %s' % input_file)
+        raise Exception('Could not open {0:s}'.format(input_file))
     return file_
 
 
@@ -228,7 +228,7 @@ def build_parser(parser=None):
     group.add_argument(
         "-p", "--parameters", dest="parameters",
         default=pkg_resources.resource_filename(__name__, "propka.cfg"),
-        help="set the parameter file [%(default)s]")
+        help="set the parameter file [{default:s}]")
     try:
         group.add_argument(
             "--log-level",
@@ -306,7 +306,8 @@ def loadOptions(args):
             try:
                 chain, resnum, inscode = parse_res_string(res_str)
             except ValueError:
-                _LOGGER.critical('Invalid residue string: "%s"', res_str)
+                _LOGGER.critical(
+                    'Invalid residue string: "{0:s}"'.format(res_str))
                 sys.exit(1)
             res_list.append((chain, resnum, inscode))
         options.titrate_only = res_list
@@ -332,9 +333,9 @@ def make_tidy_atom_label(name, element):
         label = name
     else: # if less than 4 characters long, insert white space as needed
         if len(element) == 1:
-            label = ' %-3s' % name
+            label = ' {0:<3s}'.format(name)
         else: # The element should occupy the two first chars
-            label = '%-4s' % name
+            label = '{0:<4s}'.format(name)
     return label
 
 
@@ -365,7 +366,7 @@ def write_file(filename, lines):
     """
     file_ = open_file_for_writing(filename)
     for line in lines:
-        file_.write("%s\n" % (line))
+        file_.write("{0:s}\n".format(line))
     file_.close()
 
 

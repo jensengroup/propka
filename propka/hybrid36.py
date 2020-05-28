@@ -20,7 +20,7 @@ def decode(input_string):
     Returns:
         integer
     """
-    value_error_message = "invalid literal for hybrid-36 conversion: '%s'"
+    value_error_message = "invalid literal for hybrid-36 conversion: '{0:s}'"
 
     original_input_string = input_string
     input_string = input_string.strip()
@@ -33,7 +33,7 @@ def decode(input_string):
         sign = 1
 
     if len(input_string) == 0:
-        raise ValueError(value_error_message % input_string)
+        raise ValueError(value_error_message.format(input_string))
 
     # See http://cci.lbl.gov/hybrid_36/ for documentation on the format.
 
@@ -49,13 +49,13 @@ def decode(input_string):
         reference = (16 * 36 ** (num_chars - 1) + 10 ** num_chars)
         _hybrid36_set = _HYBRID36_LOWER_SET
     else:
-        raise ValueError(value_error_message % original_input_string)
+        raise ValueError(value_error_message.format(original_input_string))
 
     # Check the validity of the input string: ASCII characters should be
     # either all uppercase or all lowercase.
     for char in input_string[1:]:
         if char not in _hybrid36_set:
-            raise ValueError(value_error_message % original_input_string)
+            raise ValueError(value_error_message.format(original_input_string))
 
     # Convert with the int function.
     return sign * (int(input_string, 36) + reference)

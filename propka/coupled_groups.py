@@ -369,16 +369,17 @@ class NonCovalentlyCoupledGroups:
             "(difference: {diff_pka:>6.2f})\n"
             " Swapped pKa's:       {swap1:>6.2f}, {swap2:>6.2f}  "
             "(difference: {shift1:>6.2f}, {shift2:>6.2f})"
- ).format(
-     label1=group1.label, label2=group2.label,
-     coupl_fact=data['coupling_factor'], def_energy=data['default_energy'],
-     swap_energy=data['swapped_energy'],
-     diff_energy=data['default_energy']-data['swapped_energy'], ph=data['pH'],
-     int_energy=data['interaction_energy'], pka1=group1.intrinsic_pka,
-     pka2=group2.intrinsic_pka,
-     diff_pka=group1.intrinsic_pka-group2.intrinsic_pka, 
-     swap1=data['swapped_pka1'], swap2=data['swapped_pka2'],
-     shift1=data['pka_shift1'], shift2=data['pka_shift2'])
+        ).format(
+            label1=group1.label, label2=group2.label,
+            coupl_fact=data['coupling_factor'],
+            def_energy=data['default_energy'],
+            swap_energy=data['swapped_energy'],
+            diff_energy=data['default_energy']-data['swapped_energy'],
+            ph=data['pH'], int_energy=data['interaction_energy'],
+            pka1=group1.intrinsic_pka, pka2=group2.intrinsic_pka,
+            diff_pka=group1.intrinsic_pka-group2.intrinsic_pka,
+            swap1=data['swapped_pka1'], swap2=data['swapped_pka2'],
+            shift1=data['pka_shift1'], shift2=data['pka_shift2'])
         return str_
 
 

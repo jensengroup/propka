@@ -71,7 +71,7 @@ class Protonate:
         """
         # atom is a protein atom
         if atom.type == 'atom':
-            key = '%3s-%s' % (atom.res_name, atom.name)
+            key = '{0:3s}-{1:s}'.format(atom.res_name, atom.name)
             if atom.terminal:
                 debug(atom.terminal)
                 key = atom.terminal

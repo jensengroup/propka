@@ -50,7 +50,8 @@ class Molecular_container:
             self.version = version_class(parameters)
         except AttributeError as err:
             print(err)
-            errstr = 'Error: Version %s does not exist' % parameters.version
+            errstr = 'Error: Version {0:s} does not exist'.format(
+                parameters.version)
             raise Exception(errstr)
         # read the input file
         if input_file_extension[0:4] == '.pdb':
@@ -89,7 +90,7 @@ class Molecular_container:
             # do some additional set up
             self.additional_setup_when_reading_input_file()
         else:
-            info('Unrecognized input file:%s' % input_file)
+            info('Unrecognized input file:{0:s}'.format(input_file))
             sys.exit(-1)
 
     def top_up_conformations(self):
@@ -152,8 +153,10 @@ class Molecular_container:
                 if group_to_add:
                     avr_group += group_to_add
                 else:
-                    str_ = ('Group %s could not be found in conformation %s.'
-                            % (group.atom.residue_label, name))
+                    str_ = (
+                        'Group {0:s} could not be found in '
+                        'conformation {0:s}.'.format(
+                            group.atom.residue_label, name))
                     warning(str_)
             # ... and store the average value
             avr_group = avr_group / len(self.conformation_names)
@@ -178,16 +181,16 @@ class Molecular_container:
             options:  options object
         """
         # write out the average conformation
-        filename = os.path.join('%s.pka' % (self.name))
+        filename = os.path.join('{0:s}.pka'.format(self.name))
         # if the display_coupled_residues option is true, write the results out
         # to an alternative pka file
         if self.options.display_coupled_residues:
-            filename = os.path.join('%s_alt_state.pka' % (self.name))
+            filename = os.path.join('{0:s}_alt_state.pka'.format(self.name))
         if (hasattr(self.version.parameters, 'output_file_tag')
                 and len(self.version.parameters.output_file_tag) > 0):
             filename = os.path.join(
-                '%s_%s.pka' % (self.name,
-                               self.version.parameters.output_file_tag))
+                '{0:s}_{1:s}.pka'.format(
+                    self.name, self.version.parameters.output_file_tag))
         propka.output.write_pka(
             self, self.version.parameters, filename=filename,
             conformation='AVR', reference=reference)

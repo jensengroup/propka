@@ -163,7 +163,8 @@ class Parameters:
         value = float(words[1])
         setattr(self, words[0], value)
         value_sq = value*value
-        setattr(self, "%s_squared" % words[0], value_sq)
+        attr = "{0:s}_squared".format(words[0])
+        setattr(self, attr, value_sq)
 
     def parse_parameter(self, words):
         """Parse field to parameters.
@@ -206,7 +207,7 @@ class Parameters:
         """Print interaction parameters."""
         info('--------------- Model pKa values ----------------------')
         for k in self.model_pkas:
-            info('%3s %8.2f' % (k, self.model_pkas[k]))
+            info('{0:>3s} {1:8.2f}'.format(k, self.model_pkas[k]))
 
         info('')
         info('--------------- Interactions --------------------------')
@@ -227,10 +228,10 @@ class Parameters:
             for group2 in lgroups:
                 fmt = "{grp1:>3s} {grp2:>3s} {mat:1s} {val1:4} {val2:4}"
                 interaction = fmt.format(
-                        grp1=group1, grp2=group2,
-                        mat=self.interaction_matrix[group1][group2],
-                        val1=self.sidechain_cutoffs.get_value(group1, group2)[0],
-                        val2=self.sidechain_cutoffs.get_value(group1, group2)[1])
+                    grp1=group1, grp2=group2,
+                    mat=self.interaction_matrix[group1][group2],
+                    val1=self.sidechain_cutoffs.get_value(group1, group2)[0],
+                    val2=self.sidechain_cutoffs.get_value(group1, group2)[1])
                 map_interaction = ''
                 if group2 in map_:
                     for val in map_[group2]:
@@ -243,21 +244,21 @@ class Parameters:
                                 != self.interaction_matrix[group1][group2]):
                             map_interaction += '* '
                         if (self.sidechain_cutoffs.get_value(group1, val)[0]
-                                != self.sidechain_cutoffs.get_value(group1,
-                                                                    group2)[0]
-                                or self.sidechain_cutoffs.get_value(group1,
-                                                                    val)[1]
-                                != self.sidechain_cutoffs.get_value(group1,
-                                                                    group2)[1]):
+                                != self.sidechain_cutoffs.get_value(
+                                    group1, group2)[0]
+                                or self.sidechain_cutoffs.get_value(
+                                    group1, val)[1]
+                                != self.sidechain_cutoffs.get_value(
+                                    group1, group2)[1]):
                             map_interaction += '! '
                         else:
                             map_interaction += '  '
                     if (len(map_[group2]) == 0
-                            and (self.sidechain_cutoffs.get_value(group1,
-                                                                  group2)[0]
+                            and (self.sidechain_cutoffs.get_value(
+                                group1, group2)[0]
                                  != 3
-                                 or self.sidechain_cutoffs.get_value(group1,
-                                                                     group2)[1]
+                                 or self.sidechain_cutoffs.get_value(
+                                     group1, group2)[1]
                                  != 4)):
                         map_interaction += '?  '
                 info(interaction, map_interaction)
@@ -306,30 +307,32 @@ O2
         lgroups = ['CG', 'C2N', 'N30', 'N31', 'N32', 'N33', 'NAR', 'OCO',
                    'NP1', 'OH', 'O3', 'CL', 'F', 'NAM', 'N1', 'O2', 'OP',
                    'SH']
-        str_ = """
-\\begin{longtable}{lllll}
-\\caption{Ligand interaction parameters. For interactions not listed, the default value of %s is applied.}
-\\label{tab:ligand_interaction_parameters}\\\\
-
-\\toprule
-Group1 & Group2 & Interaction & c1 &c2 \\\\
-\\midrule
-\\endfirsthead
-
-\\multicolumn{5}{l}{\\emph{continued from the previous page}}\\\\
-\\toprule
-Group1 & Group2 & Interaction & c1 &c2 \\\\
-\\midrule
-\\endhead
-
-\\midrule
-\\multicolumn{5}{r}{\\emph{continued on the next page}}\\\\
-\\endfoot
-
-\\bottomrule
-\\endlastfoot
-
-""" % (self.sidechain_cutoffs.default)
+        lines = [
+            "",
+            "\\begin{{longtable}}{{lllll}}",
+            ("\\caption{{Ligand interaction parameters. For interactions not "
+             "listed, the default value of {0:s} is applied.}}").format(
+                 self.sidechain_cutoffs.default),
+            "\\label{{tab:ligand_interaction_parameters}}\\\\",
+            "\\toprule",
+            "Group1 & Group2 & Interaction & c1 &c2 \\\\",
+            "\\midrule",
+            "\\endfirsthead",
+            "",
+            "\\multicolumn{{5}}{{l}}{\\emph{{continued from the previous page}}}\\\\",
+            "\\toprule",
+            "Group1 & Group2 & Interaction & c1 &c2 \\\\",
+            "\\midrule",
+            "\\endhead",
+            "",
+            "\\midrule",
+            "\\multicolumn{{5}}{{r}}{\\emph{{continued on the next page}}}\\\\",
+            "\\endfoot",
+            "",
+            "\\bottomrule",
+            "\\endlastfoot",
+            ""]
+        str_ = "\n".join(lines)
         for group1 in agroups:
             for group2 in lgroups:
                 if self.interaction_matrix[group1][group2] == '-':
@@ -347,7 +350,7 @@ Group1 & Group2 & Interaction & c1 &c2 \\\\
                     self.sidechain_cutoffs.get_value(group1, group2)[1])
                 if group1 == group2:
                     break
-        str_ += '  \\end{longtable}\n'
+        str_ += '  \\end{{longtable}}\n'
         info(str_)
 
     def print_interactions_latex(self):
@@ -357,42 +360,43 @@ Group1 & Group2 & Interaction & c1 &c2 \\\\
                    'ARG', 'TRP', 'ROH', 'CG', 'C2N', 'N30', 'N31', 'N32',
                    'N33', 'NAR', 'OCO', 'NP1', 'OH', 'O3', 'CL', 'F', 'NAM',
                    'N1', 'O2', 'OP', 'SH']
-        str_ = """
-\\begin{longtable}{%s}
-\\caption{Ligand interaction parameters. For interactions not listed, the default value of %s is applied.}
-\\label{tab:ligand_interaction_parameters}\\\\
-
-\\toprule
-Group1 & Group2 & Interaction & c1 &c2 \\\\
-\\midrule
-\\endfirsthead
-
-\\multicolumn{5}{l}{\\emph{continued from the previous page}}\\\\
-\\toprule
-Group1 & Group2 & Interaction & c1 &c2 \\\\
-\\midrule
-\\endhead
-
-\\midrule
-\\multicolumn{5}{r}{\\emph{continued on the next page}}\\\\
-\\endfoot
-
-\\bottomrule
-\\endlastfoot
-
-""" % ('l'*len(agroups), self.sidechain_cutoffs.default)
+        lines = [
+            "",
+            "\\begin{longtable}{{{0:s}}}".format('l'*len(agroups)),
+            ("\\caption{{Ligand interaction parameters. For interactions not "
+             "listed, the default value of {0:s} is applied.}}").format(
+                 str(self.sidechain_cutoffs.default)),
+            "\\label{{tab:ligand_interaction_parameters}}\\\\",
+            "\\toprule",
+            "Group1 & Group2 & Interaction & c1 &c2 \\\\",
+            "\\midrule",
+            "\\endfirsthead",
+            "",
+            "\\multicolumn{{5}}{{l}}{\\emph{{continued from the previous page}}}\\\\",
+            "\\toprule",
+            "Group1 & Group2 & Interaction & c1 &c2 \\\\",
+            "\\midrule",
+            "\\endhead",
+            "",
+            "\\midrule",
+            "\\multicolumn{{5}}{{r}}{\\emph{{continued on the next page}}}\\\\",
+            "\\endfoot",
+            "",
+            "\\bottomrule",
+            "\\endlastfoot",
+            ""
+        ]
+        str_ = "\n".join(lines)
         for group1 in agroups:
             for group2 in agroups:
-                str_ += ('%3s & %3s & %1s & %4s & %4s\\\\ \n'
-                         % (group1, group2,
-                            self.interaction_matrix[group1][group2],
-                            self.sidechain_cutoffs.get_value(
-                                group1, group2)[0],
-                            self.sidechain_cutoffs.get_value(
-                                group1, group2)[1]))
+                fmt = '{g1:>3s} & {g2:>3s} & {mat:1s} & {val1:>4s} & {val2:>4s}\\\\ \n'
+                str_ += fmt.format(
+                    group1, group2, self.interaction_matrix[group1][group2],
+                    str(self.sidechain_cutoffs.get_value(group1, group2)[0]),
+                    str(self.sidechain_cutoffs.get_value(group1, group2)[1]))
                 if group1 == group2:
                     break
-        str_ += '  \\end{longtable}\n'
+        str_ += '  \\end{{longtable}}\n'
         info(str_)
 
 
@@ -450,7 +454,8 @@ class InteractionMatrix:
             group:  group to get
         """
         if group not in self.dictionary.keys():
-            str_ = '%s not found in interaction matrix %s' % (group, self.name)
+            str_ = '{0:s} not found in interaction matrix {1:s}'.format(
+                group, self.name)
             raise KeyError(str_)
         return self.dictionary[group]
 
@@ -465,12 +470,12 @@ class InteractionMatrix:
     def __str__(self):
         str_ = '      '
         for key in self.ordered_keys:
-            str_ += '%3s ' % key
+            str_ += '{0:>3s} '.format(key)
         str_ += '\n'
         for key1 in self.ordered_keys:
-            str_ += '%3s ' % key1
+            str_ += '{0:>3s} '.format(key1)
             for key2 in self.ordered_keys:
-                str_ += '%3s ' % self[key1][key2]
+                str_ += '{0:>3s} '.format(self[key1][key2])
             str_ += '\n'
         return str_
 
@@ -517,8 +522,9 @@ class PairwiseMatrix:
         """
         if key1 in self.dictionary and key2 in self.dictionary[key1]:
             if key1 != key2:
-                str_ = ('Parameter value for %s, %s defined more than once'
-                        % (key1, key2))
+                str_ = (
+                    'Parameter value for {0:s}, {1:s} defined more '
+                    'than once'.format(key1, key2))
                 warning(str_)
         if not key1 in self.dictionary:
             self.dictionary[key1] = {}
@@ -547,7 +553,8 @@ class PairwiseMatrix:
             matrix information
         """
         if group not in self.dictionary.keys():
-            str_ = '%s not found in interaction matrix %s' % (group, self.name)
+            str_ = '{0:s} not found in interaction matrix {1:s}'.format(
+                group, self.name)
             raise KeyError(str_)
         return self.dictionary[group]
 
@@ -563,5 +570,6 @@ class PairwiseMatrix:
         str_ = ''
         for key1 in self.keys():
             for key2 in self[key1].keys():
-                str_ += '%s %s %s\n' % (key1, key2, self[key1][key2])
+                str_ += '{0:s} {1:s} {2:s}\n'.format(
+                    key1, key2, self[key1][key2])
         return str_

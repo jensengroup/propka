@@ -58,23 +58,25 @@ def protein_precheck(conformations, names):
                     atoms_by_residue[res_id] = [atom]
         for res_id, res_atoms in atoms_by_residue.items():
             res_name = res_atoms[0].res_name
-            residue_label = '%3s%5s'%(res_name, res_id)
+            residue_label = '{0:>3s}{1:>5s}'.format(res_name, res_id)
             # ignore ligand residues
             if res_name not in EXPECTED_ATOM_NUMBERS:
                 continue
             # check for c-terminal
             if 'C-' in [a.terminal for a in res_atoms]:
                 if len(res_atoms) != EXPECTED_ATOM_NUMBERS[res_name]+1:
-                    str_ = ("Unexpected number (%d) of atoms in residue %s "
-                            "in conformation %s" % (len(res_atoms),
-                                                    residue_label, name))
+                    str_ = ("Unexpected number ({num:d}) of atoms in residue "
+                            "{res:s} in conformation {conf:s}".format(
+                                num=len(res_atoms), res=residue_label,
+                                conf=name))
                     warning(str_)
                 continue
             # check number of atoms in residue
             if len(res_atoms) != EXPECTED_ATOM_NUMBERS[res_name]:
-                str_ = ('Unexpected number (%d) of atoms in residue %s '
-                        'in conformation %s' % (len(res_atoms),
-                                                residue_label, name))
+                str_ = ("Unexpected number ({num:d}) of atoms in residue "
+                        "{res:s} in conformation {conf:s}".format(
+                            num=len(res_atoms), res=residue_label,
+                            conf=name))
                 warning(str_)
 
 
@@ -86,7 +88,8 @@ def resid_from_atom(atom):
     Returns
         string
     """
-    return '%4d %s %s' % (atom.res_num, atom.chain_id, atom.icode)
+    return '{0:>4d} {1:s} {2:s}'.format(
+        atom.res_num, atom.chain_id, atom.icode)
 
 
 def get_atom_lines_from_pdb(pdb_file, ignore_residues=[], keep_protons=False,
@@ -136,7 +139,7 @@ def get_atom_lines_from_pdb(pdb_file, ignore_residues=[], keep_protons=False,
                 alt_conf_tag = chr(ord(alt_conf_tag)+16)
             if alt_conf_tag == ' ':
                 alt_conf_tag = 'A'
-            conformation = '%d%s'%(model, alt_conf_tag)
+            conformation = '{0:d}{1:s}'.format(model, alt_conf_tag)
             # set the terminal
             if  tag == 'ATOM  ':
                 if (residue_name.strip() == 'N'
@@ -190,7 +193,7 @@ def write_mol2_for_atoms(atoms, filename):
         filename:  name of file
     """
     # TODO - header needs to be converted to format string
-    header = '@<TRIPOS>MOLECULE\n\n%d %d\nSMALL\nUSER_CHARGES\n'
+    header = '@<TRIPOS>MOLECULE\n\n{natom:d} {id:d}\nSMALL\nUSER_CHARGES\n'
     atoms_section = '@<TRIPOS>ATOM\n'
     for i, atom in enumerate(atoms):
         atoms_section += atom.make_mol2_line(i+1)
@@ -200,15 +203,16 @@ def write_mol2_for_atoms(atoms, filename):
         for j, atom2 in enumerate(atoms, i+1):
             if atom1 in atom2.bonded_atoms:
                 type_ = get_bond_order(atom1, atom2)
-                bonds_section += '%7d %7d %7d %7s\n' % (id_, i+1, j+1, type_)
+                bonds_section += '{0:>7d} {1:>7d} {2:>7d} {3:>7s}\n'.format(
+                    id_, i+1, j+1, type_)
                 id_ += 1
     substructure_section = '@<TRIPOS>SUBSTRUCTURE\n\n'
     if len(atoms) > 0:
-        substructure_section = ('@<TRIPOS>SUBSTRUCTURE\n%-7d %10s %7d\n'
-                                % (atoms[0].res_num, atoms[0].res_name,
-                                   atoms[0].numb))
+        substructure_section = (
+            '@<TRIPOS>SUBSTRUCTURE\n{0:<7d} {1:>10s} {2:>7d}\n'.format(
+                atoms[0].res_num, atoms[0].res_name, atoms[0].numb))
     out = propka.lib.open_file_for_writing(filename)
-    out.write(header % (len(atoms), id_-1))
+    out.write(header.format(natom=len(atoms), id=id_-1))
     out.write(atoms_section)
     out.write(bonds_section)
     out.write(substructure_section)
@@ -232,7 +236,7 @@ def get_bond_order(atom1, atom2):
     if '.ar' in atom2.sybyl_type:
         pi_electrons2 -= 1
     if pi_electrons1 > 0 and pi_electrons2 > 0:
-        type_ = '%d' % (min(pi_electrons1, pi_electrons2)+1)
+        type_ = '{0:d}'.format(min(pi_electrons1, pi_electrons2)+1)
     if '.ar' in atom1.sybyl_type and '.ar' in atom2.sybyl_type:
         type_ = 'ar'
     return type_
@@ -247,7 +251,7 @@ def write_input(molecular_container, filename):
     """
     out = propka.lib.open_file_for_writing(filename)
     for conformation_name in molecular_container.conformation_names:
-        out.write('MODEL %s\n' % conformation_name)
+        out.write('MODEL {0:s}\n'.format(conformation_name))
         # write atoms
         for atom in molecular_container.conformations[conformation_name].atoms:
             out.write(atom.make_input_line())

@@ -5,9 +5,9 @@ from propka.lib import info
 
 def print_header():
     """Print header section of output."""
-    str_ = "%s\n" % get_propka_header()
-    str_ += "%s\n" % get_references_header()
-    str_ += "%s\n" % get_warning_header()
+    str_ = "{0:s}\n".format(get_propka_header())
+    str_ += "{0:s}\n".format(get_references_header())
+    str_ += "{0:s}\n".format(get_warning_header())
     info(str_)
 
 
@@ -25,10 +25,10 @@ def write_pdb(protein, pdbfile=None, filename=None, include_hydrogens=False,
     if pdbfile is None:
         # opening file if not given
         if filename is None:
-            filename = "%s.pdb" % (protein.name)
+            filename = "{0:s}.pdb".format(protein.name)
         # TODO - this would be better as a context manager
         pdbfile = open(filename, 'w')
-        info("writing pdbfile %s" % (filename))
+        info("writing pdbfile {0:s}".format(filename))
         close_file = True
     else:
         # don't close the file, it was opened in a different place
@@ -67,20 +67,20 @@ def write_pka(protein, parameters, filename=None, conformation='1A',
     # TODO - the code immediately overrides the verbose argument; why?
     verbose = True
     if filename is None:
-        filename = "%s.pka" % (protein.name)
+        filename = "{0:s}.pka".format(protein.name)
     # TODO - this would be much better with a context manager
     file_ = open(filename, 'w')
     if verbose:
-        info("Writing %s" % (filename))
+        info("Writing {0:s}".format(filename))
     # writing propka header
-    str_ = "%s\n" % get_propka_header()
-    str_ += "%s\n" % get_references_header()
-    str_ += "%s\n" % get_warning_header()
+    str_ = "{0:s}\n".format(get_propka_header())
+    str_ += "{0:s}\n".format(get_references_header())
+    str_ += "{0:s}\n".format(get_warning_header())
     # writing pKa determinant section
     str_ += get_determinant_section(protein, conformation, parameters)
     # writing pKa summary section
     str_ += get_summary_section(protein, conformation, parameters)
-    str_ += "%s\n" % get_the_line()
+    str_ += "{0:s}\n".format(get_the_line())
     # printing Folding Profile
     str_ += get_folding_profile_section(
         protein, conformation=conformation, reference=reference,
@@ -109,17 +109,18 @@ def print_tm_profile(protein, reference="neutral", window=[0., 14., 1.],
         _:  Boolean for verbosity
         options:  options object
     """
-    profile = protein.getTmProfile(reference=reference, grid=[0., 14., 0.1],
-                                   tms=tms, ref=ref, options=options)
+    profile = protein.getTmProfile(
+        reference=reference, grid=[0., 14., 0.1], tms=tms, ref=ref,
+        options=options)
     if profile is None:
         str_ = "Could not determine Tm-profile\n"
     else:
-        str_ = " suggested Tm-profile for %s\n" % (protein.name)
+        str_ = " suggested Tm-profile for {0:s}\n".format(protein.name)
         for (ph, tm_) in profile:
             if (ph >= window[0] and ph <= window[1]
-                    and (ph%window[2] < 0.01
-                         or ph%window[2] > 0.99*window[2])):
-                str_ += "%6.2lf%10.2lf\n" % (ph, tm_)
+                    and (ph % window[2] < 0.01
+                         or ph % window[2] > 0.99*window[2])):
+                str_ += "{0:>6.2f}{1:>10.2f}\n".format(ph, tm_)
         info(str_)
 
 
@@ -160,7 +161,7 @@ def get_determinant_section(protein, conformation, parameters):
         string
     """
     # getting the same order as in propka2.0
-    str_ = "%s\n" % get_determinants_header()
+    str_ = "{0:s}\n".format(get_determinants_header())
     # printing determinants
     for chain in protein.conformations[conformation].chains:
         for residue_type in parameters.write_out_order:
@@ -169,8 +170,9 @@ def get_determinant_section(protein, conformation, parameters):
                 if g.atom.chain_id == chain]
             for group in groups:
                 if group.residue_type == residue_type:
-                    str_ += "%s" % group.get_determinant_string(
-                        parameters.remove_penalised_group)
+                    str_ += "{0:s}".format(
+                        group.get_determinant_string(
+                            parameters.remove_penalised_group))
     # Add a warning in case of coupled residues
     if (protein.conformations[conformation].non_covalently_coupled_groups
             and not protein.options.display_coupled_residues):
@@ -190,13 +192,14 @@ def get_summary_section(protein, conformation, parameters):
     Returns:
         string
     """
-    str_ = "%s\n" % get_summary_header()
+    str_ = "{0:s}\n".format(get_summary_header())
     # printing pKa summary
     for residue_type in parameters.write_out_order:
         for group in protein.conformations[conformation].groups:
             if group.residue_type == residue_type:
-                str_ += "%s" % group.get_summary_string(
-                    parameters.remove_penalised_group)
+                str_ += "{0:s}".format(
+                    group.get_summary_string(
+                        parameters.remove_penalised_group))
     return str_
 
 
@@ -219,8 +222,8 @@ def get_folding_profile_section(protein, conformation='AVR',
     """
     str_ = get_the_line()
     str_ += "\n"
-    str_ += "Free energy of %9s (kcal/mol) as a function" % direction
-    str_ += " of pH (using %s reference)\n" %  reference
+    str_ += "Free energy of {0:>9s} (kcal/mol) as a function".format(direction)
+    str_ += " of pH (using {0:s} reference)\n".format(reference)
     profile, [ph_opt, dg_opt], [dg_min, dg_max], [ph_min, ph_max] = (
         protein.get_folding_profile(
             conformation=conformation, reference=reference,
@@ -230,27 +233,28 @@ def get_folding_profile_section(protein, conformation='AVR',
     else:
         for (ph, dg) in profile:
             if ph >= window[0] and ph <= window[1]:
-                if ph%window[2] < 0.05 or ph%window[2] > 0.95:
-                    str_ += "%6.2lf%10.2lf\n" % (ph, dg)
+                if ph % window[2] < 0.05 or ph % window[2] > 0.95:
+                    str_ += "{0:>6.2f}{1:>10.2f}\n".format(ph, dg)
         str_ += "\n"
     if ph_opt is None or dg_opt is None:
         str_ += "Could not determine pH optimum\n"
     else:
-        str_ += "The pH of optimum stability is %4.1lf" % ph_opt
-        str_ += (" for which the free energy is %6.1lf kcal/mol at 298K\n"
-                 % dg_opt)
+        str_ += "The pH of optimum stability is {0:>4.1f}".format(ph_opt)
+        str_ += (
+            " for which the free energy is {0:>6.1f} kcal/mol at 298K\n".format(
+                dg_opt))
     if dg_min is None or dg_max is None:
         str_ += "Could not determine pH values where the free energy"
-        str_ += " is within 80 %s of minimum\n" % ("%")
+        str_ += " is within 80 %% of minimum\n"
     else:
         str_ += "The free energy is within 80 %% of maximum"
-        str_ += " at pH %4.1lf to %4.1lf\n" % (dg_min, dg_max)
+        str_ += " at pH {0:>4.1f} to {1:>4.1f}\n".format(dg_min, dg_max)
     if ph_min is None or ph_max is None:
         str_ += "Could not determine the pH-range where the free"
         str_ += " energy is negative\n\n"
     else:
         str_ += "The free energy is negative in the range"
-        str_ += " %4.1lf - %4.1lf\n\n" % (ph_min, ph_max)
+        str_ += " {0:>4.1f} - {1:>4.1f}\n\n".format(ph_min, ph_max)
     return str_
 
 
@@ -278,7 +282,7 @@ def get_charge_profile_section(protein, conformation='AVR', _=None):
     if pi_pro is None or pi_mod is None:
         str_ += "Could not determine the pI\n\n"
     else:
-        str_ += ("The pI is %5.2lf (folded) and %5.2lf (unfolded)\n")
+        str_ += ("The pI is {0:>5.2f} (folded) and {1:>5.2f} (unfolded)\n")
     return str_
 
 
@@ -290,7 +294,8 @@ def write_jackal_scap_file(mutation_data=None, filename="1xxx_scap.list",
     """
     with open(filename, 'w') as file_:
         for chain_id, _, res_num, code2 in mutation_data:
-            str_ = "%s, %d, %s\n" % (chain_id, res_num, code2)
+            str_ = "{chain:s}, {num:d}, {code:s}\n".format(
+                chain=chain_id, num=res_num, code=code2)
         file_.write(str_)
 
 
@@ -302,9 +307,9 @@ def write_scwrl_sequence_file(sequence, filename="x-ray.seq", _=None):
     with open(filename, 'w') as file_:
         start = 0
         while len(sequence[start:]) > 60:
-            file_.write("%s\n" % (sequence[start:start+60]))
+            file_.write("{0:s}s\n".format(sequence[start:start+60]))
             start += 60
-        file_.write("%s\n" % (sequence[start:]))
+        file_.write("{0:s}\n".format(sequence[start:]))
 
 
 def get_propka_header():
@@ -314,7 +319,7 @@ def get_propka_header():
         string
     """
     today = date.today()
-    str_ = "propka3.1 %93s\n" % (today)
+    str_ = "propka3.1 {0:>93s}\n".format(today)
     str_ += ("---------------------------------------------------------------"
              "----------------------------------------\n")
     str_ += ("--                                                             "
@@ -468,19 +473,19 @@ def make_interaction_map(name, list_, interaction):
         for i, group1 in enumerate(list_):
             for group2 in list_[i:]:
                 if interaction(group1, group2):
-                    res += 'Coupling: %9s - %9s\n' % (group1.label,
-                                                      group2.label)
+                    res += 'Coupling: {0:>9s} - {1:>9s}\n'.format(
+                        group1.label, group2.label)
         return res
     # Name and map header
-    res = '%s\n%12s' % (name, '')
+    res = '{0:s}\n{1:>12s}'.format(name, '')
     for group in list_:
-        res += '%9s | ' % group.label
+        res += '{0:>9s} | '.format(group.label)
     # do the map
     for group1 in list_:
-        res += '\n%-12s' % (group1.label)
+        res += '\n{0:<12s}'.format(group1.label)
         for group2 in list_:
             tag = ''
             if interaction(group1, group2):
                 tag = '    X     '
-            res += '%10s| '%tag
+            res += '{0:>10s}| '.format(tag)
     return res
