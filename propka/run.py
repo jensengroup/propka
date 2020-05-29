@@ -34,7 +34,7 @@ def single(pdbfile, optargs=None):
     options = loadOptions(*optargs)
     pdbfile = options.filenames.pop(0)
     if len(options.filenames) > 0:
-        _LOGGER.warning("Ignoring filenames: %s", options.filenames)
+        _LOGGER.warning("Ignoring filenames: {0:s}".format(options.filenames))
     my_molecule = Molecular_container(pdbfile, options)
     my_molecule.calculate_pka()
     my_molecule.write_pka()

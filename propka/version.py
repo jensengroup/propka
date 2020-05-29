@@ -31,7 +31,7 @@ class Version:
         Raises:
             NotImplementedError
         """
-        err = "Called an empty Version function with args %s" % args
+        err = "Called an empty Version function with args {0:s}".format(args)
         raise NotImplementedError(err)
 
     def calculate_desolvation(self, group):

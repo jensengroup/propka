@@ -58,7 +58,7 @@ class Vector:
         elif type(other) in [int, float]:
             return Vector(self.x * other, self.y * other, self.z * other)
         else:
-            info('%s not supported' % type(other))
+            info('{0:s} not supported'.format(type(other)))
             raise TypeError
 
     def __rmul__(self, other):
@@ -85,7 +85,8 @@ class Vector:
         return math.sqrt(self.sq_length())
 
     def __str__(self):
-        return '%10.4f %10.4f %10.4f'%(self.x, self.y, self.z)
+        return '{0:>10.4f} {1:>10.4f} {2:>10.4f}'.format(
+            self.x, self.y, self.z)
 
     def __repr__(self):
         return '<vector>'
@@ -100,9 +101,7 @@ class Vector:
     def rescale(self, new_length):
         """ Rescale vector to new length while preserving direction """
         frac = new_length/(self.length())
-        res = Vector(xi=self.x*frac,
-                     yi=self.y*frac,
-                     zi=self.z*frac)
+        res = Vector(xi=self.x*frac, yi=self.y*frac, zi=self.z*frac)
         return res
 
 
@@ -296,7 +295,8 @@ class MultiVector:
                 keys2 = get_sorted_configurations(atom2.configurations.keys())
                 if self.keys != keys2:
                     str_ = ('Cannot make multi vector: Atomic configurations '
-                            'mismatch for\n   %s\n   %s\n' % (atom1, atom2))
+                            'mismatch for\n   {0:s}\n   {1:s}\n'.format(
+                                atom1, atom2))
                     raise KeyError(str_)
             for key in self.keys:
                 atom1.setConfiguration(key)
@@ -314,7 +314,7 @@ class MultiVector:
     def __str__(self):
         res = ''
         for i, key in enumerate(self.keys):
-            res += '%s %s\n' % (key, self.vectors[i])
+            res += '{0:s} {1:s}\n'.format(key, self.vectors[i])
         return res
 
     def do_job(self, job):
@@ -350,8 +350,9 @@ class MultiVector:
         for i in range(len(self.vectors)):
             self.result.vectors.append(
                 # TODO - eliminate eval() or entire class
-                eval('self.vectors[%d] %s other.vectors[%d]'
-                     % (i, operation, i)))
+                eval(
+                    'self.vectors[{0:d}] {1:s} other.vectors[{2:d}]'.format(
+                        i, operation, i)))
             self.result.keys.append(self.keys[i])
 
     def __add__(self, other):
