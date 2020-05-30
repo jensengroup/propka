@@ -203,10 +203,9 @@ def get_summary_section(protein, conformation, parameters):
     return str_
 
 
-def get_folding_profile_section(protein, conformation='AVR',
-                                direction="folding", reference="neutral",
-                                window=[0., 14., 1.0], _=False,
-                                __=None):
+def get_folding_profile_section(
+    protein, conformation='AVR', direction="folding", reference="neutral",
+    window=[0., 14., 1.0], _=False, __=None):
     """Returns string with the folding profile section of the results.
 
     Args:
@@ -245,9 +244,9 @@ def get_folding_profile_section(protein, conformation='AVR',
                 dg_opt))
     if dg_min is None or dg_max is None:
         str_ += "Could not determine pH values where the free energy"
-        str_ += " is within 80 %% of minimum\n"
+        str_ += " is within 80 % of minimum\n"
     else:
-        str_ += "The free energy is within 80 %% of maximum"
+        str_ += "The free energy is within 80 % of maximum"
         str_ += " at pH {0:>4.1f} to {1:>4.1f}\n".format(dg_min, dg_max)
     if ph_min is None or ph_max is None:
         str_ += "Could not determine the pH-range where the free"
