@@ -6,7 +6,7 @@ import propka.molecular_container
 import propka.calculations
 import propka.parameters
 import propka.pdb
-import propka.lib
+from propka.output import write_mol2_for_atoms
 from propka.lib import info, warning
 
 
@@ -133,7 +133,7 @@ class LigandPkaValues:
         """
         # print out structure unless we are using user-modified structure
         if not reuse:
-            propka.pdb.write_mol2_for_atoms(atoms, filename)
+            write_mol2_for_atoms(atoms, filename)
         # check that we actually have a file to work with
         if not os.path.isfile(filename):
             errstr = (
@@ -141,7 +141,7 @@ class LigandPkaValues:
                 "- generating one".format(
                     filename))
             warning(errstr)
-            propka.pdb.write_mol2_for_atoms(atoms, filename)
+            write_mol2_for_atoms(atoms, filename)
         # Marvin calculate pKa values
         fmt = (
             'pka -a {num1} -b {num2} --min {min_ph} '
@@ -197,3 +197,4 @@ class LigandPkaValues:
         if len(indices) != len(values) != len(types):
             raise Exception('Lengths of atoms and pka values mismatch')
         return indices, values, types
+

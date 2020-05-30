@@ -1,8 +1,5 @@
 """PROPKA calculations."""
 import math
-import propka.protonate
-import propka.bonds
-from propka.lib import warning, info
 
 
 # TODO - this file should be broken into three separate files:

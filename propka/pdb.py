@@ -1,7 +1,8 @@
-"""PDB parsing functionality."""
+"""Read and parse PDB-like input files."""
 import propka.lib
 from propka.lib import warning
 from propka.atom import Atom
+from propka.group import initialize_atom_group
 from propka.conformation_container import ConformationContainer
 
 
@@ -158,118 +159,6 @@ def get_atom_lines_from_pdb(pdb_file, ignore_residues=[], keep_protons=False,
             terminal = None
 
 
-def write_pdb(conformation, filename):
-    """Write PDB conformation to a file.
-
-    Args:
-        conformation:  conformation container
-        filename:  filename for output
-    """
-    write_pdb_for_atoms(conformation.atoms, filename)
-
-
-def write_pdb_for_atoms(atoms, filename, make_conect_section=False):
-    """Write out PDB file for atoms.
-
-    Args:
-        atoms:  list of atoms
-        filename:  name of file
-        make_conect_section:  generate a CONECT PDB section
-    """
-    out = propka.lib.open_file_for_writing(filename)
-    for atom in atoms:
-        out.write(atom.make_pdb_line())
-    if make_conect_section:
-        for atom in atoms:
-            out.write(atom.make_conect_line())
-    out.close()
-
-
-def write_mol2_for_atoms(atoms, filename):
-    """Write out MOL2 file for atoms.
-
-    Args:
-        atoms:  list of atoms
-        filename:  name of file
-    """
-    # TODO - header needs to be converted to format string
-    header = '@<TRIPOS>MOLECULE\n\n{natom:d} {id:d}\nSMALL\nUSER_CHARGES\n'
-    atoms_section = '@<TRIPOS>ATOM\n'
-    for i, atom in enumerate(atoms):
-        atoms_section += atom.make_mol2_line(i+1)
-    bonds_section = '@<TRIPOS>BOND\n'
-    id_ = 1
-    for i, atom1 in enumerate(atoms):
-        for j, atom2 in enumerate(atoms, i+1):
-            if atom1 in atom2.bonded_atoms:
-                type_ = get_bond_order(atom1, atom2)
-                bonds_section += '{0:>7d} {1:>7d} {2:>7d} {3:>7s}\n'.format(
-                    id_, i+1, j+1, type_)
-                id_ += 1
-    substructure_section = '@<TRIPOS>SUBSTRUCTURE\n\n'
-    if len(atoms) > 0:
-        substructure_section = (
-            '@<TRIPOS>SUBSTRUCTURE\n{0:<7d} {1:>10s} {2:>7d}\n'.format(
-                atoms[0].res_num, atoms[0].res_name, atoms[0].numb))
-    out = propka.lib.open_file_for_writing(filename)
-    out.write(header.format(natom=len(atoms), id=id_-1))
-    out.write(atoms_section)
-    out.write(bonds_section)
-    out.write(substructure_section)
-    out.close()
-
-
-def get_bond_order(atom1, atom2):
-    """Get the order of a bond between two atoms.
-
-    Args:
-        atom1:  first atom in bond
-        atom2:  second atom in bond
-    Returns:
-        string with bond type
-    """
-    type_ = '1'
-    pi_electrons1 = atom1.num_pi_elec_2_3_bonds
-    pi_electrons2 = atom2.num_pi_elec_2_3_bonds
-    if '.ar' in atom1.sybyl_type:
-        pi_electrons1 -= 1
-    if '.ar' in atom2.sybyl_type:
-        pi_electrons2 -= 1
-    if pi_electrons1 > 0 and pi_electrons2 > 0:
-        type_ = '{0:d}'.format(min(pi_electrons1, pi_electrons2)+1)
-    if '.ar' in atom1.sybyl_type and '.ar' in atom2.sybyl_type:
-        type_ = 'ar'
-    return type_
-
-
-def write_input(molecular_container, filename):
-    """Write PROPKA input file for molecular container.
-
-    Args:
-        molecular_container:  molecular container
-        filename:  output file name
-    """
-    out = propka.lib.open_file_for_writing(filename)
-    for conformation_name in molecular_container.conformation_names:
-        out.write('MODEL {0:s}\n'.format(conformation_name))
-        # write atoms
-        for atom in molecular_container.conformations[conformation_name].atoms:
-            out.write(atom.make_input_line())
-        # write bonds
-        for atom in molecular_container.conformations[conformation_name].atoms:
-            out.write(atom.make_conect_line())
-        # write covalently coupled groups
-        for group in (
-                molecular_container.conformations[conformation_name].groups):
-            out.write(group.make_covalently_coupled_line())
-        # write non-covalently coupled groups
-        for group in (
-                molecular_container.conformations[conformation_name].groups):
-            out.write(group.make_non_covalently_coupled_line())
-        out.write('ENDMDL\n')
-    out.close()
-
-
 def read_input(input_file, parameters, molecule):
     """Read PROPKA input file for molecular container.
 
@@ -316,6 +205,7 @@ def get_atom_lines_from_input(input_file, tags=['ATOM  ', 'HETATM']):
         if tag in tags:
             atom = Atom(line=line)
             atom.get_input_parameters()
+            initialize_atom_group(atom)
             atom.groups_extracted = 1
             atom.is_protonated = True
             atoms[atom.numb] = atom

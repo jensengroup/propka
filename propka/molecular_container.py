@@ -1,13 +1,11 @@
 """Molecular container for storing all contents of PDB files."""
 import os
 import sys
-import propka.pdb
 import propka.version
-import propka.output
-import propka.group
-import propka.lib
+from propka.pdb import read_input
+from propka.output import write_input
 from propka.conformation_container import ConformationContainer
-from propka.lib import info, warning
+from propka.lib import info, warning, make_grid
 
 
 # TODO - these are constants whose origins are a little murky
@@ -78,7 +76,7 @@ class Molecular_container:
             self.find_covalently_coupled_groups()
             # write out the input file
             filename = self.file.replace(input_file_extension, '.propka_input')
-            propka.pdb.write_input(self, filename)
+            write_input(self, filename)
         elif input_file_extension == '.propka_input':
             #input is a propka_input file
             [self.conformations, self.conformation_names] = (
@@ -155,7 +153,7 @@ class Molecular_container:
                 else:
                     str_ = (
                         'Group {0:s} could not be found in '
-                        'conformation {0:s}.'.format(
+                        'conformation {1:s}.'.format(
                             group.atom.residue_label, name))
                     warning(str_)
             # ... and store the average value
@@ -214,7 +212,7 @@ class Molecular_container:
         """
         # calculate stability profile
         profile = []
-        for ph in propka.lib.make_grid(*grid):
+        for ph in make_grid(*grid):
             conf = self.conformations[conformation]
             ddg = conf.calculate_folding_energy(ph=ph, reference=reference)
             profile.append([ph, ddg])
@@ -244,7 +242,7 @@ class Molecular_container:
             list of charge state values
         """
         charge_profile = []
-        for ph in propka.lib.make_grid(*grid):
+        for ph in make_grid(*grid):
             conf = self.conformations[conformation]
             q_unfolded, q_folded = conf.calculate_charge(
                 self.version.parameters, ph=ph)
