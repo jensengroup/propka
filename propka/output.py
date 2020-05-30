@@ -582,7 +582,7 @@ def write_mol2_for_atoms(atoms, filename):
     out.write(substructure_section)
     out.close()
 
-def write_input(molecular_container, filename):
+def write_propka(molecular_container, filename):
     """Write PROPKA input file for molecular container.
 
     Args:

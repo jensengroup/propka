@@ -1,7 +1,7 @@
 """Atom class - contains all atom information found in the PDB file"""
 import string
-from . import hybrid36
 from propka.lib import make_tidy_atom_label
+from . import hybrid36
 
 
 # Format strings that get used in multiple places (or are very complex)
@@ -25,7 +25,7 @@ STR_FMT = (
     "({r.chain_id:1s}) [{r.x:>8.3f} {r.y:>8.3f} {r.z:>8.3f}] {r.element:s}")
 
 
-class Atom(object):
+class Atom:
     """Atom class - contains all atom information found in the PDB file"""
 
     def __init__(self, line=None):

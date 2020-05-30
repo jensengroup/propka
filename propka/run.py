@@ -1,7 +1,9 @@
 """Entry point for PROPKA script."""
 import logging
 from propka.lib import loadOptions
-from propka.molecular_container import Molecular_container
+from propka.input import read_parameter_file, read_molecule_file
+from propka.parameters import Parameters
+from propka.molecular_container import MolecularContainer
 
 
 _LOGGER = logging.getLogger("PROPKA")
@@ -13,8 +15,10 @@ def main(optargs=None):
     optargs = optargs if optargs is not None else []
     options = loadOptions(*optargs)
     pdbfiles = options.filenames
+    parameters = read_parameter_file(options.parameters, Parameters())
     for pdbfile in pdbfiles:
-        my_molecule = Molecular_container(pdbfile, options)
+        my_molecule = MolecularContainer(parameters, options)
+        my_molecule = read_molecule_file(pdbfile, my_molecule)
         my_molecule.calculate_pka()
         my_molecule.write_pka()
 
@@ -33,9 +37,11 @@ def single(pdbfile, optargs=None):
     optargs = optargs if optargs is not None else []
     options = loadOptions(*optargs)
     pdbfile = options.filenames.pop(0)
+    parameters = read_parameter_file(options.parameters, Parameters())
     if len(options.filenames) > 0:
         _LOGGER.warning("Ignoring filenames: {0:s}".format(options.filenames))
-    my_molecule = Molecular_container(pdbfile, options)
+    my_molecule = MolecularContainer(parameters, options)
+    my_molecule = read_molecule_file(pdbfile, my_molecule)
     my_molecule.calculate_pka()
     my_molecule.write_pka()
     return my_molecule

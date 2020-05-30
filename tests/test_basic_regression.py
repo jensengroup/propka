@@ -5,8 +5,10 @@ import re
 from pathlib import Path
 import pytest
 from numpy.testing import assert_almost_equal
-import propka.lib
-import propka.molecular_container
+from propka.parameters import Parameters
+from propka.molecular_container import MolecularContainer
+from propka.input import read_parameter_file, read_molecule_file
+from propka.lib import loadOptions
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -64,15 +66,16 @@ def run_propka(options, pdb_path, tmp_path):
         tmp_path:  path for working directory
     """
     options += [str(pdb_path)]
-    args = propka.lib.loadOptions(options)
+    args = loadOptions(options)
     try:
         _LOGGER.warning(
             "Working in tmpdir {0:s} because of PROPKA file output; "
             "need to fix this.".format(str(tmp_path)))
         cwd = Path.cwd()
         os.chdir(tmp_path)
-        molecule = propka.molecular_container.Molecular_container(
-            str(pdb_path), args)
+        parameters = read_parameter_file(args.parameters, Parameters())
+        molecule = MolecularContainer(parameters, args)
+        molecule = read_molecule_file(str(pdb_path), molecule)
         molecule.calculate_pka()
         molecule.write_pka()
     finally:

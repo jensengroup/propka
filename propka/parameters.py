@@ -1,6 +1,4 @@
 """Holds parameters and settings."""
-import pkg_resources
-import propka.lib as lib
 from propka.lib import info, warning
 
 
@@ -346,7 +344,7 @@ O2
                    'N1', 'O2', 'OP', 'SH']
         lines = [
             "",
-            "\\begin{longtable}{{{0:s}}}".format('l'*len(agroups)),
+            "\\begin{{longtable}}{{{0:s}}}".format('l'*len(agroups)),
             ("\\caption{{Ligand interaction parameters. For interactions not "
              "listed, the default value of {0:s} is applied.}}").format(
                  str(self.sidechain_cutoffs.default)),

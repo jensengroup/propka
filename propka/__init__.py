@@ -15,6 +15,6 @@ predictions." Journal of Chemical Theory and Computation 7, no. 2 (2011): 525-53
 """
 __all__ = ["atom", "bonds", "calculations", "conformation_container",
            "coupled_groups", "determinant", "determinants", "group",
-           "hybrid36", "iterative", "lib", "ligand_pka_values", "ligand",
-           "molecular_container", "output", "parameters", "pdb", "protonate",
-           "run", "vector_algebra", "version"]
+           "hybrid36", "iterative", "input", "lib", "ligand_pka_values",
+           "ligand", "molecular_container", "output", "parameters",
+           "protonate", "run", "vector_algebra", "version"]

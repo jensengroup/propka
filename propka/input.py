@@ -1,5 +1,8 @@
 """Input routines."""
+from pathlib import Path
 from pkg_resources import resource_filename
+from propka.lib import protein_precheck
+from propka.output import write_propka
 from propka.atom import Atom
 from propka.conformation_container import ConformationContainer
 from propka.group import initialize_atom_group
@@ -27,6 +30,67 @@ def open_file_for_reading(input_file):
     return file_
 
 
+def read_molecule_file(input_file, mol_container):
+    """Read input file (PDB or PROPKA) for a molecular container
+
+    Args
+        input_file:  input file to read
+        mol_container:  MolecularContainer object
+    Returns
+        updated MolecularContainer object
+    Raises
+        ValuError if invalid input given
+    """
+    input_path = Path(input_file)
+    mol_container.name = input_path.stem
+    input_file_extension = input_path.suffix
+    if input_file_extension.lower() == '.pdb':
+        # input is a pdb file. read in atoms and top up containers to make
+        # sure that all atoms are present in all conformations
+        conformations, conformation_names = read_pdb(
+            input_path, mol_container.version.parameters, mol_container)
+        if len(conformations) == 0:
+            str_ = ('Error: The pdb file does not seems to contain any '
+                    'molecular conformations')
+            raise ValueError(str_)
+        mol_container.conformations = conformations
+        mol_container.conformation_names = conformation_names
+        mol_container.top_up_conformations()
+        # make a structure precheck
+        protein_precheck(
+            mol_container.conformations, mol_container.conformation_names)
+        # set up atom bonding and protonation
+        mol_container.version.setup_bonding_and_protonation(mol_container)
+        # Extract groups
+        mol_container.extract_groups()
+        # sort atoms
+        for name in mol_container.conformation_names:
+            mol_container.conformations[name].sort_atoms()
+        # find coupled groups
+        mol_container.find_covalently_coupled_groups()
+        # write out the input file
+        # TODO - figure out why this I/O has to happen here
+        output_path = Path(input_path.name.replace(
+            input_file_extension, '.propka_input'))
+        write_propka(mol_container, output_path)
+    elif input_file_extension.lower() == '.propka_input':
+        # input is a propka_input file
+        conformations, conformation_names = read_propka(
+            input_file, mol_container.version.parameters, mol_container)
+        mol_container.conformations = conformations
+        mol_container.conformation_names = conformation_names
+        # Extract groups - this merely sets up the groups found in the
+        # input file
+        mol_container.extract_groups()
+        # do some additional set up
+        mol_container.additional_setup_when_reading_input_file()
+    else:
+        str_ = "Unknown input file type {0!s} for file {1!s}".format(
+            input_file_extension, input_path)
+        raise ValueError(str_)
+    return mol_container
+
+
 def read_parameter_file(input_file, parameters):
     """Read a parameter file.
 
@@ -45,7 +109,6 @@ def read_parameter_file(input_file, parameters):
     for line in input_:
         parameters.parse_line(line)
     return parameters
-
 
 
 def conformation_sorter(conf):
@@ -121,7 +184,7 @@ def get_atom_lines_from_pdb(pdb_file, ignore_residues=[], keep_protons=False,
             terminal = None
 
 
-def read_input(input_file, parameters, molecule):
+def read_propka(input_file, parameters, molecule):
     """Read PROPKA input file for molecular container.
 
     Args:
@@ -235,5 +298,3 @@ def read_pdb(pdb_file, parameters, molecule):
     # make a sorted list of conformation names
     names = sorted(conformations.keys(), key=conformation_sorter)
     return [conformations, names]
-
-
