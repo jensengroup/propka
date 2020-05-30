@@ -2,15 +2,6 @@
 import math
 
 
-# TODO - this file should be broken into three separate files:
-# * calculations.py - includes basic functions for calculating distances, etc.
-# * hydrogen.py - includes bonding and protonation functions
-# * energy.py - includes energy functions (dependent on distance functions)
-
-
-# TODO - the next set of functions form a distinct "module" for distance calculation
-
-
 # Maximum distance used to bound calculations of smallest distance
 MAX_DISTANCE = 1e6
 
