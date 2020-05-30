@@ -1,16 +1,10 @@
 """PROPKA representation of bonds."""
-# TODO - is pickle still used?
-import pickle
-# TODO - eliminate use of sys
-import sys
-# TODO - eliminate use of os
-import os
 import math
 import json
 import pkg_resources
 import propka.calculations
 # TODO - replace the info/warning imports with logging functionality
-from propka.lib import info, warning
+from propka.lib import info
 
 
 # TODO - should these constants be defined higher up in the module?
@@ -30,18 +24,23 @@ class BondMaker:
     """
     def __init__(self):
         # predefined bonding distances
-        self.distances = {'S-S' : DISULFIDE_DISTANCE, 'F-F' : FLUORIDE_DISTANCE}
+        self.distances = {'S-S' : DISULFIDE_DISTANCE,
+                          'F-F' : FLUORIDE_DISTANCE}
         self.distances_squared = {}
-        for k in self.distances.keys():
-            self.distances_squared[k] = self.distances[k] * self.distances[k]
-        self.H_dist = HYDROGEN_DISTANCE
+        for key in self.distances:
+            self.distances_squared[key] = (
+                self.distances[key] * self.distances[key])
+        h_dist = HYDROGEN_DISTANCE
         self.default_dist = DEFAULT_DISTANCE
-        self.H_dist_squared = self.H_dist * self.H_dist
+        self.h_dist_squared = h_dist * h_dist
         self.default_dist_squared = self.default_dist * self.default_dist
-        distances = list(self.distances_squared.values()) + [self.default_dist_squared]
+        distances = (
+            list(self.distances_squared.values())
+            + [self.default_dist_squared])
         self.max_sq_distance = max(distances)
         # protein bonding data
-        self.data_file_name = pkg_resources.resource_filename(__name__, 'protein_bonds.json')
+        self.data_file_name = (
+            pkg_resources.resource_filename(__name__, 'protein_bonds.json'))
         with open(self.data_file_name, 'rt') as json_file:
             self.protein_bonds = json.load(json_file)
         self.intra_residue_backbone_bonds = {'N': ['CA'], 'CA': ['N', 'C'],
@@ -74,9 +73,13 @@ class BondMaker:
         self.num_pi_elec_conj_bonds_ligands = {'N.am': 1, 'N.pl3': 1}
         self.backbone_atoms = list(self.intra_residue_backbone_bonds.keys())
         self.terminal_oxygen_names = ['OXT', 'O\'\'']
+        self.boxes = {}
+        self.num_box_x = None
+        self.num_box_y = None
+        self.num_box_z = None
 
     def find_bonds_for_protein(self, protein):
-        """Finds bonds proteins based on the way atoms normally bond in proteins.
+        """Bonds proteins based on the way atoms normally bond.
 
         Args:
             protein:  the protein to search for bonds
@@ -92,9 +95,12 @@ class BondMaker:
         last_residues = []
         for chain in protein.chains:
             for i in range(1, len(chain.residues)):
-                if chain.residues[i-1].res_name.replace(' ', '') not in ['N+', 'C-']:
-                    if chain.residues[i].res_name.replace(' ', '') not in ['N+', 'C-']:
-                        self.connect_backbone(chain.residues[i-1], chain.residues[i])
+                if (chain.residues[i-1].res_name.replace(' ', '')
+                        not in ['N+', 'C-']):
+                    if (chain.residues[i].res_name.replace(' ', '')
+                            not in ['N+', 'C-']):
+                        self.connect_backbone(chain.residues[i-1],
+                                              chain.residues[i])
                         last_residues.append(chain.residues[i])
         info('++++ terminal oxygen ++++')
         # terminal OXT
@@ -121,7 +127,8 @@ class BondMaker:
             if atom1.name == 'SG':
                 for atom2 in cys2.atoms:
                     if atom2.name == 'SG':
-                        dist = propka.calculations.squared_distance(atom1, atom2)
+                        dist = propka.calculations.squared_distance(atom1,
+                                                                    atom2)
                         # TODO - is SS_dist_squared an attribute of this class?
                         if dist < self.SS_dist_squared:
                             self.make_bond(atom1, atom2)
@@ -138,7 +145,6 @@ class BondMaker:
                     if atom2.name == 'C':
                         self.make_bond(atom1, atom2)
 
-    # TODO - stopped here.
     def connect_backbone(self, residue1, residue2):
         """Sets up bonds in the backbone
 
@@ -152,8 +158,8 @@ class BondMaker:
             if atom1.name == 'C':
                 for atom2 in residue2.atoms:
                     if atom2.name == 'N':
-                        if propka.calculations.squared_distance(atom1, atom2) \
-                            < self.default_dist_squared:
+                        if (propka.calculations.squared_distance(atom1, atom2)
+                                < self.default_dist_squared):
                             self.make_bond(atom1, atom2)
 
     def find_bonds_for_residue_backbone(self, residue):
@@ -164,17 +170,18 @@ class BondMaker:
         """
         for atom1 in residue.atoms:
             if atom1.name in list(self.num_pi_elec_bonds_backbone.keys()):
-                atom1.num_pi_elec_2_3_bonds \
-                    = self.num_pi_elec_bonds_backbone[atom1.name]
-            if atom1.name in \
-                list(self.num_pi_elec_conj_bonds_backbone.keys()) \
-                    and len(atom1.bonded_atoms) > 1: # last part to avoid including N-term
-                atom1.num_pi_elec_conj_2_3_bonds \
-                    = self.num_pi_elec_conj_bonds_backbone[atom1.name]
+                atom1.num_pi_elec_2_3_bonds = (
+                    self.num_pi_elec_bonds_backbone[atom1.name])
+            if atom1.name in (
+                    list(self.num_pi_elec_conj_bonds_backbone.keys())
+                    and len(atom1.bonded_atoms) > 1): # avoid N-term
+                atom1.num_pi_elec_conj_2_3_bonds = (
+                    self.num_pi_elec_conj_bonds_backbone[atom1.name])
 
             if atom1.name in self.backbone_atoms:
                 for atom2 in residue.atoms:
-                    if atom2.name in self.intra_residue_backbone_bonds[atom1.name]:
+                    if atom2.name in (
+                            self.intra_residue_backbone_bonds[atom1.name]):
                         self.make_bond(atom1, atom2)
 
     def find_bonds_for_side_chain(self, atoms):
@@ -184,18 +191,19 @@ class BondMaker:
             atoms:  list of atoms to check for bonds
         """
         for atom1 in atoms:
-            key = '%s-%s' % (atom1.res_name, atom1.name)
+            key = '{0:s}-{1:s}'.format(atom1.res_name, atom1.name)
             if key in list(self.num_pi_elec_bonds_sidechains.keys()):
-                atom1.num_pi_elec_2_3_bonds \
-                    = self.num_pi_elec_bonds_sidechains[key]
+                atom1.num_pi_elec_2_3_bonds = (
+                    self.num_pi_elec_bonds_sidechains[key])
             if key in list(self.num_pi_elec_conj_bonds_sidechains.keys()):
-                atom1.num_pi_elec_conj_2_3_bonds \
-                    = self.num_pi_elec_conj_bonds_sidechains[key]
-
+                atom1.num_pi_elec_conj_2_3_bonds = (
+                    self.num_pi_elec_conj_bonds_sidechains[key])
             if not atom1.name in self.backbone_atoms:
                 if not atom1.name in self.terminal_oxygen_names:
                     for atom2 in atoms:
-                        if atom2.name in self.protein_bonds[atom1.res_name][atom1.name]:
+                        if atom2.name in (
+                                self
+                                .protein_bonds[atom1.res_name][atom1.name]):
                             self.make_bond(atom1, atom2)
 
     def find_bonds_for_ligand(self, ligand):
@@ -219,25 +227,30 @@ class BondMaker:
             # for ligands
             if atom.type == 'hetatm':
                 if atom.sybyl_type in self.num_pi_elec_bonds_ligands.keys():
-                    atom.num_pi_elec_2_3_bonds = self.num_pi_elec_bonds_ligands[atom.sybyl_type]
-                if atom.sybyl_type in self.num_pi_elec_conj_bonds_ligands.keys():
-                    atom.num_pi_elec_conj_2_3_bonds \
-                        = self.num_pi_elec_conj_bonds_ligands[atom.sybyl_type]
+                    atom.num_pi_elec_2_3_bonds = (
+                        self.num_pi_elec_bonds_ligands[atom.sybyl_type])
+                if atom.sybyl_type in (
+                        self.num_pi_elec_conj_bonds_ligands.keys()):
+                    atom.num_pi_elec_conj_2_3_bonds = (
+                        self.num_pi_elec_conj_bonds_ligands[atom.sybyl_type])
             # for protein
             if atom.type == 'atom':
-                key = '%s-%s' % (atom.res_name, atom.name)
+                key = '{0:s}-{1:s}'.format(atom.res_name, atom.name)
                 if key in list(self.num_pi_elec_bonds_sidechains.keys()):
-                    atom.num_pi_elec_2_3_bonds = self.num_pi_elec_bonds_sidechains[key]
+                    atom.num_pi_elec_2_3_bonds = (
+                        self.num_pi_elec_bonds_sidechains[key])
                 if key in list(self.num_pi_elec_conj_bonds_sidechains.keys()):
-                    atom.num_pi_elec_conj_2_3_bonds = self.num_pi_elec_conj_bonds_sidechains[key]
-
+                    atom.num_pi_elec_conj_2_3_bonds = (
+                        self.num_pi_elec_conj_bonds_sidechains[key])
                 if atom.name in list(self.num_pi_elec_bonds_backbone.keys()):
-                    atom.num_pi_elec_2_3_bonds = self.num_pi_elec_bonds_backbone[atom.name]
-                if atom.name in list(self.num_pi_elec_conj_bonds_backbone.keys()) \
-                    and len(atom.bonded_atoms) > 1:
+                    atom.num_pi_elec_2_3_bonds = (
+                        self.num_pi_elec_bonds_backbone[atom.name])
+                if atom.name in list(
+                        self.num_pi_elec_conj_bonds_backbone.keys()) and (
+                            len(atom.bonded_atoms) > 1):
                     # last part to avoid including N-term
-                    atom.num_pi_elec_conj_2_3_bonds \
-                        = self.num_pi_elec_conj_bonds_backbone[atom.name]
+                    atom.num_pi_elec_conj_2_3_bonds = (
+                        self.num_pi_elec_conj_bonds_backbone[atom.name])
 
     def find_bonds_for_protein_by_distance(self, molecule):
         """Finds bonds for all atoms in the molecule.
@@ -287,9 +300,9 @@ class BondMaker:
         sq_dist = propka.calculations.squared_distance(atom1, atom2)
         if sq_dist > self.max_sq_distance:
             return False
-        key = '%s-%s' % (atom1.element, atom2.element)
+        key = '{0:s}-{1:s}'.format(atom1.element, atom2.element)
         h_count = key.count('H')
-        if sq_dist < self.H_dist_squared and h_count == 1:
+        if sq_dist < self.h_dist_squared and h_count == 1:
             return True
         if sq_dist < self.default_dist_squared and h_count == 0:
             return True
@@ -305,7 +318,8 @@ class BondMaker:
             molecules:  list of molecules for finding bonds.
         """
         for name in molecules.conformation_names:
-            self.find_bonds_for_atoms_using_boxes(molecules.conformations[name].atoms)
+            self.find_bonds_for_atoms_using_boxes(
+                molecules.conformations[name].atoms)
 
     def add_pi_electron_information(self, molecules):
         """Add pi electron information to a molecule.
@@ -314,7 +328,8 @@ class BondMaker:
             molecules:  list of molecules for adding pi electron information.
         """
         for name in molecules.conformation_names:
-            self.add_pi_electron_table_info(molecules.conformations[name].atoms)
+            self.add_pi_electron_table_info(
+                molecules.conformations[name].atoms)
 
     def find_bonds_for_atoms_using_boxes(self, atoms):
         """Finds all bonds for a list of atoms.
@@ -370,16 +385,17 @@ class BondMaker:
             z:  box z-coordinates
             atom:  the atom to place in a box
         """
-        for bx in [x, x+1]:
-            for by in [y, y+1]:
-                for bz in [z, z+1]:
-                    key = (bx, by, bz)
+        for box_x in [x, x+1]:
+            for box_y in [y, y+1]:
+                for box_z in [z, z+1]:
+                    key = (box_x, box_y, box_z)
                     try:
                         self.boxes[key].append(atom)
                     except KeyError:
                         pass
 
-    def has_bond(self, atom1, atom2):
+    @staticmethod
+    def has_bond(atom1, atom2):
         """Look for bond between two atoms.
 
         Args:
@@ -392,7 +408,8 @@ class BondMaker:
             return True
         return False
 
-    def make_bond(self, atom1, atom2):
+    @staticmethod
+    def make_bond(atom1, atom2):
         """Makes a bond between atom1 and atom2
 
         Args:
@@ -418,10 +435,12 @@ class BondMaker:
                 name_i = atom.name
                 resi_j = bonded_atom.res_name
                 name_j = bonded_atom.name
-                if not name_i in self.backbone_atoms or\
-                        not name_j in self.backbone_atoms:
-                    if not name_i in self.terminal_oxygen_names and\
-                            not name_j in self.terminal_oxygen_names:
+                if not name_i in (
+                        self.backbone_atoms
+                        or not name_j in self.backbone_atoms):
+                    if not name_i in (
+                            self.terminal_oxygen_names
+                            and not name_j in self.terminal_oxygen_names):
                         if not resi_i in list(self.protein_bonds.keys()):
                             self.protein_bonds[resi_i] = {}
                         if not name_i in self.protein_bonds[resi_i]:

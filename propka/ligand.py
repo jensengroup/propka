@@ -1,16 +1,9 @@
-#!/usr/bin/python
-
-from __future__ import division
-from __future__ import print_function
-
-import sys
-
-import propka.calculations
-from propka.vector_algebra import *
-from propka.lib import info, warning
+"""Ligand classes and functions."""
+from propka.calculations import squared_distance
+from propka.vector_algebra import Vector
 
 
-all_sybyl_types = [
+ALL_SYBYL_TYPES = [
     'C.3',   #  carbon sp3
     'H',     #  hydrogen
     'C.2',   #  carbon sp2
@@ -66,344 +59,277 @@ all_sybyl_types = [
     'Sn']    #  tin
 
 
-#propka_input_types = ['1P','1N','2P','2N']
-#for type in all_sybyl_types:
-#    temp = type.replace('.','')
-#    if len(temp)>3:
-#        temp = temp[0:3]
-#    propka_input_types.append(temp)
-#
-#for t in propka_input_types:
-#    print (t)
+PROPKA_INPUT_TYPES = ['1P', '1N', '2P', '2N', 'C3', 'H', 'C2', 'Hsp', 'C1',
+                      'Ht3', 'Car', 'LP', 'Cca', 'Du', 'N3', 'DuC', 'N2',
+                      'Any', 'N1', 'Hal', 'Nar', 'Het', 'Nam', 'Hev', 'Npl',
+                      'Li', 'N4', 'Na', 'O3', 'Mg', 'O2', 'Al', 'Oco', 'Si',
+                      'Osp', 'K', 'Ot3', 'Ca', 'S3', 'Crt', 'S2', 'Cro', 'SO',
+                      'Mn', 'SO2', 'Fe', 'P3', 'Coo', 'F', 'Cu', 'Cl', 'Zn',
+                      'Br', 'Se', 'I', 'Mo', 'Sn']
 
 
-propka_input_types = [
-    '1P',
-    '1N',
-    '2P',
-    '2N',
-    'C3',
-    'H',
-    'C2',
-    'Hsp',
-    'C1',
-    'Ht3',
-    'Car',
-    'LP',
-    'Cca',
-    'Du',
-    'N3',
-    'DuC',
-    'N2',
-    'Any',
-    'N1',
-    'Hal',
-    'Nar',
-    'Het',
-    'Nam',
-    'Hev',
-    'Npl',
-    'Li',
-    'N4',
-    'Na',
-    'O3',
-    'Mg',
-    'O2',
-    'Al',
-    'Oco',
-    'Si',
-    'Osp',
-    'K',
-    'Ot3',
-    'Ca',
-    'S3',
-    'Crt',
-    'S2',
-    'Cro',
-    'SO',
-    'Mn',
-    'SO2',
-    'Fe',
-    'P3',
-    'Coo',
-    'F',
-    'Cu',
-    'Cl',
-    'Zn',
-    'Br',
-    'Se',
-    'I',
-    'Mo',
-    'Sn']
-
-
-max_C_double_bond = 1.3
-max_C_triple_bond = 1.2
-
-max_C_double_bond_squared = max_C_double_bond*max_C_double_bond
-max_C_triple_bond_squared = max_C_triple_bond*max_C_triple_bond
-
-
-
-
+MAX_C_DOUBLE_BOND = 1.3
+MAX_C_TRIPLE_BOND = 1.2
+MAX_C_DOUBLE_BOND_SQUARED = MAX_C_DOUBLE_BOND*MAX_C_DOUBLE_BOND
+MAX_C_TRIPLE_BOND_SQUARED = MAX_C_TRIPLE_BOND*MAX_C_TRIPLE_BOND
+PLANARITY_MARGIN = 0.20
 
 
 def assign_sybyl_type(atom):
+    """Assign Sybyl type to atom.
+
+    Args:
+        atom:  atom to assign
+    """
     # check if we already have assigned a name to this atom
     if atom.sybyl_assigned:
-        #info(atom.name,'already assigned')
         return
-
     # find some properties of the atom
     ring_atoms = is_ring_member(atom)
-    aromatic   = is_aromatic_ring(ring_atoms)
-    planar     = is_planar(atom)
+    aromatic = is_aromatic_ring(ring_atoms)
+    planar = is_planar(atom)
     bonded_elements = {}
-    for i in range(len(atom.bonded_atoms)):
-        bonded_elements[i]=atom.bonded_atoms[i].element
-
-
-
+    for i, bonded_atom in enumerate(atom.bonded_atoms):
+        bonded_elements[i] = bonded_atom.element
     # Aromatic carbon/nitrogen
     if aromatic:
-        for ra in ring_atoms:
-            if ra.element in ['C','N']:
-                set_type(ra, ra.element+'.ar')
+        for ring_atom in ring_atoms:
+            if ring_atom.element in ['C', 'N']:
+                set_type(ring_atom, ring_atom.element+'.ar')
         return
-
     # check for amide
-    if atom.element in ['O','N','C']:
-        O=None
-        N=None
-        C=None
+    if atom.element in ['O', 'N', 'C']:
+        o_atom = None
+        n_atom = None
+        c_atom = None
         # oxygen, nitrogen
-        if atom.element in ['O','N']:
-            for b in atom.get_bonded_elements('C'):
-                for bb in b.bonded_atoms:
-                    if (bb.element =='N' and atom.element == 'O'):
-                        O=atom
-                        C=b
-                        N=bb
-                    elif (bb.element =='O' and atom.element == 'N'):
-                        N=atom
-                        C=b
-                        O=bb
+        if atom.element in ['O', 'N']:
+            for bonded_elem in atom.get_bonded_elements('C'):
+                for bonded_atom in bonded_elem.bonded_atoms:
+                    if (bonded_atom.element == 'N' and atom.element == 'O'):
+                        o_atom = atom
+                        c_atom = bonded_elem
+                        n_atom = bonded_atom
+                    elif (bonded_atom.element == 'O' and atom.element == 'N'):
+                        n_atom = atom
+                        c_atom = bonded_elem
+                        o_atom = bonded_atom
         # carbon
         if atom.element == 'C':
             nitrogens = atom.get_bonded_elements('N')
             oxygens = atom.get_bonded_elements('O')
-            if len(nitrogens)==1 and len(oxygens)==1:
-                C = atom
-                N = nitrogens[0]
-                O = oxygens[0]
-
-
-        if C and N and O:
-            # make sure that the Nitrogen is not aromatic and that it has two heavy atom bonds
-            if not is_aromatic_ring(is_ring_member(N)) and len(N.get_bonded_heavy_atoms())==2:
-                set_type(N,'N.am')
-                set_type(C,'C.2')
-                set_type(O,'O.2')
+            if len(nitrogens) == 1 and len(oxygens) == 1:
+                c_atom = atom
+                n_atom = nitrogens[0]
+                o_atom = oxygens[0]
+        if c_atom and n_atom and o_atom:
+            # make sure that the Nitrogen is not aromatic and that it has two
+            # heavy atom bonds
+            if (not is_aromatic_ring(is_ring_member(n_atom))
+                    and len(n_atom.get_bonded_heavy_atoms()) == 2):
+                set_type(n_atom, 'N.am')
+                set_type(c_atom, 'C.2')
+                set_type(o_atom, 'O.2')
                 return
-
-
-    if atom.element=='C':
+    if atom.element == 'C':
         # check for carboxyl
-        if len(atom.bonded_atoms)==3 and list(bonded_elements.values()).count('O')==2:
-            i1 = list(bonded_elements.values()).index('O')
-            i2 = list(bonded_elements.values()).index('O',i1+1)
-            if len(atom.bonded_atoms[i1].bonded_atoms)==1 and len(atom.bonded_atoms[i2].bonded_atoms)==1:
-                set_type(atom.bonded_atoms[i1],'O.co2-')
-                set_type(atom.bonded_atoms[i2],'O.co2')
-                set_type(atom,'C.2')
+        if (len(atom.bonded_atoms) == 3
+                and list(bonded_elements.values()).count('O') == 2):
+            index1 = list(bonded_elements.values()).index('O')
+            index2 = list(bonded_elements.values()).index('O', index1+1)
+            if (len(atom.bonded_atoms[index1].bonded_atoms) == 1
+                    and len(atom.bonded_atoms[index2].bonded_atoms) == 1):
+                set_type(atom.bonded_atoms[index1], 'O.co2-')
+                set_type(atom.bonded_atoms[index2], 'O.co2')
+                set_type(atom, 'C.2')
                 return
-
-
-
         # sp carbon
-        if len(atom.bonded_atoms)<=2:
-            for b in atom.bonded_atoms:
-                if propka.calculations.squared_distance(atom, b) < max_C_triple_bond_squared:
-                    set_type(atom,'C.1')
-                    set_type(b,b.element+'.1')
+        if len(atom.bonded_atoms) <= 2:
+            for bonded_atom in atom.bonded_atoms:
+                if (squared_distance(atom, bonded_atom)
+                        < MAX_C_TRIPLE_BOND_SQUARED):
+                    set_type(atom, 'C.1')
+                    set_type(bonded_atom, bonded_atom.element + '.1')
             if atom.sybyl_assigned:
                 return
-
         # sp2 carbon
         if planar:
-            set_type(atom,'C.2')
+            set_type(atom, 'C.2')
             # check for N.pl3
-            for b in atom.bonded_atoms:
-                if b.element=='N':
-                    if len(b.bonded_atoms)<3 or is_planar(b):
-                        set_type(b,'N.pl3')
+            for bonded_atom in atom.bonded_atoms:
+                if bonded_atom.element == 'N':
+                    if (len(bonded_atom.bonded_atoms) < 3
+                            or is_planar(bonded_atom)):
+                        set_type(bonded_atom, 'N.pl3')
             return
-
         # sp3 carbon
         set_type(atom, 'C.3')
         return
-
     # Nitrogen
     if atom.element == 'N':
         # check for planar N
-        if len(atom.bonded_atoms)==1:
+        if len(atom.bonded_atoms) == 1:
             if is_planar(atom.bonded_atoms[0]):
-                set_type(atom,'N.pl3')
+                set_type(atom, 'N.pl3')
                 return
-
         if planar:
-            set_type(atom,'N.pl3')
+            set_type(atom, 'N.pl3')
             return
-
-        set_type(atom,'N.3')
+        set_type(atom, 'N.3')
         return
-
     # Oxygen
     if atom.element == 'O':
-        set_type(atom,'O.3')
-
+        set_type(atom, 'O.3')
         if len(atom.bonded_atoms) == 1:
             # check for carboxyl
             if atom.bonded_atoms[0].element == 'C':
                 the_carbon = atom.bonded_atoms[0]
-                if len(the_carbon.bonded_atoms)==3 and the_carbon.count_bonded_elements('O')==2:
-                    [O1,O2] = the_carbon.get_bonded_elements('O')
-
-                    if len(O1.bonded_atoms)==1 and len(O2.bonded_atoms)==1:
-                        set_type(O1,'O.co2-')
-                        set_type(O2,'O.co2')
-                        set_type(the_carbon,'C.2')
+                if (len(the_carbon.bonded_atoms) == 3
+                        and the_carbon.count_bonded_elements('O') == 2):
+                    [oxy1, oxy2] = the_carbon.get_bonded_elements('O')
+                    if (len(oxy1.bonded_atoms) == 1
+                            and len(oxy2.bonded_atoms) == 1):
+                        set_type(oxy1, 'O.co2-')
+                        set_type(oxy2, 'O.co2')
+                        set_type(the_carbon, 'C.2')
                         return
-
             # check for X=O
-            if propka.calculations.squared_distance(atom, atom.bonded_atoms[0]) < max_C_double_bond_squared:
-                set_type(atom,'O.2')
-                if atom.bonded_atoms[0].element=='C':
-                    set_type(atom.bonded_atoms[0],'C.2')
+            if (squared_distance(atom, atom.bonded_atoms[0])
+                    < MAX_C_DOUBLE_BOND_SQUARED):
+                set_type(atom, 'O.2')
+                if atom.bonded_atoms[0].element == 'C':
+                    set_type(atom.bonded_atoms[0], 'C.2')
         return
-
-
     # Sulphur
     if atom.element == 'S':
         # check for SO2
-        if list(bonded_elements.values()).count('O')==2:
-            i1 = list(bonded_elements.values()).index('O')
-            i2 = list(bonded_elements.values()).index('O',i1+1)
-            set_type(atom.bonded_atoms[i1],'O.2')
-            set_type(atom.bonded_atoms[i2],'O.2')
-            set_type(atom,'S.o2')
+        if list(bonded_elements.values()).count('O') == 2:
+            index1 = list(bonded_elements.values()).index('O')
+            index2 = list(bonded_elements.values()).index('O', index1+1)
+            set_type(atom.bonded_atoms[index1], 'O.2')
+            set_type(atom.bonded_atoms[index2], 'O.2')
+            set_type(atom, 'S.o2')
             return
-
         # check for SO4
-        if list(bonded_elements.values()).count('O')==4:
-            no_O2 = 0
+        if list(bonded_elements.values()).count('O') == 4:
+            no_o2 = 0
             for i in range(len(atom.bonded_atoms)):
-                if len(atom.bonded_atoms[i].bonded_atoms)==1 and no_O2<2:
-                    set_type(atom.bonded_atoms[i],'O.2')
-                    no_O2+=1
+                if len(atom.bonded_atoms[i].bonded_atoms) == 1 and no_o2 < 2:
+                    set_type(atom.bonded_atoms[i], 'O.2')
+                    no_o2 += 1
                 else:
-                    set_type(atom.bonded_atoms[i],'O.3')
-
-        set_type(atom,'S.3')
-
-
+                    set_type(atom.bonded_atoms[i], 'O.3')
+        set_type(atom, 'S.3')
         return
-
-
     # Phosphorus
     if atom.element == 'P':
-        set_type(atom,'P.3')
-
+        set_type(atom, 'P.3')
         # check for phosphate group
         bonded_oxygens = atom.get_bonded_elements('O')
-        for o in bonded_oxygens: set_type(o,'O.3')
-#         if len(bonded_oxygens)>=3:
-#             # find oxygens only bonded to current phosphorus
-#             bonded_oxygens_1 = [o for o in bonded_oxygens if len(o.get_bonded_heavy_atoms())==1]
-#             # find the closest oxygen ...
-#             closest_oxygen = min(bonded_oxygens_1,
-#                                  key= lambda o:propka.calculations.squared_distance(atom,o))
-#             # ... and set it to O.2
-#             set_type(closest_oxygen,'O.2')
-
+        for o_atom in bonded_oxygens:
+            set_type(o_atom, 'O.3')
         return
-
-
-
     element = atom.element.capitalize()
-    set_type(atom,element)
-    # info('Using element as type for %s'%atom.element)
-
-    return
+    set_type(atom, element)
 
 
 def is_ring_member(atom):
-    return identify_ring(atom,atom,0,[])
+    """Determine if atom is a member of a ring.
+
+    Args:
+        atom:  atom to test
+    Returns:
+        list of atoms
+    """
+    return identify_ring(atom, atom, 0, [])
+
 
 def identify_ring(this_atom, original_atom, number, past_atoms):
-    number+=1
-    past_atoms=past_atoms+[this_atom]
+    """Identify the atoms in a ring
+
+    Args:
+        this_atom:  atom to test
+        original_atom:  some other atom
+        number:  number of atoms
+        past_atoms:  atoms that have already been found
+    Returns:
+        list of atoms
+    """
+    number += 1
+    past_atoms = past_atoms + [this_atom]
     return_atoms = []
     if number > 10:
         return return_atoms
-
     for atom in this_atom.get_bonded_heavy_atoms():
-        if atom == original_atom and number>2:
+        if atom == original_atom and number > 2:
             return past_atoms
-
         if atom not in past_atoms:
-            these_return_atoms = identify_ring(atom, original_atom, number, past_atoms)
+            these_return_atoms = identify_ring(atom, original_atom, number,
+                                               past_atoms)
             if len(these_return_atoms) > 0:
-                if len(return_atoms)>len(these_return_atoms) or len(return_atoms)==0:
+                if (len(return_atoms) > len(these_return_atoms)
+                        or len(return_atoms) == 0):
                     return_atoms = these_return_atoms
-
     return return_atoms
 
 
+def set_type(atom, type_):
+    """Set atom type..
 
-
-def set_type(atom,type):
-    #info(atom, '->',type)
-    atom.sybyl_type = type
-    atom.sybyl_assigned=True
-    return
-
-
+    Args:
+        atom:  atom to set
+        type_:  type value to set
+    """
+    atom.sybyl_type = type_
+    atom.sybyl_assigned = True
 
 
 def is_planar(atom):
-    """ Finds out if atom forms a plane together with its bonded atoms"""
-    atoms = [atom]+atom.bonded_atoms
+    """Finds out if atom forms a plane together with its bonded atoms.
+
+    Args:
+        atom:  atom to test
+    Returns:
+        Boolean
+    """
+    atoms = [atom] + atom.bonded_atoms
     return are_atoms_planar(atoms)
 
+
 def are_atoms_planar(atoms):
-    if len(atoms)==0:
-        return False
-    if len(atoms)<4:
-        return False
-    v1 = vector(atom1=atoms[0], atom2=atoms[1])
-    v2 = vector(atom1=atoms[0], atom2=atoms[2])
-    n = (v1**v2).rescale(1.0)
+    """Test whether a group of atoms are planar.
 
-    margin = 0.20
-    for b in atoms[3:]:
-        v = vector(atom1=atoms[0], atom2=b).rescale(1.0)
-        #info(atoms[0],abs(v*n) )
-        if abs(v*n)>margin:
+    Args:
+        atoms:  list of atoms
+    Returns:
+        Boolean
+    """
+    if len(atoms) == 0:
+        return False
+    if len(atoms) < 4:
+        return False
+    vec1 = Vector(atom1=atoms[0], atom2=atoms[1])
+    vec2 = Vector(atom1=atoms[0], atom2=atoms[2])
+    norm = (vec1**vec2).rescale(1.0)
+    margin = PLANARITY_MARGIN
+    for atom in atoms[3:]:
+        vec = Vector(atom1=atoms[0], atom2=atom).rescale(1.0)
+        if abs(vec*norm) > margin:
             return False
-
     return True
 
-def is_aromatic_ring(atoms):
-    if len(atoms)<5:
-        return False
 
+def is_aromatic_ring(atoms):
+    """Determine whether group of atoms form aromatic ring.
+
+    Args:
+        atoms:  list of atoms to test
+    Returns:
+        Boolean
+    """
+    if len(atoms) < 5:
+        return False
     for i in range(len(atoms)):
         if not are_atoms_planar(atoms[i:]+atoms[:i]):
             return False
-
     return True
-
-
-
-

@@ -1,231 +1,275 @@
-
-from __future__ import division
-from __future__ import print_function
-
-import math
+"""Holds parameters and settings."""
+import pkg_resources
 import propka.lib as lib
-import sys, os
 from propka.lib import info, warning
 
-import pkg_resources
 
 # names and types of all key words in configuration file
-matrices =            ['interaction_matrix']
-
-pair_wise_matrices =  ['sidechain_cutoffs']
-
-number_dictionaries = ['VanDerWaalsVolume','charge','model_pkas','ions',
-                      'valence_electrons','custom_model_pkas']
-
-list_dictionaries =   ['backbone_NH_hydrogen_bond','backbone_CO_hydrogen_bond']
-
-string_dictionaries = ['protein_group_mapping']
-
-string_lists =        ['ignore_residues','angular_dependent_sidechain_interactions',
-                       'acid_list','base_list','exclude_sidechain_interactions',
-                       'backbone_reorganisation_list','write_out_order']
-
-distances =           ['desolv_cutoff','buried_cutoff','coulomb_cutoff1','coulomb_cutoff2']
-
-parameters =          ['Nmin','Nmax','desolvationSurfaceScalingFactor','desolvationPrefactor',
-                       'desolvationAllowance','coulomb_diel','COO_HIS_exception','OCO_HIS_exception',
-                       'CYS_HIS_exception','CYS_CYS_exception','min_ligand_model_pka','max_ligand_model_pka',
-                       'include_H_in_interactions','coupling_max_number_of_bonds',
-                       'min_bond_distance_for_hydrogen_bonds','coupling_penalty',
-                       'shared_determinants','common_charge_centre','hide_penalised_group', 'remove_penalised_group',
-                       'max_intrinsic_pKa_diff','min_interaction_energy','max_free_energy_diff','min_swap_pka_shift',
-                       'min_pka','max_pka','sidechain_interaction']
-
-strings =             ['version','output_file_tag','ligand_typing','pH','reference']
-
-
+MATRICES = ['interaction_matrix']
+PAIR_WISE_MATRICES = ['sidechain_cutoffs']
+NUMBER_DICTIONARIES = [
+    'VanDerWaalsVolume', 'charge', 'model_pkas', 'ions', 'valence_electrons',
+    'custom_model_pkas']
+LIST_DICTIONARIES = ['backbone_NH_hydrogen_bond', 'backbone_CO_hydrogen_bond']
+STRING_DICTIONARIES = ['protein_group_mapping']
+STRING_LISTS = [
+    'ignore_residues', 'angular_dependent_sidechain_interactions',
+    'acid_list', 'base_list', 'exclude_sidechain_interactions',
+    'backbone_reorganisation_list', 'write_out_order']
+DISTANCES = ['desolv_cutoff', 'buried_cutoff', 'coulomb_cutoff1',
+             'coulomb_cutoff2']
+PARAMETERS = [
+    'Nmin', 'Nmax', 'desolvationSurfaceScalingFactor', 'desolvationPrefactor',
+    'desolvationAllowance', 'coulomb_diel', 'COO_HIS_exception',
+    'OCO_HIS_exception', 'CYS_HIS_exception', 'CYS_CYS_exception',
+    'min_ligand_model_pka', 'max_ligand_model_pka',
+    'include_H_in_interactions', 'coupling_max_number_of_bonds',
+    'min_bond_distance_for_hydrogen_bonds', 'coupling_penalty',
+    'shared_determinants', 'common_charge_centre', 'hide_penalised_group',
+    'remove_penalised_group', 'max_intrinsic_pka_diff',
+    'min_interaction_energy', 'max_free_energy_diff', 'min_swap_pka_shift',
+    'min_pka', 'max_pka', 'sidechain_interaction']
+STRINGS = ['version', 'output_file_tag', 'ligand_typing', 'pH', 'reference']
 
 
 class Parameters:
-    def __init__(self, parameter_file):
+    """PROPKA parameter class."""
 
+    def __init__(self, parameter_file):
+        """Initialize parameter class.
+
+        Args:
+            parameter_file:  file with parameters
+        """
+        # TODO - need to define all members explicitly
+        self.model_pkas = {}
+        self.interaction_matrix = InteractionMatrix("interaction_matrix")
+        self.sidechain_cutoffs = None
+        # TODO - it would be nice to rename these; they're defined everywhere
+        self.COO_HIS_exception = None
+        self.OCO_HIS_exception = None
+        self.CYS_HIS_exception = None
+        self.CYS_CYS_exception = None
+        # These functions set up remaining data structures implicitly
         self.set_up_data_structures()
         self.read_parameters(parameter_file)
 
-        #self.print_interaction_parameters()
-        #self.print_interaction_parameters_latex()
-        #####self.print_interactions_latex()
-        #sys.exit(0)
+    def read_parameters(self, file_):
+        """Read parameters from file.
 
-
-        return
-
-
-    def read_parameters(self, file):
+        Args:
+            file_:  file to read
+        """
         # try to locate the parameters file
         try:
-            ifile = pkg_resources.resource_filename(__name__, file)
-            input = lib.open_file_for_reading(ifile)
-        except:
-            input = lib.open_file_for_reading(file)
-
-        for line in input:
+            ifile = pkg_resources.resource_filename(__name__, file_)
+            input_ = lib.open_file_for_reading(ifile)
+        except (IOError, FileNotFoundError, ValueError):
+            input_ = lib.open_file_for_reading(file_)
+        for line in input_:
             self.parse_line(line)
 
-        return
-
-
     def parse_line(self, line):
+        """Parse parameter file line."""
         # first, remove comments
         comment_pos = line.find('#')
         if comment_pos != -1:
             line = line[:comment_pos]
-
         # split the line into words
         words = line.split()
         if len(words) == 0:
             return
-
         # parse the words
-        if len(words)==3 and words[0] in number_dictionaries:
+        if len(words) == 3 and words[0] in NUMBER_DICTIONARIES:
             self.parse_to_number_dictionary(words)
-        elif len(words)==2 and words[0] in string_lists:
+        elif len(words) == 2 and words[0] in STRING_LISTS:
             self.parse_to_string_list(words)
-        elif len(words)==2 and words[0] in distances:
+        elif len(words) == 2 and words[0] in DISTANCES:
             self.parse_distance(words)
-        elif len(words)==2 and words[0] in parameters:
+        elif len(words) == 2 and words[0] in PARAMETERS:
             self.parse_parameter(words)
-        elif len(words)==2 and words[0] in strings:
+        elif len(words) == 2 and words[0] in STRINGS:
             self.parse_string(words)
-        elif len(words)>2 and words[0] in list_dictionaries:
+        elif len(words) > 2 and words[0] in LIST_DICTIONARIES:
             self.parse_to_list_dictionary(words)
-        elif words[0] in matrices+pair_wise_matrices:
+        elif words[0] in MATRICES+PAIR_WISE_MATRICES:
             self.parse_to_matrix(words)
-        elif len(words)==3 and words[0] in string_dictionaries:
+        elif len(words) == 3 and words[0] in STRING_DICTIONARIES:
             self.parse_to_string_dictionary(words)
 
-
-        #info(words)
-
-        return
-
-
     def parse_to_number_dictionary(self, words):
-        exec('self.%s[\'%s\'] = %s'%tuple(words))
-        return
+        """Parse field to number dictionary.
+
+        Args:
+            words:  strings to parse.
+        """
+        dict_ = getattr(self, words[0])
+        key = words[1]
+        value = words[2]
+        dict_[key] = float(value)
 
     def parse_to_string_dictionary(self, words):
-        exec('self.%s[\'%s\'] = \'%s\''%tuple(words))
-        return
+        """Parse field to string dictionary.
+
+        Args:
+            words:  strings to parse
+        """
+        dict_ = getattr(self, words[0])
+        key = words[1]
+        value = words[2]
+        dict_[key] = value
 
     def parse_to_list_dictionary(self, words):
-        exec('if not \'%s\' in self.%s.keys(): self.%s[\'%s\'] = []'%(words[1],words[0],words[0],words[1]))
-        for word in words[2:]:
-            exec('self.%s[\'%s\'].append(%s)'%(words[0],words[1],word))
+        """Parse field to list dictionary.
 
-        return
+        Args:
+            words:  strings to parse.
+        """
+        dict_ = getattr(self, words[0])
+        key = words[1]
+        if not key in dict_:
+            dict_[key] = []
+        for value in words[2:]:
+            if isinstance(value, list):
+                dict_[key].append([float(x) for x in value])
+            dict_[key].append(float(value))
 
     def parse_to_string_list(self, words):
-        exec('self.%s.append(\'%s\')'%tuple(words))
-        return
+        """Parse field to string list.
+
+        Args:
+            words:  strings to parse
+        """
+        list_ = getattr(self, words[0])
+        value = words[1]
+        list_.append(value)
 
     def parse_to_matrix(self, words):
-        exec('self.%s.add(%s)'%(words[0],tuple(words[1:])))
-        return
+        """Parse field to matrix.
+
+        Args:
+            words:  strings to parse
+        """
+        matrix = getattr(self, words[0])
+        value = tuple(words[1:])
+        matrix.add(value)
 
     def parse_distance(self, words):
-        # float check needed
-        exec('self.%s = %s'%tuple(words))
-        exec('self.%s_squared = pow(%s,2)'%tuple(words))
-        return
+        """Parse field to distance.
+
+        Args:
+            words:  strings to parse
+        """
+        value = float(words[1])
+        setattr(self, words[0], value)
+        value_sq = value*value
+        attr = "{0:s}_squared".format(words[0])
+        setattr(self, attr, value_sq)
 
     def parse_parameter(self, words):
-        exec('self.%s = %s'%tuple(words))
-        return
+        """Parse field to parameters.
+
+        Args:
+            words:  strings to parse
+        """
+        value = float(words[1])
+        setattr(self, words[0], value)
 
     def parse_string(self, words):
-        #info('self.%s = \'%s\''%tuple(words))
-        exec('self.%s = \'%s\''%tuple(words))
-        return
+        """Parse field to strings.
 
+        Args:
+            words:  strings to parse
+        """
+        setattr(self, words[0], words[1])
 
     def set_up_data_structures(self):
-        for key_word in number_dictionaries+list_dictionaries+string_dictionaries:
-            exec('self.%s = {}'%key_word)
-        for key_word in string_lists:
-            exec('self.%s = []'%key_word)
-        for key_word in strings:
-            exec('self.%s = \'\''%key_word)
-        for key_word in matrices:
-            exec('self.%s = Interaction_matrix(\'%s\')'%(key_word,key_word))
-        for key_word in pair_wise_matrices:
-            exec('self.%s =Pair_wise_matrix(\'%s\')'%(key_word,key_word))
+        """Set up internal data structures.
 
-        return
+        TODO - it would be better to make these assignments explicit in
+        __init__.
+        """
+        for key_word in (NUMBER_DICTIONARIES + LIST_DICTIONARIES
+                         + STRING_DICTIONARIES):
+            setattr(self, key_word, {})
+        for key_word in STRING_LISTS:
+            setattr(self, key_word, [])
+        for key_word in STRINGS:
+            setattr(self, key_word, "")
+        for key_word in MATRICES:
+            matrix = InteractionMatrix(key_word)
+            setattr(self, key_word, matrix)
+        for key_word in PAIR_WISE_MATRICES:
+            matrix = PairwiseMatrix(key_word)
+            setattr(self, key_word, matrix)
 
     def print_interaction_parameters(self):
+        """Print interaction parameters."""
         info('--------------- Model pKa values ----------------------')
-        for k in self.model_pkas.keys():
-            info('%3s %8.2f' % (k, self.model_pkas[k]))
+        for k in self.model_pkas:
+            info('{0:>3s} {1:8.2f}'.format(k, self.model_pkas[k]))
 
         info('')
         info('--------------- Interactions --------------------------')
-        agroups = ['COO', 'HIS', 'CYS', 'TYR', 'SER', 'N+', 'LYS', 'AMD', 'ARG', 'TRP', 'ROH', 'CG', 'C2N', 'N30', 'N31', 'N32', 'N33', 'NAR', 'OCO', 'NP1', 'OH', 'O3', 'CL', 'F', 'NAM', 'N1', 'O2', 'OP', 'SH']
-        lgroups = ['CG', 'C2N', 'N30', 'N31', 'N32', 'N33', 'NAR', 'OCO', 'NP1', 'OH', 'O3', 'CL', 'F', 'NAM', 'N1', 'O2', 'OP', 'SH']
-
-        map = {
-            'CG' :['ARG'],
-            'C2N':['ARG'],
-            'N30':['N+','LYS'],
-            'N31':['N+','LYS'],
-            'N32':['N+','LYS'],
-            'N33':['N+','LYS'] ,
-            'NAR':['HIS'],
-            'OCO':['COO'],
-            'OP' :[],#['TYR','SER'],
-            'SH' :['CYS'] ,
-            'NP1':[],
-            'OH' :['ROH'],
-            'O3' :[] ,
-            'CL' :[],
-            'F'  :[],
-            'NAM':['AMD'],
-            'N1' :[],
-            'O2' :[]}
-
-
-        for g1 in agroups:
-            for g2 in lgroups:
-
-                interaction = '%3s %3s %1s %4s %4s'%(g1,g2,
-                                                    self.interaction_matrix[g1][g2],
-                                                    self.sidechain_cutoffs.get_value(g1,g2)[0],
-                                                    self.sidechain_cutoffs.get_value(g1,g2)[1])
-
+        agroups = [
+            'COO', 'HIS', 'CYS', 'TYR', 'SER', 'N+', 'LYS', 'AMD', 'ARG',
+            'TRP', 'ROH', 'CG', 'C2N', 'N30', 'N31', 'N32', 'N33', 'NAR',
+            'OCO', 'NP1', 'OH', 'O3', 'CL', 'F', 'NAM', 'N1', 'O2', 'OP', 'SH']
+        lgroups = [
+            'CG', 'C2N', 'N30', 'N31', 'N32', 'N33', 'NAR', 'OCO', 'NP1',
+            'OH', 'O3', 'CL', 'F', 'NAM', 'N1', 'O2', 'OP', 'SH']
+        map_ = {
+            'CG': ['ARG'], 'C2N': ['ARG'], 'N30': ['N+', 'LYS'],
+            'N31': ['N+', 'LYS'], 'N32': ['N+', 'LYS'], 'N33': ['N+', 'LYS'],
+            'NAR': ['HIS'], 'OCO': ['COO'], 'OP': [], 'SH': ['CYS'],
+            'NP1': [], 'OH': ['ROH'], 'O3': [], 'CL': [], 'F': [],
+            'NAM': ['AMD'], 'N1': [], 'O2': []}
+        for group1 in agroups:
+            for group2 in lgroups:
+                fmt = "{grp1:>3s} {grp2:>3s} {mat:1s} {val1:4} {val2:4}"
+                interaction = fmt.format(
+                    grp1=group1, grp2=group2,
+                    mat=self.interaction_matrix[group1][group2],
+                    val1=self.sidechain_cutoffs.get_value(group1, group2)[0],
+                    val2=self.sidechain_cutoffs.get_value(group1, group2)[1])
                 map_interaction = ''
-                if g2 in map:
-                    for m in map[g2]:
-                        map_interaction += '|%3s %3s %1s %4s %4s'%(g1,m,
-                                                                  self.interaction_matrix[g1][m],
-                                                                  self.sidechain_cutoffs.get_value(g1,m)[0],
-                                                                  self.sidechain_cutoffs.get_value(g1,m)[1])
-                        if self.interaction_matrix[g1][m] != self.interaction_matrix[g1][g2]:
+                if group2 in map_:
+                    for val in map_[group2]:
+                        fmt = "|{grp1:>3s} {grp2:>3s} {mat:1s} {val1:4} {val2:4}"
+                        map_interaction += fmt.format(
+                            group1, val, self.interaction_matrix[group1][val],
+                            self.sidechain_cutoffs.get_value(group1, val)[0],
+                            self.sidechain_cutoffs.get_value(group1, val)[1])
+                        if (self.interaction_matrix[group1][val]
+                                != self.interaction_matrix[group1][group2]):
                             map_interaction += '* '
-                        if self.sidechain_cutoffs.get_value(g1,m)[0] != self.sidechain_cutoffs.get_value(g1,g2)[0] or \
-                                self.sidechain_cutoffs.get_value(g1,m)[1] != self.sidechain_cutoffs.get_value(g1,g2)[1]:
+                        if (self.sidechain_cutoffs.get_value(group1, val)[0]
+                                != self.sidechain_cutoffs.get_value(
+                                    group1, group2)[0]
+                                or self.sidechain_cutoffs.get_value(
+                                    group1, val)[1]
+                                != self.sidechain_cutoffs.get_value(
+                                    group1, group2)[1]):
                             map_interaction += '! '
                         else:
                             map_interaction += '  '
-                    if len(map[g2])==0 and (self.sidechain_cutoffs.get_value(g1,g2)[0] !=3 or self.sidechain_cutoffs.get_value(g1,g2)[1] != 4):
+                    if (len(map_[group2]) == 0
+                            and (self.sidechain_cutoffs.get_value(
+                                group1, group2)[0]
+                                 != 3
+                                 or self.sidechain_cutoffs.get_value(
+                                     group1, group2)[1]
+                                 != 4)):
                         map_interaction += '?  '
-
                 info(interaction, map_interaction)
-
-                if g1==g2:
+                if group1 == group2:
                     break
             info('-')
-
         info('--------------- Exceptions ----------------------------')
         info('COO-HIS', self.COO_HIS_exception)
         info('OCO-HIS', self.OCO_HIS_exception)
         info('CYS-HIS', self.CYS_HIS_exception)
         info('CYS-CYS', self.CYS_CYS_exception)
-
 
         info('--------------- Mapping -------------------------------')
         info("""
@@ -251,284 +295,281 @@ NAM
 N1
 O2
 """)
-        return
-
-
-
-
-
 
     def print_interaction_parameters_latex(self):
-#         info('--------------- Model pKa values ----------------------')
-#         for k in self.model_pkas.keys():
-#             info('%3s %8.2f'%(k,self.model_pkas[k]))
-
-#         info('')
-#         info('--------------- Interactions --------------------------')
-        agroups = ['COO', 'HIS', 'CYS', 'TYR', 'SER', 'N+', 'LYS', 'AMD', 'ARG', 'TRP', 'ROH', 'CG', 'C2N', 'N30', 'N31', 'N32', 'N33', 'NAR', 'OCO', 'NP1', 'OH', 'O3', 'CL', 'F', 'NAM', 'N1', 'O2', 'OP', 'SH']
-        lgroups = ['CG', 'C2N', 'N30', 'N31', 'N32', 'N33', 'NAR', 'OCO', 'NP1', 'OH', 'O3', 'CL', 'F', 'NAM', 'N1', 'O2', 'OP', 'SH']
-
-        map = {
-            'CG' :['ARG'],
-            'C2N':['ARG'],
-            'N30':['N+','LYS'],
-            'N31':['N+','LYS'],
-            'N32':['N+','LYS'],
-            'N33':['N+','LYS'] ,
-            'NAR':['HIS'],
-            'OCO':['COO'],
-            'OP' :[],#['TYR','SER'],
-            'SH' :['CYS'] ,
-            'NP1':['AMD'],
-            'OH' :['ROH'],
-            'O3' :[] ,
-            'CL' :[],
-            'F'  :[],
-            'NAM':[],
-            'N1' :[],
-            'O2' :[]}
-
-
-        s = """
-\\begin{longtable}{lllll}
-\\caption{Ligand interaction parameters. For interactions not listed, the default value of %s is applied.}
-\\label{tab:ligand_interaction_parameters}\\\\
-
-\\toprule
-Group1 & Group2 & Interaction & c1 &c2 \\\\
-\\midrule
-\\endfirsthead
-
-\\multicolumn{5}{l}{\\emph{continued from the previous page}}\\\\
-\\toprule
-Group1 & Group2 & Interaction & c1 &c2 \\\\
-\\midrule
-\\endhead
-
-\\midrule
-\\multicolumn{5}{r}{\\emph{continued on the next page}}\\\\
-\\endfoot
-
-\\bottomrule
-\\endlastfoot
-
-"""%(self.sidechain_cutoffs.default)
-        for g1 in agroups:
-            for g2 in lgroups:
-                if self.interaction_matrix[g1][g2]=='-':
+        """Print interaction parameters in LaTeX format."""
+        # TODO - if these lists and dictionaries are the same as above, then
+        # should be constants at the level of the module
+        agroups = ['COO', 'HIS', 'CYS', 'TYR', 'SER', 'N+', 'LYS', 'AMD',
+                   'ARG', 'TRP', 'ROH', 'CG', 'C2N', 'N30', 'N31', 'N32',
+                   'N33', 'NAR', 'OCO', 'NP1', 'OH', 'O3', 'CL', 'F', 'NAM',
+                   'N1', 'O2', 'OP', 'SH']
+        lgroups = ['CG', 'C2N', 'N30', 'N31', 'N32', 'N33', 'NAR', 'OCO',
+                   'NP1', 'OH', 'O3', 'CL', 'F', 'NAM', 'N1', 'O2', 'OP',
+                   'SH']
+        lines = [
+            "",
+            "\\begin{{longtable}}{{lllll}}",
+            ("\\caption{{Ligand interaction parameters. For interactions not "
+             "listed, the default value of {0:s} is applied.}}").format(
+                 self.sidechain_cutoffs.default),
+            "\\label{{tab:ligand_interaction_parameters}}\\\\",
+            "\\toprule",
+            "Group1 & Group2 & Interaction & c1 &c2 \\\\",
+            "\\midrule",
+            "\\endfirsthead",
+            "",
+            "\\multicolumn{{5}}{{l}}{\\emph{{continued from the previous page}}}\\\\",
+            "\\toprule",
+            "Group1 & Group2 & Interaction & c1 &c2 \\\\",
+            "\\midrule",
+            "\\endhead",
+            "",
+            "\\midrule",
+            "\\multicolumn{{5}}{{r}}{\\emph{{continued on the next page}}}\\\\",
+            "\\endfoot",
+            "",
+            "\\bottomrule",
+            "\\endlastfoot",
+            ""]
+        str_ = "\n".join(lines)
+        for group1 in agroups:
+            for group2 in lgroups:
+                if self.interaction_matrix[group1][group2] == '-':
                     continue
-                if self.sidechain_cutoffs.get_value(g1,g2)==self.sidechain_cutoffs.default:
+                if (self.sidechain_cutoffs.get_value(group1, group2)
+                        == self.sidechain_cutoffs.default):
                     continue
-
-
-                s+= '%3s & %3s & %1s & %4s & %4s\\\\ \n'%(g1,g2,
-                                                       self.interaction_matrix[g1][g2],
-                                                       self.sidechain_cutoffs.get_value(g1,g2)[0],
-                                                       self.sidechain_cutoffs.get_value(g1,g2)[1])
-
-                if g1==g2:
+                fmt = (
+                    "{grp1:>3s} & {grp2:>3s} & {mat:1s} & {val1:4} & "
+                    "{val2:4}\\\\ \n")
+                str_ += fmt.format(
+                    group1, group2,
+                    self.interaction_matrix[group1][group2],
+                    self.sidechain_cutoffs.get_value(group1, group2)[0],
+                    self.sidechain_cutoffs.get_value(group1, group2)[1])
+                if group1 == group2:
                     break
-
-        s += '  \\end{longtable}\n'
-        info(s)
-        return
+        str_ += '  \\end{{longtable}}\n'
+        info(str_)
 
     def print_interactions_latex(self):
-        agroups = ['COO', 'HIS', 'CYS', 'TYR', 'SER', 'N+', 'LYS', 'AMD', 'ARG', 'TRP', 'ROH', 'CG', 'C2N', 'N30', 'N31', 'N32', 'N33', 'NAR', 'OCO', 'NP1', 'OH', 'O3', 'CL', 'F', 'NAM', 'N1', 'O2', 'OP', 'SH']
-        lgroups = ['CG', 'C2N', 'N30', 'N31', 'N32', 'N33', 'NAR', 'OCO', 'NP1', 'OH', 'O3', 'CL', 'F', 'NAM', 'N1', 'O2', 'OP', 'SH']
-
-
-        s = """
-\\begin{longtable}{%s}
-\\caption{Ligand interaction parameters. For interactions not listed, the default value of %s is applied.}
-\\label{tab:ligand_interaction_parameters}\\\\
-
-\\toprule
-Group1 & Group2 & Interaction & c1 &c2 \\\\
-\\midrule
-\\endfirsthead
-
-\\multicolumn{5}{l}{\\emph{continued from the previous page}}\\\\
-\\toprule
-Group1 & Group2 & Interaction & c1 &c2 \\\\
-\\midrule
-\\endhead
-
-\\midrule
-\\multicolumn{5}{r}{\\emph{continued on the next page}}\\\\
-\\endfoot
-
-\\bottomrule
-\\endlastfoot
-
-"""%('l'*len(agroups),self.sidechain_cutoffs.default)
-        for g1 in agroups:
-            for g2 in agroups:
-
-                s+= '%3s & %3s & %1s & %4s & %4s\\\\ \n'%(g1,g2,
-                                                       self.interaction_matrix[g1][g2],
-                                                       self.sidechain_cutoffs.get_value(g1,g2)[0],
-                                                       self.sidechain_cutoffs.get_value(g1,g2)[1])
-
-                if g1==g2:
+        """Print interactions in LaTeX."""
+        # TODO - are these the same lists as above? Convert to module constants.
+        agroups = ['COO', 'HIS', 'CYS', 'TYR', 'SER', 'N+', 'LYS', 'AMD',
+                   'ARG', 'TRP', 'ROH', 'CG', 'C2N', 'N30', 'N31', 'N32',
+                   'N33', 'NAR', 'OCO', 'NP1', 'OH', 'O3', 'CL', 'F', 'NAM',
+                   'N1', 'O2', 'OP', 'SH']
+        lines = [
+            "",
+            "\\begin{longtable}{{{0:s}}}".format('l'*len(agroups)),
+            ("\\caption{{Ligand interaction parameters. For interactions not "
+             "listed, the default value of {0:s} is applied.}}").format(
+                 str(self.sidechain_cutoffs.default)),
+            "\\label{{tab:ligand_interaction_parameters}}\\\\",
+            "\\toprule",
+            "Group1 & Group2 & Interaction & c1 &c2 \\\\",
+            "\\midrule",
+            "\\endfirsthead",
+            "",
+            "\\multicolumn{{5}}{{l}}{\\emph{{continued from the previous page}}}\\\\",
+            "\\toprule",
+            "Group1 & Group2 & Interaction & c1 &c2 \\\\",
+            "\\midrule",
+            "\\endhead",
+            "",
+            "\\midrule",
+            "\\multicolumn{{5}}{{r}}{\\emph{{continued on the next page}}}\\\\",
+            "\\endfoot",
+            "",
+            "\\bottomrule",
+            "\\endlastfoot",
+            ""
+        ]
+        str_ = "\n".join(lines)
+        for group1 in agroups:
+            for group2 in agroups:
+                fmt = '{g1:>3s} & {g2:>3s} & {mat:1s} & {val1:>4s} & {val2:>4s}\\\\ \n'
+                str_ += fmt.format(
+                    group1, group2, self.interaction_matrix[group1][group2],
+                    str(self.sidechain_cutoffs.get_value(group1, group2)[0]),
+                    str(self.sidechain_cutoffs.get_value(group1, group2)[1]))
+                if group1 == group2:
                     break
-
-        s += '  \\end{longtable}\n'
-        info(s)
-        return
+        str_ += '  \\end{{longtable}}\n'
+        info(str_)
 
 
+class InteractionMatrix:
+    """Interaction matrix class."""
 
-
-class Interaction_matrix:
     def __init__(self, name):
+        """Initialize with name of matrix.
+
+        Args:
+            name:  name of interaction matrix
+        """
         self.name = name
+        self.value = None
         self.ordered_keys = []
         self.dictionary = {}
-        return
 
-    def add(self,words):
+    def add(self, words):
+        """Add values to matrix.
+
+        Args:
+            words:  values to add
+        """
         new_group = words[0]
         self.ordered_keys.append(new_group)
-
         if not new_group in self.dictionary.keys():
             self.dictionary[new_group] = {}
-
-        for i in range(len(self.ordered_keys)):
-            group = self.ordered_keys[i]
-            if len(words)>i+1:
+        for i, group in enumerate(self.ordered_keys):
+            if len(words) > i+1:
                 try:
-                    exec('self.value = %s'%words[i+1])
-                except:
+                    self.value = float(words[i+1])
+                except ValueError:
                     self.value = words[i+1]
                 self.dictionary[group][new_group] = self.value
                 self.dictionary[new_group][group] = self.value
 
-
-        return
-
     def get_value(self, item1, item2):
+        """Get specific matrix value.
+
+        Args:
+            item1:  matrix row index
+            item2:  matrix column index
+        Returns:
+            matrix value or None
+        """
         try:
             return self.dictionary[item1][item2]
-        except:
+        except KeyError:
             return None
 
     def __getitem__(self, group):
+        """Get specific group from matrix.
+
+        Args:
+            group:  group to get
+        """
         if group not in self.dictionary.keys():
-            raise Exception('%s not found in interaction matrix %s'%(group,self.name))
+            str_ = '{0:s} not found in interaction matrix {1:s}'.format(
+                group, self.name)
+            raise KeyError(str_)
         return self.dictionary[group]
 
-
     def keys(self):
+        """Get keys from matrix.
+
+        Returns:
+            dictionary key list
+        """
         return self.dictionary.keys()
 
     def __str__(self):
-        s = '      '
-        for k1 in self.ordered_keys:
-            s+='%3s '%k1
-        s+='\n'
-        for k1 in self.ordered_keys:
-            s+='%3s '%k1
-            for k2 in self.ordered_keys:
-                s+='%3s '%self[k1][k2]
-            s+='\n'
-
-        return s
-#         ks = ['COO', 'SER', 'ARG', 'LYS', 'HIS', 'AMD', 'CYS', 'TRP','ROH','TYR','N+','CG', 'C2N', 'N30', 'N31', 'N32', 'N33', 'NAR', 'OCO', 'NP1', 'OH', 'O3', 'CL', 'F', 'NAM', 'N1', 'O2', 'OP', 'SH']
-
-#         p = ''
-#         n=0
-#         for i in range(len(ks)):
-#             for j in range(i,len(ks)):
-#                 if not [0.0,0.0]==self[ks[i]][ks[j]]:
-#                     if not [3.0,4.0]==self[ks[i]][ks[j]]:
-#                         p+='sidechain_cutoff %3s %3s %s\n'%(ks[i],ks[j],self[ks[i]][ks[j]])
-#                         n+=1
-
-#         info('total',n,len(ks))
-#         return p
+        str_ = '      '
+        for key in self.ordered_keys:
+            str_ += '{0:>3s} '.format(key)
+        str_ += '\n'
+        for key1 in self.ordered_keys:
+            str_ += '{0:>3s} '.format(key1)
+            for key2 in self.ordered_keys:
+                str_ += '{0:>3s} '.format(self[key1][key2])
+            str_ += '\n'
+        return str_
 
 
+class PairwiseMatrix:
+    """Pairwise interaction matrix class."""
 
-class Pair_wise_matrix:
     def __init__(self, name):
+        """Initialize pairwise matrix.
+
+        Args:
+            name:  name of pairwise interaction
+        """
         self.name = name
         self.dictionary = {}
         self.default = [0.0, 0.0]
-        return
 
-    def add(self,words):
+    def add(self, words):
+        """Add information to the matrix.
+
+        TODO - this function unnecessarily bundles arguments into a tuple
+
+        Args:
+            words:  tuple with assignment information and value
+        """
         # assign the default value
-        if len(words)==3 and words[0]=='default':
+        if len(words) == 3 and words[0] == 'default':
             self.default = [float(words[1]), float(words[2])]
             return
-
         # assign non-default values
-        g1 = words[0]
-        g2 = words[1]
-        v = [float(words[2]), float(words[3])]
+        group1 = words[0]
+        group2 = words[1]
+        value = [float(words[2]), float(words[3])]
+        self.insert(group1, group2, value)
+        self.insert(group2, group1, value)
 
-        self.insert(g1,g2,v)
-        self.insert(g2,g1,v)
+    def insert(self, key1, key2, value):
+        """Insert value into matrix.
 
-        return
-
-    def insert(self, k1,k2,v):
-
-        if k1 in self.dictionary.keys() and k2 in self.dictionary[k1].keys():
-            if k1!=k2:
-                warning('Parameter value for %s, %s defined more than once' % (k1, k2))
-
-        if not k1 in self.dictionary:
-            self.dictionary[k1] = {}
-
-        self.dictionary[k1][k2] =v
-
-        return
+        Args:
+            key1:  first matrix key (row)
+            key2:  second matrix key (column)
+            value:  value to insert
+        """
+        if key1 in self.dictionary and key2 in self.dictionary[key1]:
+            if key1 != key2:
+                str_ = (
+                    'Parameter value for {0:s}, {1:s} defined more '
+                    'than once'.format(key1, key2))
+                warning(str_)
+        if not key1 in self.dictionary:
+            self.dictionary[key1] = {}
+        self.dictionary[key1][key2] = value
 
     def get_value(self, item1, item2):
+        """Get specified value from matrix.
 
+        Args:
+            item1:  row index
+            item2:  column index
+        Returns:
+            matrix value (or default)
+        """
         try:
             return self.dictionary[item1][item2]
-        except:
+        except KeyError:
             return self.default
 
     def __getitem__(self, group):
+        """Get item from matrix corresponding to specific group.
+
+        Args:
+            group:  group to retrieve
+        Returns:
+            matrix information
+        """
         if group not in self.dictionary.keys():
-            raise Exception('%s not found in interaction matrix %s'%(group,self.name))
+            str_ = '{0:s} not found in interaction matrix {1:s}'.format(
+                group, self.name)
+            raise KeyError(str_)
         return self.dictionary[group]
 
-
     def keys(self):
+        """Get keys from matrix.
+
+        Returns:
+            dictionary key list
+        """
         return self.dictionary.keys()
 
     def __str__(self):
-        s=''
-        for k1 in self.keys():
-            for k2 in self[k1].keys():
-                s += '%s %s %s\n'%(k1,k2,self[k1][k2])
-
-        return s
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        str_ = ''
+        for key1 in self.keys():
+            for key2 in self[key1].keys():
+                str_ += '{0:s} {1:s} {2:s}\n'.format(
+                    key1, key2, self[key1][key2])
+        return str_

@@ -22,7 +22,8 @@ MAX_ERR_DECIMALS = 2
 TEST_DIR = Path("tests")
 # Location for test PDBs
 PDB_DIR = Path("pdb")
-# Location for results for comparing output (allow running from tests/ and ../tests/)
+# Location for results for comparing output (allow running from tests/ and
+# ../tests/)
 RESULTS_DIR = Path("tests/results")
 if not RESULTS_DIR.is_dir():
     _LOGGER.warning("Switching to sub-directory")
@@ -47,7 +48,9 @@ def get_test_dirs():
             if test_path.is_dir():
                 path_dict[key] = test_path
             else:
-                errstr = "Can't find %s test files in %s" % (key, [TEST_DIR / path, path])
+                errstr = (
+                    "Can't find {0:s} test files in {1:s}".format(
+                        key, [TEST_DIR / path, path]))
                 raise FileNotFoundError(errstr)
     return path_dict
 
@@ -63,11 +66,13 @@ def run_propka(options, pdb_path, tmp_path):
     options += [str(pdb_path)]
     args = propka.lib.loadOptions(options)
     try:
-        _LOGGER.warning("Working in tmpdir %s because of PROPKA file output; need to fix this.",
-                        tmp_path)
+        _LOGGER.warning(
+            "Working in tmpdir {0:s} because of PROPKA file output; "
+            "need to fix this.".format(str(tmp_path)))
         cwd = Path.cwd()
         os.chdir(tmp_path)
-        molecule = propka.molecular_container.Molecular_container(str(pdb_path), args)
+        molecule = propka.molecular_container.Molecular_container(
+            str(pdb_path), args)
         molecule.calculate_pka()
         molecule.write_pka()
     finally:
@@ -90,7 +95,7 @@ def compare_output(pdb, tmp_path, ref_path):
             ref_data.append(float(line))
 
     test_data = []
-    pka_path = Path(tmp_path) / ("%s.pka" % pdb)
+    pka_path = Path(tmp_path) / ("{0:s}.pka".format(pdb))
     with open(pka_path, "rt") as pka_file:
         at_pka = False
         for line in pka_file:
@@ -100,12 +105,15 @@ def compare_output(pdb, tmp_path, ref_path):
             elif line.startswith("---"):
                 at_pka = False
             else:
-                m = re.search(r'([0-9]+\.[0-9]+)', line)
-                value = float(m.group(0))
+                match = re.search(r'([0-9]+\.[0-9]+)', line)
+                value = float(match.group(0))
                 test_data.append(value)
-    errstr = "Error exceeds maximum allowed value (%d decimal places)" % MAX_ERR_DECIMALS
-    assert_almost_equal(test_data, ref_data, decimal=MAX_ERR_DECIMALS,
-                        err_msg=errstr, verbose=True)
+    errstr = (
+        "Error exceeds maximum allowed value ({0:d} decimal places)".format(
+            MAX_ERR_DECIMALS))
+    assert_almost_equal(
+        test_data, ref_data, decimal=MAX_ERR_DECIMALS, err_msg=errstr,
+        verbose=True)
 
 
 @pytest.mark.parametrize("pdb, options", [
@@ -113,24 +121,26 @@ def compare_output(pdb, tmp_path, ref_path):
     pytest.param('1HPX', [], id="1HPX: no options"),
     pytest.param('4DFR', [], id="4DFR: no options"),
     pytest.param('3SGB', [], id="3SGB: no options"),
-    pytest.param('3SGB-subset', ["--titrate_only", 
-        "E:17,E:18,E:19,E:29,E:44,E:45,E:46,E:118,E:119,E:120,E:139"], 
-        id="3SGB: --titrate_only"),
+    pytest.param('3SGB-subset', [
+        "--titrate_only",
+        "E:17,E:18,E:19,E:29,E:44,E:45,E:46,E:118,E:119,E:120,E:139"],
+                 id="3SGB: --titrate_only"),
     pytest.param('1HPX-warn', ['--quiet'], id="1HPX-warn: --quiet")])
 def test_regression(pdb, options, tmp_path):
     """Basic regression test of PROPKA functionality."""
     path_dict = get_test_dirs()
-    ref_path = path_dict["results"] / ("%s.dat" % pdb)
+    ref_path = path_dict["results"] / ("{0:s}.dat".format(pdb))
     if ref_path.is_file():
         ref_path = ref_path.resolve()
     else:
-        _LOGGER.warning("Missing results file for comparison: %s", ref_path)
+        _LOGGER.warning("Missing results file for comparison: {0:s}".format(
+            str(ref_path)))
         ref_path = None
-    pdb_path = path_dict["pdbs"] / ("%s.pdb" % pdb)
+    pdb_path = path_dict["pdbs"] / ("{0:s}.pdb".format(pdb))
     if pdb_path.is_file():
         pdb_path = pdb_path.resolve()
     else:
-        errstr = "Missing PDB file: %s" % pdb_path
+        errstr = "Missing PDB file: {0:s}".format(pdb_path)
         raise FileNotFoundError(errstr)
     tmp_path = Path(tmp_path).resolve()
 
