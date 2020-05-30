@@ -29,12 +29,11 @@ STR_FMT = (
 class Atom(object):
     """Atom class - contains all atom information found in the PDB file"""
 
-    def __init__(self, line=None, _=False):
+    def __init__(self, line=None):
         """Initialize Atom object.
 
         Args:
             line:  Line from a PDB file to set properties of atom.
-            _:  TODO - this does not appear to be used. Can we remove it?
         """
         self.occ = None
         self.numb = None
