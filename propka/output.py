@@ -203,10 +203,9 @@ def get_summary_section(protein, conformation, parameters):
     return str_
 
 
-def get_folding_profile_section(protein, conformation='AVR',
-                                direction="folding", reference="neutral",
-                                window=[0., 14., 1.0], _=False,
-                                __=None):
+def get_folding_profile_section(
+    protein, conformation='AVR', direction="folding", reference="neutral",
+    window=[0., 14., 1.0], _=False, __=None):
     """Returns string with the folding profile section of the results.
 
     Args:
@@ -245,9 +244,9 @@ def get_folding_profile_section(protein, conformation='AVR',
                 dg_opt))
     if dg_min is None or dg_max is None:
         str_ += "Could not determine pH values where the free energy"
-        str_ += " is within 80 %% of minimum\n"
+        str_ += " is within 80 % of minimum\n"
     else:
-        str_ += "The free energy is within 80 %% of maximum"
+        str_ += "The free energy is within 80 % of maximum"
         str_ += " at pH {0:>4.1f} to {1:>4.1f}\n".format(dg_min, dg_max)
     if ph_min is None or ph_max is None:
         str_ += "Could not determine the pH-range where the free"
@@ -319,40 +318,26 @@ def get_propka_header():
         string
     """
     today = date.today()
-    str_ = "propka3.1 {0:>93s}\n".format(today)
-    str_ += ("---------------------------------------------------------------"
-             "----------------------------------------\n")
-    str_ += ("--                                                             "
-             "                                      --\n")
-    str_ += ("--                                   PROPKA: A PROTEIN PKA "
-             "PREDICTOR                                 --\n")
-    str_ += ("--                                                             "
-             "                                      --\n")
-    str_ += ("--                                 VERSION 1.0,  04/25/2004, "
-             "IOWA CITY                               --\n")
-    str_ += ("--                                             BY HUI LI       "
-             "                                      --\n")
-    str_ += ("--                                                             "
-             "                                      --\n")
-    str_ += ("--                            VERSION 2.0,  11/05/2007, IOWA "
-             "CITY/COPENHAGEN                         --\n")
-    str_ += ("--                                BY DELPHINE C. BAS AND DAVID "
-             "M. ROGERS                             --\n")
-    str_ += ("--                                                             "
-             "                                      --\n")
-    str_ += ("--                                VERSION 3.0,  01/06/2011, "
-             "COPENHAGEN                               --\n")
-    str_ += ("--                            BY MATS H.M. OLSSON AND CHRESTEN "
-             "R. SONDERGARD                         --\n")
-    str_ += ("--                                                             "
-             "                                      --\n")
-    str_ += ("--                                VERSION 3.1,  07/01/2011, "
-             "COPENHAGEN                               --\n")
-    str_ += ("--                            BY CHRESTEN R. SONDERGARD AND "
-             "MATS H.M. OLSSON                         --\n")
-    str_ += ("---------------------------------------------------------------"
-             "----------------------------------------\n")
-    str_ += ("\n")
+    str_ = "propka3.1 {0!s:>93s}\n".format(today)
+    str_ += """
+-------------------------------------------------------------------------------
+--                                                                           --
+--  PROPKA: A PROTEIN PKA PREDICTOR                                          --
+--                                                                           --
+--  VERSION 1.0,  04/25/2004,  IOWA CITY                                     --
+--  BY HUI LI                                                                --
+--                                                                           --
+--  VERSION 2.0,  11/05/2007, IOWA CITY/COPENHAGEN                           --
+--  BY DELPHINE C. BAS AND DAVID M. ROGERS                                   --
+--                                                                           --
+--  VERSION 3.0,  01/06/2011, COPENHAGEN                                     --
+--  BY MATS H.M. OLSSON AND CHRESTEN R. SONDERGARD                           --
+--                                                                           --
+--  VERSION 3.1,  07/01/2011, COPENHAGEN                                     --
+--  BY CHRESTEN R. SONDERGARD AND MATS H.M. OLSSON                           --
+--                                                                           --
+-------------------------------------------------------------------------------
+"""
     return str_
 
 
@@ -362,39 +347,29 @@ def get_references_header():
     Returns:
         string
     """
-    str_ = ""
-    str_ += ("---------------------------------------------------------------"
-             "----------------------------------------\n")
-    str_ += (" References:\n")
-    str_ += ("\n")
-    str_ += ("   Very Fast Empirical Prediction and Rationalization of "
-             "Protein pKa Values\n")
-    str_ += ("   Hui Li, Andrew D. Robertson and Jan H. Jensen\n")
-    str_ += ("   PROTEINS: Structure, Function, and Bioinformatics 61:704-721"
-             " (2005)\n")
-    str_ += ("   \n")
-    str_ += ("   Very Fast Prediction and Rationalization of pKa Values for "
-             "Protein-Ligand Complexes\n")
-    str_ += ("   Delphine C. Bas, David M. Rogers and Jan H. Jensen\n")
-    str_ += ("   PROTEINS: Structure, Function, and Bioinformatics 73:765-"
-             "783 (2008)\n")
-    str_ += ("   \n")
-    str_ += ("   PROPKA3: Consistent Treatment of Internal and Surface "
-             "Residues in Empirical pKa predictions\n")
-    str_ += ("   Mats H.M. Olsson, Chresten R. Sondergard, Michal Rostkowski, "
-             "and Jan H. Jensen\n")
-    str_ += ("   Journal of Chemical Theory and Computation, 7(2):525-537 "
-             "(2011)\n")
-    str_ += ("   \n")
-    str_ += ("   Improved Treatment of Ligands and Coupling Effects in "
-             "Empirical Calculation\n")
-    str_ += ("    and Rationalization of pKa Values\n")
-    str_ += ("   Chresten R. Sondergaard, Mats H.M. Olsson, Michal "
-             "Rostkowski, and Jan H. Jensen\n")
-    str_ += ("   Journal of Chemical Theory and Computation, (2011)\n")
-    str_ += ("   \n")
-    str_ += ("--------------------------------------------------------------"
-             "-----------------------------------------\n")
+    str_ = """
+-------------------------------------------------------------------------------
+References:
+
+Very Fast Empirical Prediction and Rationalization of Protein pKa Values.
+Hui Li, Andrew D. Robertson and Jan H. Jensen. PROTEINS: Structure, Function,
+and Bioinformatics. 61:704-721 (2005)
+
+Very Fast Prediction and Rationalization of pKa Values for Protein-Ligand
+Complexes.  Delphine C. Bas, David M. Rogers and Jan H. Jensen.  PROTEINS:
+Structure, Function, and Bioinformatics 73:765-783 (2008)
+
+PROPKA3: Consistent Treatment of Internal and Surface Residues in Empirical
+pKa predictions.  Mats H.M. Olsson, Chresten R. Sondergard, Michal Rostkowski, 
+and Jan H. Jensen.  Journal of Chemical Theory and Computation, 7(2):525-537 
+(2011)
+
+Improved Treatment of Ligands and Coupling Effects in Empirical Calculation 
+and Rationalization of pKa Values.  Chresten R. Sondergaard, Mats H.M. Olsson,
+Michal Rostkowski, and Jan H. Jensen.  Journal of Chemical Theory and
+Computation, (2011)
+-------------------------------------------------------------------------------
+"""
     return str_
 
 
@@ -416,15 +391,12 @@ def get_determinants_header():
     Returns:
         string
     """
-    str_ = ""
-    str_ += ("---------  -----   ------   ---------------------    "
-             "--------------    --------------    --------------\n")
-    str_ += ("                            DESOLVATION  EFFECTS       "
-             "SIDECHAIN          BACKBONE        COULOMBIC    \n")
-    str_ += (" RESIDUE    pKa    BURIED     REGULAR      RE        "
-             "HYDROGEN BOND     HYDROGEN BOND      INTERACTION  \n")
-    str_ += ("---------  -----   ------   ---------   ---------    "
-             "--------------    --------------    --------------\n")
+    str_ = """
+---------  -----   ------   ---------------------    --------------    --------------    --------------
+                            DESOLVATION  EFFECTS       SIDECHAIN          BACKBONE        COULOMBIC    
+ RESIDUE    pKa    BURIED     REGULAR      RE        HYDROGEN BOND     HYDROGEN BOND      INTERACTION  
+---------  -----   ------   ---------   ---------    --------------    --------------    --------------
+"""
     return str_
 
 
