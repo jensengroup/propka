@@ -473,7 +473,7 @@ class Group:
                     str_ += '*'
                 else:
                     str_ += ' '
-                str_ += " {0:4d}{1:>2s} ".format(int(100.0*self.buried), "%%")
+                str_ += " {0:4d}{1:>2s} ".format(int(100.0*self.buried), "%")
                 str_ += " {0:6.2f} {1:4d}".format(
                     self.energy_volume, int(self.num_volume))
                 str_ += " {0:6.2f} {1:4d}".format(
