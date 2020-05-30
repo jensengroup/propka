@@ -279,10 +279,10 @@ def build_parser(parser=None):
     return parser
 
 
-def loadOptions(args):
-    """Load the arguments parser with options.
-
-    NOTE - verbosity is set as soon as this function is invoked.
+def loadOptions(args=None):
+    """
+    Load the arguments parser with options. Note that verbosity is set as soon
+    as this function is invoked.
 
     Arguments:
         args:  list of arguments
@@ -292,11 +292,8 @@ def loadOptions(args):
     # loading the parser
     parser = build_parser()
     # parsing and returning options and arguments
-    if len(args) == 0:
-        # command line
-        options = parser.parse_args()
-    else:
-        options = parser.parse_args(args)
+    options = parser.parse_args(args)
+
     # adding specified filenames to arguments
     options.filenames.append(options.input_pdb)
     # Convert titrate_only string to a list of (chain, resnum) items:
