@@ -1,96 +1,58 @@
-"""Read and parse PDB-like input files."""
-import propka.lib
-from propka.lib import warning
+"""Input routines."""
+from pkg_resources import resource_filename
 from propka.atom import Atom
-from propka.group import initialize_atom_group
 from propka.conformation_container import ConformationContainer
+from propka.group import initialize_atom_group
 
 
-EXPECTED_ATOM_NUMBERS = {'ALA': 5, 'ARG': 11, 'ASN': 8, 'ASP': 8, 'CYS': 6,
-                         'GLY': 4, 'GLN': 9, 'GLU': 9, 'HIS': 10, 'ILE': 8,
-                         'LEU': 8, 'LYS': 9, 'MET': 8, 'PHE': 11, 'PRO': 7,
-                         'SER': 6, 'THR': 7, 'TRP': 14, 'TYR': 12, 'VAL': 7}
+def open_file_for_reading(input_file):
+    """Open file or file-like stream for reading.
 
-
-def read_pdb(pdb_file, parameters, molecule):
-    """Parse a PDB file.
+    TODO - convert this to a context manager
 
     Args:
-        pdb_file:  file to read
-        parameters:  parameters to guide parsing
-        molecule:  molecular container
+        input_file: path to file or file-like object. If file-like object,
+        then will attempt fseek(0).
+    """
+    try:
+        input_file.fseek(0)
+        return input_file
+    except AttributeError:
+        pass
+
+    try:
+        file_ = open(input_file, 'rt')
+    except:
+        raise IOError('Cannot find file {0:s}'.format(input_file))
+    return file_
+
+
+def read_parameter_file(input_file, parameters):
+    """Read a parameter file.
+
+    Args:
+        input_file:  input file to read
+        parameters:  Parameters object
     Returns:
-        list with elements:
-            1. list of conformations
-            2. list of names
+        updated Parameters object
     """
-    conformations = {}
-    # read in all atoms in the file
-    lines = get_atom_lines_from_pdb(
-        pdb_file, ignore_residues=parameters.ignore_residues,
-        keep_protons=molecule.options.keep_protons,
-        chains=molecule.options.chains)
-    for (name, atom) in lines:
-        if not name in conformations.keys():
-            conformations[name] = ConformationContainer(
-                name=name, parameters=parameters, molecular_container=molecule)
-        conformations[name].add_atom(atom)
-    # make a sorted list of conformation names
-    names = sorted(conformations.keys(), key=propka.lib.conformation_sorter)
-    return [conformations, names]
+    # try to locate the parameter file
+    try:
+        ifile = resource_filename(__name__, input_file)
+        input_ = open_file_for_reading(ifile)
+    except (IOError, FileNotFoundError, ValueError):
+        input_ = open_file_for_reading(input_file)
+    for line in input_:
+        parameters.parse_line(line)
+    return parameters
 
 
-def protein_precheck(conformations, names):
-    """Check protein for correct number of atoms, etc.
 
-    Args:
-        names:  conformation names to check
-    """
-    for name in names:
-        atoms = conformations[name].atoms
-        # Group the atoms by their residue:
-        atoms_by_residue = {}
-        for atom in atoms:
-            if atom.element != 'H':
-                res_id = resid_from_atom(atom)
-                try:
-                    atoms_by_residue[res_id].append(atom)
-                except KeyError:
-                    atoms_by_residue[res_id] = [atom]
-        for res_id, res_atoms in atoms_by_residue.items():
-            res_name = res_atoms[0].res_name
-            residue_label = '{0:>3s}{1:>5s}'.format(res_name, res_id)
-            # ignore ligand residues
-            if res_name not in EXPECTED_ATOM_NUMBERS:
-                continue
-            # check for c-terminal
-            if 'C-' in [a.terminal for a in res_atoms]:
-                if len(res_atoms) != EXPECTED_ATOM_NUMBERS[res_name]+1:
-                    str_ = ("Unexpected number ({num:d}) of atoms in residue "
-                            "{res:s} in conformation {conf:s}".format(
-                                num=len(res_atoms), res=residue_label,
-                                conf=name))
-                    warning(str_)
-                continue
-            # check number of atoms in residue
-            if len(res_atoms) != EXPECTED_ATOM_NUMBERS[res_name]:
-                str_ = ("Unexpected number ({num:d}) of atoms in residue "
-                        "{res:s} in conformation {conf:s}".format(
-                            num=len(res_atoms), res=residue_label,
-                            conf=name))
-                warning(str_)
-
-
-def resid_from_atom(atom):
-    """Return string with atom residue information.
-
-    Args:
-        atom:  atom to generate string for
-    Returns
-        string
-    """
-    return '{0:>4d} {1:s} {2:s}'.format(
-        atom.res_num, atom.chain_id, atom.icode)
+def conformation_sorter(conf):
+    """TODO - figure out what this function does."""
+    model = int(conf[:-1])
+    altloc = conf[-1:]
+    return model*100+ord(altloc)
 
 
 def get_atom_lines_from_pdb(pdb_file, ignore_residues=[], keep_protons=False,
@@ -104,7 +66,7 @@ def get_atom_lines_from_pdb(pdb_file, ignore_residues=[], keep_protons=False,
         tags:  tags of lines that include atoms
         chains:  list of chains
     """
-    lines = propka.lib.open_file_for_reading(pdb_file).readlines()
+    lines = open_file_for_reading(pdb_file).readlines()
     nterm_residue = 'next_residue'
     old_residue = None
     terminal = None
@@ -179,7 +141,7 @@ def read_input(input_file, parameters, molecule):
                 molecular_container=molecule)
         conformations[name].add_atom(atom)
     # make a sorted list of conformation names
-    names = sorted(conformations.keys(), key=propka.lib.conformation_sorter)
+    names = sorted(conformations.keys(), key=conformation_sorter)
     return [conformations, names]
 
 
@@ -192,7 +154,7 @@ def get_atom_lines_from_input(input_file, tags=['ATOM  ', 'HETATM']):
     Yields:
         conformation container, list of atoms
     """
-    lines = propka.lib.open_file_for_reading(input_file).readlines()
+    lines = open_file_for_reading(input_file).readlines()
     conformation = ''
     atoms = {}
     numbers = []
@@ -246,3 +208,32 @@ def get_atom_lines_from_input(input_file, tags=['ATOM  ', 'HETATM']):
             # prepare for next conformation
             atoms = {}
             numbers = []
+
+def read_pdb(pdb_file, parameters, molecule):
+    """Parse a PDB file.
+
+    Args:
+        pdb_file:  file to read
+        parameters:  parameters to guide parsing
+        molecule:  molecular container
+    Returns:
+        list with elements:
+            1. list of conformations
+            2. list of names
+    """
+    conformations = {}
+    # read in all atoms in the file
+    lines = get_atom_lines_from_pdb(
+        pdb_file, ignore_residues=parameters.ignore_residues,
+        keep_protons=molecule.options.keep_protons,
+        chains=molecule.options.chains)
+    for (name, atom) in lines:
+        if not name in conformations.keys():
+            conformations[name] = ConformationContainer(
+                name=name, parameters=parameters, molecular_container=molecule)
+        conformations[name].add_atom(atom)
+    # make a sorted list of conformation names
+    names = sorted(conformations.keys(), key=conformation_sorter)
+    return [conformations, names]
+
+

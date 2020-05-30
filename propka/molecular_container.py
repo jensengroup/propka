@@ -2,10 +2,11 @@
 import os
 import sys
 import propka.version
-from propka.pdb import read_input
+from propka.input import read_pdb, read_input, read_parameter_file
+from propka.parameters import Parameters
 from propka.output import write_input
 from propka.conformation_container import ConformationContainer
-from propka.lib import info, warning, make_grid
+from propka.lib import info, warning, protein_precheck, make_grid
 
 
 # TODO - these are constants whose origins are a little murky
@@ -38,11 +39,12 @@ class Molecular_container:
         self.file = os.path.split(input_file)[1]
         self.name = self.file[0:self.file.rfind('.')]
         input_file_extension = input_file[input_file.rfind('.'):]
-        # set the version
+        parameters = Parameters()
         if options:
-            parameters = propka.parameters.Parameters(self.options.parameters)
+            parameters = read_parameter_file(
+                self.options.parameters, parameters)
         else:
-            parameters = propka.parameters.Parameters('propka.cfg')
+            parameters = read_parameter_file('propka.cfg', parameters)
         try:
             version_class = getattr(propka.version, parameters.version)
             self.version = version_class(parameters)
@@ -56,15 +58,15 @@ class Molecular_container:
             # input is a pdb file. read in atoms and top up containers to make
             # sure that all atoms are present in all conformations
             [self.conformations, self.conformation_names] = (
-                propka.pdb.read_pdb(input_file, self.version.parameters, self))
+                read_pdb(input_file, self.version.parameters, self))
             if len(self.conformations) == 0:
                 info('Error: The pdb file does not seems to contain any '
                      'molecular conformations')
                 sys.exit(-1)
             self.top_up_conformations()
             # make a structure precheck
-            propka.pdb.protein_precheck(self.conformations,
-                                        self.conformation_names)
+            protein_precheck(
+                self.conformations, self.conformation_names)
             # set up atom bonding and protonation
             self.version.setup_bonding_and_protonation(self)
             # Extract groups
@@ -79,9 +81,8 @@ class Molecular_container:
             write_input(self, filename)
         elif input_file_extension == '.propka_input':
             #input is a propka_input file
-            [self.conformations, self.conformation_names] = (
-                propka.pdb.read_input(input_file, self.version.parameters,
-                                      self))
+            [self.conformations, self.conformation_names] = read_input(
+                input_file, self.version.parameters, self)
             # Extract groups - this merely sets up the groups found in the
             # input file
             self.extract_groups()

@@ -5,7 +5,6 @@ import sys
 import propka.molecular_container
 import propka.calculations
 import propka.parameters
-import propka.pdb
 from propka.output import write_mol2_for_atoms
 from propka.lib import info, warning
 

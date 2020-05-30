@@ -35,7 +35,7 @@ STRINGS = ['version', 'output_file_tag', 'ligand_typing', 'pH', 'reference']
 class Parameters:
     """PROPKA parameter class."""
 
-    def __init__(self, parameter_file):
+    def __init__(self):
         """Initialize parameter class.
 
         Args:
@@ -52,22 +52,6 @@ class Parameters:
         self.CYS_CYS_exception = None
         # These functions set up remaining data structures implicitly
         self.set_up_data_structures()
-        self.read_parameters(parameter_file)
-
-    def read_parameters(self, file_):
-        """Read parameters from file.
-
-        Args:
-            file_:  file to read
-        """
-        # try to locate the parameters file
-        try:
-            ifile = pkg_resources.resource_filename(__name__, file_)
-            input_ = lib.open_file_for_reading(ifile)
-        except (IOError, FileNotFoundError, ValueError):
-            input_ = lib.open_file_for_reading(file_)
-        for line in input_:
-            self.parse_line(line)
 
     def parse_line(self, line):
         """Parse parameter file line."""

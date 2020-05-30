@@ -1,6 +1,42 @@
 """Output routines."""
 from datetime import date
-from propka.lib import info, open_file_for_writing
+from propka.lib import info
+
+
+def open_file_for_writing(input_file):
+    """Open file or file-like stream for writing.
+
+    TODO - convert this to a context manager.
+
+    Args:
+        input_file: path to file or file-like object. If file-like object,
+        then will attempt to get file mode.
+    """
+    try:
+        mode = input_file.mode
+        if not ("w" in mode or "a" in mode or "+" in mode):
+            raise IOError("File/stream not open for writing")
+        return input_file
+    except AttributeError:
+        pass
+    try:
+        file_ = open(input_file, 'wt')
+    except FileNotFoundError:
+        raise Exception('Could not open {0:s}'.format(input_file))
+    return file_
+
+
+def write_file(filename, lines):
+    """Writes a new file.
+
+    Args:
+        filename:  name of file
+        lines:  lines to write to file
+    """
+    file_ = open_file_for_writing(filename)
+    for line in lines:
+        file_.write("{0:s}\n".format(line))
+    file_.close()
 
 
 def print_header():
