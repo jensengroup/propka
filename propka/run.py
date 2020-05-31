@@ -21,6 +21,8 @@ def main(optargs=None):
         my_molecule = read_molecule_file(pdbfile, my_molecule)
         my_molecule.calculate_pka()
         my_molecule.write_pka()
+        if options.generate_propka_input:
+            my_molecule.write_propka()
 
 
 def single(pdbfile, optargs=None):
@@ -44,4 +46,6 @@ def single(pdbfile, optargs=None):
     my_molecule = read_molecule_file(pdbfile, my_molecule)
     my_molecule.calculate_pka()
     my_molecule.write_pka()
+    if options.generate_propka_input:
+        my_molecule.write_propka()
     return my_molecule

@@ -78,6 +78,8 @@ def run_propka(options, pdb_path, tmp_path):
         molecule = read_molecule_file(str(pdb_path), molecule)
         molecule.calculate_pka()
         molecule.write_pka()
+        if args.generate_propka_input:
+            molecule.write_propka()
     finally:
         os.chdir(cwd)
 
