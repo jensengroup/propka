@@ -13,8 +13,7 @@ def open_file_for_writing(input_file):
         then will attempt to get file mode.
     """
     try:
-        mode = input_file.mode
-        if not ("w" in mode or "a" in mode or "+" in mode):
+        if not input_file.writable():
             raise IOError("File/stream not open for writing")
         return input_file
     except AttributeError:
