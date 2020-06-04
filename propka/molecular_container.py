@@ -125,7 +125,7 @@ class MolecularContainer:
             filename:  file to write to
         """
         if filename is None:
-            filename = os.path.join('{0:s}.propka'.format(self.name))
+            filename = os.path.join('{0:s}.propka_input'.format(self.name))
         write_propka(self, filename)
 
     def write_pka(self, filename=None, reference="neutral",
