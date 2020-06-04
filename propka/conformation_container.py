@@ -36,7 +36,6 @@ class ConformationContainer:
         self.groups = []
         self.chains = []
         self.current_iter_item = 0
-        # TODO - what is marvin_pkas_calculated?
         self.marvin_pkas_calculated = False
         self.non_covalently_coupled_groups = False
 

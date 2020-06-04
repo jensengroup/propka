@@ -11,56 +11,63 @@ _STDOUT_HANDLER.setFormatter(logging.Formatter("%(message)s"))
 _LOGGER.addHandler(_STDOUT_HANDLER)
 
 
-def open_file_for_reading(input_file):
-    """Open file or file-like stream for reading.
-
-    TODO - convert this to a context manager
-
-    Args:
-        input_file: path to file or file-like object. If file-like object,
-        then will attempt fseek(0).
-    """
-    try:
-        input_file.fseek(0)
-        return input_file
-    except AttributeError:
-        pass
-
-    try:
-        file_ = open(input_file, 'rt')
-    except:
-        raise IOError('Cannot find file {0:s}'.format(input_file))
-    return file_
+EXPECTED_ATOM_NUMBERS = {'ALA': 5, 'ARG': 11, 'ASN': 8, 'ASP': 8, 'CYS': 6,
+                         'GLY': 4, 'GLN': 9, 'GLU': 9, 'HIS': 10, 'ILE': 8,
+                         'LEU': 8, 'LYS': 9, 'MET': 8, 'PHE': 11, 'PRO': 7,
+                         'SER': 6, 'THR': 7, 'TRP': 14, 'TYR': 12, 'VAL': 7}
 
 
-def open_file_for_writing(input_file):
-    """Open file or file-like stream for writing.
-
-    TODO - convert this to a context manager.
+def protein_precheck(conformations, names):
+    """Check protein for correct number of atoms, etc.
 
     Args:
-        input_file: path to file or file-like object. If file-like object,
-        then will attempt to get file mode.
+        names:  conformation names to check
     """
-    try:
-        mode = input_file.mode
-        if not ("w" in mode or "a" in mode or "+" in mode):
-            raise IOError("File/stream not open for writing")
-        return input_file
-    except AttributeError:
-        pass
-    try:
-        file_ = open(input_file, 'wt')
-    except FileNotFoundError:
-        raise Exception('Could not open {0:s}'.format(input_file))
-    return file_
+    for name in names:
+        atoms = conformations[name].atoms
+        # Group the atoms by their residue:
+        atoms_by_residue = {}
+        for atom in atoms:
+            if atom.element != 'H':
+                res_id = resid_from_atom(atom)
+                try:
+                    atoms_by_residue[res_id].append(atom)
+                except KeyError:
+                    atoms_by_residue[res_id] = [atom]
+        for res_id, res_atoms in atoms_by_residue.items():
+            res_name = res_atoms[0].res_name
+            residue_label = '{0:>3s}{1:>5s}'.format(res_name, res_id)
+            # ignore ligand residues
+            if res_name not in EXPECTED_ATOM_NUMBERS:
+                continue
+            # check for c-terminal
+            if 'C-' in [a.terminal for a in res_atoms]:
+                if len(res_atoms) != EXPECTED_ATOM_NUMBERS[res_name]+1:
+                    str_ = ("Unexpected number ({num:d}) of atoms in residue "
+                            "{res:s} in conformation {conf:s}".format(
+                                num=len(res_atoms), res=residue_label,
+                                conf=name))
+                    warning(str_)
+                continue
+            # check number of atoms in residue
+            if len(res_atoms) != EXPECTED_ATOM_NUMBERS[res_name]:
+                str_ = ("Unexpected number ({num:d}) of atoms in residue "
+                        "{res:s} in conformation {conf:s}".format(
+                            num=len(res_atoms), res=residue_label,
+                            conf=name))
+                warning(str_)
 
 
-def conformation_sorter(conf):
-    """TODO - figure out what this function does."""
-    model = int(conf[:-1])
-    altloc = conf[-1:]
-    return model*100+ord(altloc)
+def resid_from_atom(atom):
+    """Return string with atom residue information.
+
+    Args:
+        atom:  atom to generate string for
+    Returns
+        string
+    """
+    return '{0:>4d} {1:s} {2:s}'.format(
+        atom.res_num, atom.chain_id, atom.icode)
 
 
 def split_atoms_into_molecules(atoms):
@@ -352,19 +359,6 @@ def get_sorted_configurations(configuration_keys):
 def configuration_compare(conf):
     """TODO - figure out what this function does."""
     return 100*int(conf[1:-2]) + ord(conf[-1])
-
-
-def write_file(filename, lines):
-    """Writes a new file.
-
-    Args:
-        filename:  name of file
-        lines:  lines to write to file
-    """
-    file_ = open_file_for_writing(filename)
-    for line in lines:
-        file_.write("{0:s}\n".format(line))
-    file_.close()
 
 
 def _args_to_str(arg_list):

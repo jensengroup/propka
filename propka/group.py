@@ -6,6 +6,7 @@ from propka.ligand_pka_values import LigandPkaValues
 from propka.determinant import Determinant
 from propka.lib import info, warning
 
+
 # Constants that start with "UNK_" are a mystery to me
 UNK_PKA_SCALING = -1.36
 PROTONATOR = propka.protonate.Protonate(verbose=False)
@@ -1417,3 +1418,15 @@ def is_ion_group(parameters, atom):
     if atom.res_name.strip() in parameters.ions.keys():
         return IonGroup(atom)
     return None
+
+def initialize_atom_group(atom):
+    """Initialize an atom group.
+
+    Args:
+        atom:  atom to initialize
+    """
+        # try to initialise the group
+    group_attr = globals()[atom.group_label]
+    atom.group = group_attr(atom)
+    atom.group.model_pka = atom.group_model_pka
+    atom.group.model_pka_set = atom.group_model_pka_set

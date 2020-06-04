@@ -3,6 +3,41 @@ from datetime import date
 from propka.lib import info
 
 
+def open_file_for_writing(input_file):
+    """Open file or file-like stream for writing.
+
+    TODO - convert this to a context manager.
+
+    Args:
+        input_file: path to file or file-like object. If file-like object,
+        then will attempt to get file mode.
+    """
+    try:
+        if not input_file.writable():
+            raise IOError("File/stream not open for writing")
+        return input_file
+    except AttributeError:
+        pass
+    try:
+        file_ = open(input_file, 'wt')
+    except FileNotFoundError:
+        raise Exception('Could not open {0:s}'.format(input_file))
+    return file_
+
+
+def write_file(filename, lines):
+    """Writes a new file.
+
+    Args:
+        filename:  name of file
+        lines:  lines to write to file
+    """
+    file_ = open_file_for_writing(filename)
+    for line in lines:
+        file_.write("{0:s}\n".format(line))
+    file_.close()
+
+
 def print_header():
     """Print header section of output."""
     str_ = "{0:s}\n".format(get_propka_header())
@@ -11,8 +46,8 @@ def print_header():
     info(str_)
 
 
-def write_pdb(protein, pdbfile=None, filename=None, include_hydrogens=False,
-              _=None):
+def write_pdb_for_protein(
+        protein, pdbfile=None, filename=None, include_hydrogens=False, _=None):
     """Write a residue to the new PDB file.
 
     Args:
@@ -48,6 +83,16 @@ def write_pdb(protein, pdbfile=None, filename=None, include_hydrogens=False,
                         pdbfile.write(line)
     if close_file:
         pdbfile.close()
+
+
+def write_pdb_for_conformation(conformation, filename):
+    """Write PDB conformation to a file.
+
+    Args:
+        conformation:  conformation container
+        filename:  filename for output
+    """
+    write_pdb_for_atoms(conformation.atoms, filename)
 
 
 def write_pka(protein, parameters, filename=None, conformation='1A',
@@ -204,8 +249,8 @@ def get_summary_section(protein, conformation, parameters):
 
 
 def get_folding_profile_section(
-    protein, conformation='AVR', direction="folding", reference="neutral",
-    window=[0., 14., 1.0], _=False, __=None):
+        protein, conformation='AVR', direction="folding", reference="neutral",
+        window=[0., 14., 1.0], _=False, __=None):
     """Returns string with the folding profile section of the results.
 
     Args:
@@ -461,3 +506,104 @@ def make_interaction_map(name, list_, interaction):
                 tag = '    X     '
             res += '{0:>10s}| '.format(tag)
     return res
+
+
+def write_pdb_for_atoms(atoms, filename, make_conect_section=False):
+    """Write out PDB file for atoms.
+
+    Args:
+        atoms:  list of atoms
+        filename:  name of file
+        make_conect_section:  generate a CONECT PDB section
+    """
+    out = open_file_for_writing(filename)
+    for atom in atoms:
+        out.write(atom.make_pdb_line())
+    if make_conect_section:
+        for atom in atoms:
+            out.write(atom.make_conect_line())
+    out.close()
+
+
+def get_bond_order(atom1, atom2):
+    """Get the order of a bond between two atoms.
+
+    Args:
+        atom1:  first atom in bond
+        atom2:  second atom in bond
+    Returns:
+        string with bond type
+    """
+    type_ = '1'
+    pi_electrons1 = atom1.num_pi_elec_2_3_bonds
+    pi_electrons2 = atom2.num_pi_elec_2_3_bonds
+    if '.ar' in atom1.sybyl_type:
+        pi_electrons1 -= 1
+    if '.ar' in atom2.sybyl_type:
+        pi_electrons2 -= 1
+    if pi_electrons1 > 0 and pi_electrons2 > 0:
+        type_ = '{0:d}'.format(min(pi_electrons1, pi_electrons2)+1)
+    if '.ar' in atom1.sybyl_type and '.ar' in atom2.sybyl_type:
+        type_ = 'ar'
+    return type_
+
+
+def write_mol2_for_atoms(atoms, filename):
+    """Write out MOL2 file for atoms.
+
+    Args:
+        atoms:  list of atoms
+        filename:  name of file
+    """
+    # TODO - header needs to be converted to format string
+    header = '@<TRIPOS>MOLECULE\n\n{natom:d} {id:d}\nSMALL\nUSER_CHARGES\n'
+    atoms_section = '@<TRIPOS>ATOM\n'
+    for i, atom in enumerate(atoms):
+        atoms_section += atom.make_mol2_line(i+1)
+    bonds_section = '@<TRIPOS>BOND\n'
+    id_ = 1
+    for i, atom1 in enumerate(atoms):
+        for j, atom2 in enumerate(atoms, i+1):
+            if atom1 in atom2.bonded_atoms:
+                type_ = get_bond_order(atom1, atom2)
+                bonds_section += '{0:>7d} {1:>7d} {2:>7d} {3:>7s}\n'.format(
+                    id_, i+1, j+1, type_)
+                id_ += 1
+    substructure_section = '@<TRIPOS>SUBSTRUCTURE\n\n'
+    if len(atoms) > 0:
+        substructure_section = (
+            '@<TRIPOS>SUBSTRUCTURE\n{0:<7d} {1:>10s} {2:>7d}\n'.format(
+                atoms[0].res_num, atoms[0].res_name, atoms[0].numb))
+    out = open_file_for_writing(filename)
+    out.write(header.format(natom=len(atoms), id=id_-1))
+    out.write(atoms_section)
+    out.write(bonds_section)
+    out.write(substructure_section)
+    out.close()
+
+def write_propka(molecular_container, filename):
+    """Write PROPKA input file for molecular container.
+
+    Args:
+        molecular_container:  molecular container
+        filename:  output file name
+    """
+    out = open_file_for_writing(filename)
+    for conformation_name in molecular_container.conformation_names:
+        out.write('MODEL {0:s}\n'.format(conformation_name))
+        # write atoms
+        for atom in molecular_container.conformations[conformation_name].atoms:
+            out.write(atom.make_input_line())
+        # write bonds
+        for atom in molecular_container.conformations[conformation_name].atoms:
+            out.write(atom.make_conect_line())
+        # write covalently coupled groups
+        for group in (
+                molecular_container.conformations[conformation_name].groups):
+            out.write(group.make_covalently_coupled_line())
+        # write non-covalently coupled groups
+        for group in (
+                molecular_container.conformations[conformation_name].groups):
+            out.write(group.make_non_covalently_coupled_line())
+        out.write('ENDMDL\n')
+    out.close()

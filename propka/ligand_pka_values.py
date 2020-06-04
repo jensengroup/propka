@@ -2,12 +2,8 @@
 import os
 import subprocess
 import sys
-import propka.molecular_container
-import propka.calculations
-import propka.parameters
-import propka.pdb
-import propka.lib
-from propka.lib import info, warning
+from propka.output import write_mol2_for_atoms
+from propka.lib import info, warning, split_atoms_into_molecules
 
 
 class LigandPkaValues:
@@ -48,17 +44,17 @@ class LigandPkaValues:
             sys.exit(-1)
         return locs[0]
 
-    def get_marvin_pkas_for_pdb_file(self, pdbfile, num_pkas=10, min_ph=-10,
-                                     max_ph=20):
+    def get_marvin_pkas_for_pdb_file(
+            self, molecule, parameters, num_pkas=10, min_ph=-10, max_ph=20):
         """Use Marvin executables to get pKas for a PDB file.
 
         Args:
             pdbfile:  PDB file
+            molecule:  MolecularContainer object
             num_pkas:  number of pKas to get
             min_ph:  minimum pH value
             max_ph:  maximum pH value
         """
-        molecule = propka.molecular_container.Molecular_container(pdbfile)
         self.get_marvin_pkas_for_molecular_container(
             molecule, num_pkas=num_pkas, min_ph=min_ph, max_ph=max_ph)
 
@@ -111,7 +107,7 @@ class LigandPkaValues:
             max_ph:  maximum pH value
         """
         # do one molecule at the time so we don't confuse marvin
-        molecules = propka.lib.split_atoms_into_molecules(atoms)
+        molecules = split_atoms_into_molecules(atoms)
         for i, molecule in enumerate(molecules):
             filename = '{0:s}_{1:d}.mol2'.format(name, i+1)
             self.get_marvin_pkas_for_molecule(
@@ -133,7 +129,7 @@ class LigandPkaValues:
         """
         # print out structure unless we are using user-modified structure
         if not reuse:
-            propka.pdb.write_mol2_for_atoms(atoms, filename)
+            write_mol2_for_atoms(atoms, filename)
         # check that we actually have a file to work with
         if not os.path.isfile(filename):
             errstr = (
@@ -141,7 +137,7 @@ class LigandPkaValues:
                 "- generating one".format(
                     filename))
             warning(errstr)
-            propka.pdb.write_mol2_for_atoms(atoms, filename)
+            write_mol2_for_atoms(atoms, filename)
         # Marvin calculate pKa values
         fmt = (
             'pka -a {num1} -b {num2} --min {min_ph} '

@@ -3,7 +3,13 @@
 TODO - this module unnecessarily confuses the code.  Can we eliminate it?
 """
 from propka.lib import info
-import propka.calculations as calcs
+from propka.hydrogens import setup_bonding_and_protonation, setup_bonding
+from propka.hydrogens import setup_bonding_and_protonation_30_style
+from propka.energy import radial_volume_desolvation, calculate_pair_weight
+from propka.energy import hydrogen_bond_energy, hydrogen_bond_interaction
+from propka.energy import electrostatic_interaction, check_coulomb_pair
+from propka.energy import coulomb_energy, check_exceptions
+from propka.energy import backbone_reorganization
 
 
 class Version:
@@ -79,8 +85,7 @@ class Version:
 
     def setup_bonding_and_protonation(self, molecular_container):
         """Setup bonding and protonation using assigned model."""
-        return self.molecular_preparation_method(
-            self.parameters, molecular_container)
+        return self.molecular_preparation_method(molecular_container)
 
     def setup_bonding(self, molecular_container):
         """Setup bonding using assigned model."""
@@ -94,18 +99,18 @@ class VersionA(Version):
         """Initialize object with parameters."""
         # set the calculation rutines used in this version
         super().__init__(parameters)
-        self.molecular_preparation_method = calcs.setup_bonding_and_protonation
-        self.prepare_bonds = calcs.setup_bonding
-        self.desolvation_model = calcs.radial_volume_desolvation
-        self.weight_pair_method = calcs.calculate_pair_weight
-        self.sidechain_interaction_model = calcs.hydrogen_bond_energy
-        self.hydrogen_bond_interaction_model = calcs.hydrogen_bond_interaction
-        self.electrostatic_interaction_model = calcs.electrostatic_interaction
-        self.check_coulomb_pair_method = calcs.check_coulomb_pair
-        self.coulomb_interaction_model = calcs.coulomb_energy
-        self.backbone_interaction_model = calcs.hydrogen_bond_energy
-        self.backbone_reorganisation_method = calcs.backbone_reorganization
-        self.exception_check_method = calcs.check_exceptions
+        self.molecular_preparation_method = setup_bonding_and_protonation
+        self.prepare_bonds = setup_bonding
+        self.desolvation_model = radial_volume_desolvation
+        self.weight_pair_method = calculate_pair_weight
+        self.sidechain_interaction_model = hydrogen_bond_energy
+        self.hydrogen_bond_interaction_model = hydrogen_bond_interaction
+        self.electrostatic_interaction_model = electrostatic_interaction
+        self.check_coulomb_pair_method = check_coulomb_pair
+        self.coulomb_interaction_model = coulomb_energy
+        self.backbone_interaction_model = hydrogen_bond_energy
+        self.backbone_reorganisation_method = backbone_reorganization
+        self.exception_check_method = check_exceptions
 
     def get_hydrogen_bond_parameters(self, atom1, atom2):
         """Get hydrogen bond parameters for two atoms.
@@ -265,14 +270,14 @@ class Propka30(Version):
         # set the calculation routines used in this version
         super().__init__(parameters)
         self.molecular_preparation_method = (
-            calcs.setup_bonding_and_protonation_30_style)
-        self.desolvation_model = calcs.radial_volume_desolvation
-        self.weight_pair_method = calcs.calculate_pair_weight
-        self.sidechain_interaction_model = calcs.hydrogen_bond_energy
-        self.check_coulomb_pair_method = calcs.check_coulomb_pair
-        self.coulomb_interaction_model = calcs.coulomb_energy
-        self.backbone_reorganisation_method = calcs.backbone_reorganization
-        self.exception_check_method = calcs.check_exceptions
+            setup_bonding_and_protonation_30_style)
+        self.desolvation_model = radial_volume_desolvation
+        self.weight_pair_method = calculate_pair_weight
+        self.sidechain_interaction_model = hydrogen_bond_energy
+        self.check_coulomb_pair_method = check_coulomb_pair
+        self.coulomb_interaction_model = coulomb_energy
+        self.backbone_reorganisation_method = backbone_reorganization
+        self.exception_check_method = check_exceptions
 
     def get_hydrogen_bond_parameters(self, atom1, atom2):
         """Get hydrogen bond parameters for two atoms.

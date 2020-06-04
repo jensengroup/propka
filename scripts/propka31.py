@@ -11,7 +11,9 @@ is the same as the module name; that's why the new script is called
 propka31.)
 """
 from propka.lib import loadOptions
-from propka.molecular_container import Molecular_container
+from propka.input import read_parameter_file, read_molecule_file
+from propka.parameters import Parameters
+from propka.molecular_container import MolecularContainer
 
 
 def main():
@@ -19,9 +21,11 @@ def main():
     # loading options, flaggs and arguments
     options = loadOptions([])
     pdbfiles = options.filenames
+    parameters = read_parameter_file(options.parameters, Parameters())
 
     for pdbfile in pdbfiles:
-        my_molecule = Molecular_container(pdbfile, options)
+        my_molecule = MolecularContainer(parameters, options)
+        my_molecule = read_molecule_file(pdbfile, my_molecule)
         my_molecule.calculate_pka()
         my_molecule.write_pka()
 

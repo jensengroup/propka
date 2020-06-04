@@ -1,7 +1,6 @@
 """Atom class - contains all atom information found in the PDB file"""
 import string
-import propka.lib
-import propka.group
+from propka.lib import make_tidy_atom_label
 from . import hybrid36
 
 
@@ -26,7 +25,7 @@ STR_FMT = (
     "({r.chain_id:1s}) [{r.x:>8.3f} {r.y:>8.3f} {r.z:>8.3f}] {r.element:s}")
 
 
-class Atom(object):
+class Atom:
     """Atom class - contains all atom information found in the PDB file"""
 
     def __init__(self, line=None):
@@ -50,6 +49,9 @@ class Atom(object):
         self.z = None
         self.group = None
         self.group_type = None
+        self.group_label = None
+        self.group_model_pka = None
+        self.group_model_pka_set = None
         self.number_of_bonded_elements = {}
         self.cysteine_bridge = False
         self.bonded_atoms = []
@@ -267,7 +269,7 @@ class Atom(object):
                 model_pka = PKA_FMT.format(self.group.model_pka)
         str_ = INPUT_LINE_FMT.format(
             type=self.type.upper(), r=self,
-            atom_label=propka.lib.make_tidy_atom_label(self.name, self.element),
+            atom_label=make_tidy_atom_label(self.name, self.element),
             group=group, pka=model_pka)
         return str_
 
@@ -313,21 +315,11 @@ class Atom(object):
             self.occ = self.occ.replace('ALG', 'titratable_ligand')
             self.occ = self.occ.replace('BLG', 'titratable_ligand')
             self.occ = self.occ.replace('LG', 'non_titratable_ligand')
-            # try to initialise the group
-            try:
-                group_attr = "{0:s}_group".format(self.occ)
-                group_attr = getattr(propka.group, group_attr)
-                self.group = group_attr(self)
-            except:
-                # TODO - be more specific with expection handling here
-                str_ = (
-                    '{0:s} in input_file is not recognized as a group'.format(
-                        self.occ))
-                raise Exception(str_)
+            self.group_label = "{0:s}_group".format(self.occ)
         # set the model pKa value
         if self.beta != '-':
-            self.group.model_pka = float(self.beta)
-            self.group.model_pka_set = True
+            self.group_model_pka = float(self.beta)
+            self.group_model_pka_set = True
         # set occ and beta to standard values
         self.occ = '1.00'
         self.beta = '0.00'
@@ -344,7 +336,7 @@ class Atom(object):
         """
         str_ = PDB_LINE_FMT1.format(
             type=self.type.upper(), r=self,
-            atom_label=propka.lib.make_tidy_atom_label(self.name, self.element))
+            atom_label=make_tidy_atom_label(self.name, self.element))
         return str_
 
     def make_mol2_line(self, id_):
@@ -359,7 +351,7 @@ class Atom(object):
         """
         str_ = MOL2_LINE_FMT.format(
             id=id_, r=self,
-            atom_label=propka.lib.make_tidy_atom_label(self.name, self.element))
+            atom_label=make_tidy_atom_label(self.name, self.element))
         return str_
 
     def make_pdb_line2(self, numb=None, name=None, res_name=None, chain_id=None,
@@ -397,7 +389,7 @@ class Atom(object):
         str_ = PDB_LINE_FMT2.format(
             numb=numb, res_name=res_name, chain_id=chain_id, res_num=res_num,
             x=x, y=y, z=z, occ=occ, beta=beta,
-            atom_label=propka.lib.make_tidy_atom_label(name, self.element)
+            atom_label=make_tidy_atom_label(name, self.element)
         )
         return str_
 
@@ -408,7 +400,7 @@ class Atom(object):
 
         Returns:
             String with label"""
-        return propka.lib.make_tidy_atom_label(self.name, self.element)
+        return make_tidy_atom_label(self.name, self.element)
 
     def __str__(self):
         """Return an undefined-format string version of this atom."""

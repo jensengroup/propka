@@ -8,7 +8,7 @@ import propka.iterative
 import propka.lib
 import propka.vector_algebra
 from propka.calculations import squared_distance, get_smallest_distance
-from propka.calculations import angle_distance_factors, hydrogen_bond_energy
+from propka.energy import angle_distance_factors, hydrogen_bond_energy
 from propka.determinant import Determinant
 
 

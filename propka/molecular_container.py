@@ -1,13 +1,8 @@
 """Molecular container for storing all contents of PDB files."""
 import os
-import sys
-import propka.pdb
 import propka.version
-import propka.output
-import propka.group
-import propka.lib
 from propka.conformation_container import ConformationContainer
-from propka.lib import info, warning
+from propka.lib import info, warning, make_grid
 
 
 # TODO - these are constants whose origins are a little murky
@@ -16,35 +11,26 @@ UNK_PI_CUTOFF = 0.01
 MAX_ITERATION = 4
 
 
-class Molecular_container:
+class MolecularContainer:
     """Container for storing molecular contents of PDB files.
 
     TODO - this class name does not conform to PEP8 but has external use.
     We should deprecate and change eventually.
     """
 
-    def __init__(self, input_file, options=None):
+    def __init__(self, parameters, options=None):
         """Initialize molecular container.
 
         Args:
-            input_file:  molecular input file
+            parameters:  Parameters() object
             options:  options object
         """
         # printing out header before parsing input
         propka.output.print_header()
-        # set up some values
+        self.conformation_names = []
+        self.conformations = {}
         self.options = options
-        self.input_file = input_file
-        # TODO - replace this indelicate os.path code with pathlib
-        self.dir = os.path.split(input_file)[0]
-        self.file = os.path.split(input_file)[1]
-        self.name = self.file[0:self.file.rfind('.')]
-        input_file_extension = input_file[input_file.rfind('.'):]
-        # set the version
-        if options:
-            parameters = propka.parameters.Parameters(self.options.parameters)
-        else:
-            parameters = propka.parameters.Parameters('propka.cfg')
+        self.name = None
         try:
             version_class = getattr(propka.version, parameters.version)
             self.version = version_class(parameters)
@@ -53,45 +39,6 @@ class Molecular_container:
             errstr = 'Error: Version {0:s} does not exist'.format(
                 parameters.version)
             raise Exception(errstr)
-        # read the input file
-        if input_file_extension[0:4] == '.pdb':
-            # input is a pdb file. read in atoms and top up containers to make
-            # sure that all atoms are present in all conformations
-            [self.conformations, self.conformation_names] = (
-                propka.pdb.read_pdb(input_file, self.version.parameters, self))
-            if len(self.conformations) == 0:
-                info('Error: The pdb file does not seems to contain any '
-                     'molecular conformations')
-                sys.exit(-1)
-            self.top_up_conformations()
-            # make a structure precheck
-            propka.pdb.protein_precheck(self.conformations,
-                                        self.conformation_names)
-            # set up atom bonding and protonation
-            self.version.setup_bonding_and_protonation(self)
-            # Extract groups
-            self.extract_groups()
-            # sort atoms
-            for name in self.conformation_names:
-                self.conformations[name].sort_atoms()
-            # find coupled groups
-            self.find_covalently_coupled_groups()
-            # write out the input file
-            filename = self.file.replace(input_file_extension, '.propka_input')
-            propka.pdb.write_input(self, filename)
-        elif input_file_extension == '.propka_input':
-            #input is a propka_input file
-            [self.conformations, self.conformation_names] = (
-                propka.pdb.read_input(input_file, self.version.parameters,
-                                      self))
-            # Extract groups - this merely sets up the groups found in the
-            # input file
-            self.extract_groups()
-            # do some additional set up
-            self.additional_setup_when_reading_input_file()
-        else:
-            info('Unrecognized input file:{0:s}'.format(input_file))
-            sys.exit(-1)
 
     def top_up_conformations(self):
         """Makes sure that all atoms are present in all conformations."""
@@ -155,7 +102,7 @@ class Molecular_container:
                 else:
                     str_ = (
                         'Group {0:s} could not be found in '
-                        'conformation {0:s}.'.format(
+                        'conformation {1:s}.'.format(
                             group.atom.residue_label, name))
                     warning(str_)
             # ... and store the average value
@@ -214,7 +161,7 @@ class Molecular_container:
         """
         # calculate stability profile
         profile = []
-        for ph in propka.lib.make_grid(*grid):
+        for ph in make_grid(*grid):
             conf = self.conformations[conformation]
             ddg = conf.calculate_folding_energy(ph=ph, reference=reference)
             profile.append([ph, ddg])
@@ -244,7 +191,7 @@ class Molecular_container:
             list of charge state values
         """
         charge_profile = []
-        for ph in propka.lib.make_grid(*grid):
+        for ph in make_grid(*grid):
             conf = self.conformations[conformation]
             q_unfolded, q_folded = conf.calculate_charge(
                 self.version.parameters, ph=ph)
