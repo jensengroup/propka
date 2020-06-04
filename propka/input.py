@@ -68,11 +68,6 @@ def read_molecule_file(input_file, mol_container):
             mol_container.conformations[name].sort_atoms()
         # find coupled groups
         mol_container.find_covalently_coupled_groups()
-        # write out the input file
-        # TODO - figure out why this I/O has to happen here
-        output_path = Path(input_path.name.replace(
-            input_file_extension, '.propka_input'))
-        write_propka(mol_container, output_path)
     elif input_file_extension.lower() == '.propka_input':
         # input is a propka_input file
         conformations, conformation_names = read_propka(

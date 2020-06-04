@@ -1,6 +1,7 @@
 """Molecular container for storing all contents of PDB files."""
 import os
 import propka.version
+from propka.output import write_propka, write_pka, print_header, print_result
 from propka.conformation_container import ConformationContainer
 from propka.lib import info, warning, make_grid
 
@@ -26,7 +27,7 @@ class MolecularContainer:
             options:  options object
         """
         # printing out header before parsing input
-        propka.output.print_header()
+        print_header()
         self.conformation_names = []
         self.conformations = {}
         self.options = options
@@ -82,7 +83,7 @@ class MolecularContainer:
         # find the average of the conformations
         self.average_of_conformations()
         # print out the conformation-average results
-        propka.output.print_result(self, 'AVR', self.version.parameters)
+        print_result(self, 'AVR', self.version.parameters)
 
     def average_of_conformations(self):
         """Generate an average of conformations."""
@@ -117,6 +118,16 @@ class MolecularContainer:
             self.conformation_names[0]].chains
         self.conformations['AVR'] = avr_conformation
 
+    def write_propka(self, filename=None):
+        """Write PROPKA input file.
+
+        Args:
+            filename:  file to write to
+        """
+        if filename is None:
+            filename = os.path.join('{0:s}.propka_input'.format(self.name))
+        write_propka(self, filename)
+
     def write_pka(self, filename=None, reference="neutral",
                   direction="folding", options=None):
         """Write pKa information to a file.
@@ -127,8 +138,8 @@ class MolecularContainer:
             direction:  folding vs. unfolding
             options:  options object
         """
-        # write out the average conformation
-        filename = os.path.join('{0:s}.pka'.format(self.name))
+        if filename is None:
+            filename = os.path.join('{0:s}.pka'.format(self.name))
         # if the display_coupled_residues option is true, write the results out
         # to an alternative pka file
         if self.options.display_coupled_residues:
@@ -138,7 +149,7 @@ class MolecularContainer:
             filename = os.path.join(
                 '{0:s}_{1:s}.pka'.format(
                     self.name, self.version.parameters.output_file_tag))
-        propka.output.write_pka(
+        write_pka(
             self, self.version.parameters, filename=filename,
             conformation='AVR', reference=reference)
 

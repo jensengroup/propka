@@ -28,6 +28,8 @@ def main():
         my_molecule = read_molecule_file(pdbfile, my_molecule)
         my_molecule.calculate_pka()
         my_molecule.write_pka()
+        if options.generate_propka_input:
+            my_molecule.write_propka()
 
 
 if __name__ == '__main__':

@@ -280,6 +280,9 @@ def build_parser(parser=None):
         "-q", "--quiet", action="store_const", const="WARNING",
         dest="log_level", help="suppress non-warning messages")
     group.add_argument(
+        "--generate-propka-input", action="store_true",
+        help="Generate a PROPKA input file")
+    group.add_argument(
         "--protonate-all", dest="protonate_all", action="store_true",
         help="Protonate all atoms (will not influence pKa calculation)",
         default=False)
