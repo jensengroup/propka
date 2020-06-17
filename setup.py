@@ -45,7 +45,7 @@ See http://propka.org/ for the PROPKA web server.
         ],
     packages=find_packages(exclude=['scripts']),
     package_data={'propka': ['*.dat', '*.cfg']},
-    entry_points={'console_scripts': ['propka31 = propka.run:main', ]},
+    entry_points={'console_scripts': ['propka32 = propka.run:main', ]},
     zip_safe=True,
     python_requires='>=3.5',
     tests_require=["pandas", "numpy"],

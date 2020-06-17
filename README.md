@@ -24,10 +24,10 @@ required files):
     cd <source directory>
     python setup.py install --user
 
-This will install the `propka31` script in your executable directory,
+This will install the `propka32` script in your executable directory,
 as configured for setuptools, for instance `~/.local/bin`. You can
 change the bin directory with the `--install-scripts` option. For
-example, in order to install in my `bin` directory in my home
+example, in order to install in the `bin` directory in the home
 directory:
 
     python setup.py install --user --install-scripts ~/bin
@@ -47,13 +47,13 @@ from within a virtual environment (e.g., via [virtualenv](https://pypi.org/proje
 
 1. Clone the code from GitHub
 2. `python setup.py install --user`
-2. Run `propka31` with a .pdb file (see Examples)
+2. Run `propka32` with a .pdb file (see Examples)
 
 ## Examples
 
 Calculate using pdb file
 
-    propka31 1hpx.pdb
+    propka32 1hpx.pdb
 
 ## Testing (for developers)
 

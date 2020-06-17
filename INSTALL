@@ -5,8 +5,8 @@ Clone repository or unpack the tar ball and install with
 
     pip install <source directory>
 
-This will install the `propka31` script in your executable
+This will install the `propka32` script in your executable
 directory.  The `propka` Python module will also become available for import
-and can be invoked in lieu of the `propka31` script via:
+and can be invoked in lieu of the `propka32` script via:
 
     python -m propka
