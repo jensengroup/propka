@@ -44,7 +44,7 @@ See http://propka.org/ for the PROPKA web server.
         'Topic :: Scientific/Engineering :: Chemistry',
         ],
     packages=find_packages(exclude=['scripts']),
-    package_data={'propka': ['*.dat', '*.cfg']},
+    package_data={'propka': ['*.dat', '*.cfg', '*.json']},
     entry_points={'console_scripts': ['propka32 = propka.run:main', ]},
     zip_safe=True,
     python_requires='>=3.5',
