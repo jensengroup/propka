@@ -1,4 +1,4 @@
-"""Tests for PROPKA 3.1"""
+"""Tests for PROPKA"""
 import logging
 import os
 import re
