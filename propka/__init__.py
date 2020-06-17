@@ -1,4 +1,4 @@
-"""PROPKA 3.1
+"""PROPKA 3.2
 
 See https://github.com/jensengroup/propka-3.1 for more information.
 
