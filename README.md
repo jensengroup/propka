@@ -1,7 +1,7 @@
-# PROPKA 3.1
+# PROPKA 3.2
 
 PROPKA predicts the pKa values of ionizable groups in proteins
-(version 3.0) and protein-ligand complexes (version 3.1)
+(version 3.0) and protein-ligand complexes (version 3.2 and later)
 based on the 3D structure.
 
 For proteins without ligands both version should produce the same result.
@@ -25,7 +25,7 @@ you don't have setuptools installed you will need an internet
 connection so that the installation procedure can download the
 required files):
 
-    cd propka-3.1
+    cd <source directory>
     python setup.py install --user
 
 This will install the `propka31` script in your executable directory,
@@ -58,7 +58,6 @@ from within a virtual environment (e.g., via [virtualenv](https://pypi.org/proje
 Calculate using pdb file
 
     propka31 1hpx.pdb
-
 
 ## Testing (for developers)
 
