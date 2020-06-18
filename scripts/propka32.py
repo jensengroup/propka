@@ -3,12 +3,12 @@
 
 This is the original propka script. However, this distribute-based
 installation moved the main() function into propka.run.main and just
-generates a script called propka31 from the setup.py installation
+generates a script called `propka32` from the setup.py installation
 script. You should not need to use this script.
 
 (Also note that there can be import problems because the script name
 is the same as the module name; that's why the new script is called
-propka31.)
+`propka32`.)
 """
 from propka.lib import loadOptions
 from propka.input import read_parameter_file, read_molecule_file
