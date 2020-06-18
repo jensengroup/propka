@@ -15,7 +15,7 @@ in publications:
 
 ## Requirements
 
-PROPKA 3.2 requires Python 3.5 or higher.  Additional requirements are specified in the `requirements.txt` file and automatically satisfied when installing with [pip](https://pip.pypa.io).
+PROPKA 3 requires Python 3.5 or higher.  Additional requirements are specified in the `requirements.txt` file and automatically satisfied when installing with [pip](https://pip.pypa.io).
 
 ## Installation
 
