@@ -4,7 +4,7 @@ PROPKA predicts the pKa values of ionizable groups in proteins
 (version 3.0) and protein-ligand complexes (version 3.2 and later)
 based on the 3D structure.
 
-For proteins without ligands both version should produce the same result.
+For proteins without ligands, both version should produce the same result.
 
 The method is described in the following papers, which you should cite
 in publications:
@@ -13,45 +13,66 @@ in publications:
 
 * Olsson, Mats HM, Chresten R. Sondergaard, Michal Rostkowski, and Jan H. Jensen. "PROPKA3: consistent treatment of internal and surface residues in empirical pKa predictions." Journal of Chemical Theory and Computation 7, no. 2 (2011): 525-537. doi:[10.1021/ct100578z](https://doi.org/10.1021/ct100578z)
 
+## Requirements
+
+PROPKA 3.2 requires Python 3.5 or higher.  Additional requirements are specified in the `requirements.txt` file and automatically satisfied when installing with [pip](https://pip.pypa.io).
+
 ## Installation
 
-Clone repository or unpack the tar ball and install with
-[setuptools](http://pythonhosted.org/setuptools/index.html) (note: if
-you don't have setuptools installed you will need an internet
-connection so that the installation procedure can download the
-required files):
+### PIP-based installation
 
-    cd <source directory>
-    python setup.py install --user
+The easiest way to install PROPKA is via the [PyPI archive](https://pypi.org/project/PROPKA/) with the command
 
-This will install the `propka32` script in your executable directory,
-as configured for setuptools, for instance `~/.local/bin`. You can
-change the bin directory with the `--install-scripts` option. For
-example, in order to install in the `bin` directory in the home
-directory:
+    pip install propka
 
-    python setup.py install --user --install-scripts ~/bin
+As always, a virtual environment (e.g., via [virtualenv](https://pypi.org/project/virtualenv/)) is recommended when installing packages.
 
 For the purposes of testing or development, you may prefer to install PROPKA as
 an editable module via PIP by running
-```
-pip install -e .
-```
-from within a virtual environment (e.g., via [virtualenv](https://pypi.org/project/virtualenv/)).
 
-## Requirements
+    pip install -e .
 
-* Python 3.5 or higher 
+### Source-based installation
+
+The source code can be installed by cloning the repository or unpacking from a source code archive and running
+
+    pip install .
+
+in the source directory.
+
+Installation is also possible with 
+[setuptools](http://pythonhosted.org/setuptools/index.html) which offers additional customization options; e.g.
+
+    python setup.py install --user
+
+will install the `propka32` script in your executable directory,
+as configured for setuptools, for instance `~/.local/bin` while
+
+    python setup.py install --user --install-scripts ~/bin
+
+will install the script in the `bin` subdirectory of your home directory.
 
 ## Getting started
 
-1. Clone the code from GitHub
-2. `python setup.py install --user`
-2. Run `propka32` with a .pdb file (see Examples)
+PROPKA can be used either as a module or via the installed script; i.e., either
 
-## Examples
+    propka32
 
-Calculate using pdb file
+or
+
+    python -m propka
+
+works for invoking PROPKA.
+
+A brief list of available options can be obtained by running PROPKA with no options:
+
+    propka32
+
+A longer list of options and descriptions is available using the `--help` option:
+
+    propka32 --help
+
+Most users run PROPKA by invoking the program with a PDB file as its argument; e.g.,
 
     propka32 1hpx.pdb
 
@@ -67,6 +88,3 @@ Please cite these references in publications:
 * Sondergaard, Chresten R., Mats HM Olsson, Michal Rostkowski, and Jan H. Jensen. "Improved Treatment of Ligands and Coupling Effects in Empirical Calculation and Rationalization of pKa Values." Journal of Chemical Theory and Computation 7, no. 7 (2011): 2284-2295.
 
 * Olsson, Mats HM, Chresten R. Sondergaard, Michal Rostkowski, and Jan H. Jensen. "PROPKA3: consistent treatment of internal and surface residues in empirical pKa predictions." Journal of Chemical Theory and Computation 7, no. 2 (2011): 525-537.
-
-
-
