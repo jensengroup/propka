@@ -45,7 +45,7 @@ Installation is also possible with
 
     python setup.py install --user
 
-will install the `propka32` script in your executable directory,
+will install the `propka3` script in your executable directory,
 as configured for setuptools, for instance `~/.local/bin` while
 
     python setup.py install --user --install-scripts ~/bin
@@ -56,7 +56,7 @@ will install the script in the `bin` subdirectory of your home directory.
 
 PROPKA can be used either as a module or via the installed script; i.e., either
 
-    propka32
+    propka3
 
 or
 
@@ -66,15 +66,15 @@ works for invoking PROPKA.
 
 A brief list of available options can be obtained by running PROPKA with no options:
 
-    propka32
+    propka3
 
 A longer list of options and descriptions is available using the `--help` option:
 
-    propka32 --help
+    propka3 --help
 
 Most users run PROPKA by invoking the program with a PDB file as its argument; e.g.,
 
-    propka32 1hpx.pdb
+    propka3 1hpx.pdb
 
 ## Testing (for developers)
 

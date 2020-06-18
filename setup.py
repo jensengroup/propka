@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 VERSION = "3.2.0"
 
 setup(
-    name="PROPKA",
+    name="propka",
     version=VERSION,
     description="Heuristic pKa calculations with ligands", long_description="""
 PROPKA predicts the pKa values of ionizable groups in proteins (version 3.0) and
@@ -31,6 +31,8 @@ See http://propka.org/ for the PROPKA web server.
 """,
     author="Jan H. Jensen",
     author_email="jhjensen@chem.ku.dk",
+    maintainer="Nathan Baker",
+    maintainer_email="nathanandrewbaker@gmail.com",
     license="LGPL v2.1",
     url="http://propka.org",
     keywords="science",
@@ -45,9 +47,9 @@ See http://propka.org/ for the PROPKA web server.
         ],
     packages=find_packages(exclude=['scripts']),
     package_data={'propka': ['*.dat', '*.cfg', '*.json']},
-    entry_points={'console_scripts': ['propka32 = propka.run:main', ]},
+    entry_points={'console_scripts': ['propka3 = propka.run:main', ]},
     zip_safe=True,
     python_requires='>=3.5',
-    tests_require=["pandas", "numpy"],
+    tests_require=["pandas", "numpy", "pytest"],
     test_suite="tests",
     )
