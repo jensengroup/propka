@@ -48,7 +48,7 @@ See http://propka.org/ for the PROPKA web server.
           'Topic :: Scientific/Engineering :: Chemistry',
       ],
       packages=find_packages(exclude=['scripts']),
-      package_data = {'propka': ['*.dat', '*.cfg']},
+      package_data = {'propka': ['*.dat', '*.cfg', '*.json']},
       #scripts = ["scripts/propka31.py"],  # use entry point below
       entry_points = {
         'console_scripts': [
