@@ -45,12 +45,7 @@ Installation is also possible with
 
     python setup.py install --user
 
-will install the `propka3` script in your executable directory,
-as configured for setuptools, for instance `~/.local/bin` while
-
-    python setup.py install --user --install-scripts ~/bin
-
-will install the script in the `bin` subdirectory of your home directory.
+will install the `propka3` script in your executable directory.
 
 ## Getting started
 
