@@ -38,6 +38,7 @@ release = '3.2.0'
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx',
               'sphinx.ext.mathjax', 'sphinx.ext.viewcode',
               'sphinx.ext.napoleon', 'sphinx.ext.todo',
+              'sphinx.ext.autosummary',
 ##              'sphinx_sitemap',
               'sphinx_rtd_theme']
 
@@ -55,6 +56,11 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
+# https://www.sphinx-doc.org/en/master/usage/extensions/autosummary.html
+# We use a customized _templates/autosummary/module.rst to document members, too.
+autosummary_generate = True
+autosummary_imported_members = False
+autosummary_generate_overwrite = True
 
 # -- Options for HTML output -------------------------------------------------
 
