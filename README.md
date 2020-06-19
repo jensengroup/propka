@@ -29,12 +29,8 @@ The easiest way to install PROPKA is via the [PyPI archive](https://pypi.org/pro
 
     pip install propka
 
+This installation will install the `propka` Python module and the `propka3` executable script.
 As always, a virtual environment (e.g., via [virtualenv](https://pypi.org/project/virtualenv/)) is recommended when installing packages.
-
-For the purposes of testing or development, you may prefer to install PROPKA as
-an editable module via PIP by running
-
-    pip install -e .
 
 ### Source-based installation
 
@@ -43,13 +39,11 @@ The source code can be installed by cloning the repository or unpacking from a s
     pip install .
 
 in the source directory.
+For the purposes of testing or development, you may prefer to install PROPKA as an editable module via PIP by running
 
-Installation is also possible with 
-[setuptools](http://pythonhosted.org/setuptools/index.html) which offers additional customization options; e.g.
+    pip install -e .
 
-    python setup.py install --user
-
-will install the `propka3` script in your executable directory.
+in the source directory.
 
 ## Getting started
 
