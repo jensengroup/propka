@@ -99,7 +99,7 @@ def read_parameter_file(input_file, parameters):
     try:
         ifile = resource_filename(__name__, input_file)
         input_ = open_file_for_reading(ifile)
-    except (IOError, FileNotFoundError, ValueError):
+    except (IOError, FileNotFoundError, ValueError, KeyError):
         input_ = open_file_for_reading(input_file)
     for line in input_:
         parameters.parse_line(line)
