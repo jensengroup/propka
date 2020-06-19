@@ -1,6 +1,13 @@
-"""Provides alternative PDB format that can encode larger atom numbers.
+"""
+Hybrid36 PDB-like file format
+=============================
 
-http://cci.lbl.gov/hybrid_36/
+`hybrid36`_ is an alternative PDB format that can encode larger atom
+numbers. This module provides the :func:`decode` functon to parse the
+atom numbers in hybrid36 "PDB" files.
+
+.. _hybrid36: http://cci.lbl.gov/hybrid_36/
+
 """
 import string
 

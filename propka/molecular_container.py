@@ -1,4 +1,9 @@
-"""Molecular container for storing all contents of PDB files."""
+"""
+PDB molecular container
+=======================
+
+Molecular container for storing all contents of PDB files.
+"""
 import os
 import propka.version
 from propka.output import write_propka, write_pka, print_header, print_result

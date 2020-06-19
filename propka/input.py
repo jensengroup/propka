@@ -1,4 +1,9 @@
-"""Input routines."""
+"""
+Input handling
+==============
+
+Input routines.
+"""
 from pathlib import Path
 from pkg_resources import resource_filename
 from propka.lib import protein_precheck

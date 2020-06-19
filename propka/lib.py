@@ -1,4 +1,10 @@
-"""Implements many of the main functions used to call PROPKA."""
+"""
+Set-up of a PROPKA calculation
+==============================
+
+Implements many of the main functions used to call PROPKA.
+"""
+
 import sys
 import logging
 import argparse

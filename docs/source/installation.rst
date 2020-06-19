@@ -21,7 +21,7 @@ The easiest way to install a release of PROPKA 3 is from the `PyPI archive`_ wit
 
    
 This installation will install the :mod:`propka` Python module and the
-:command:`propka3` executable script. As always, a virtual environment (e.g., via
+:program:`propka3` executable script. As always, a virtual environment (e.g., via
 `virtualenv`_) is recommended when installing packages.
 
 Source-based installation

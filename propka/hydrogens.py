@@ -1,4 +1,10 @@
-"""Calculations related to hydrogen placement."""
+"""
+Hydrogens
+=========
+
+Calculations related to hydrogen placement.
+
+"""
 import math
 from propka.lib import info
 from propka.protonate import Protonate

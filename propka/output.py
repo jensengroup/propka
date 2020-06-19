@@ -1,4 +1,9 @@
-"""Output routines."""
+"""
+Output
+======
+
+Output routines.
+"""
 from datetime import date
 from propka.lib import info
 
@@ -408,11 +413,11 @@ Complexes.  Delphine C. Bas, David M. Rogers and Jan H. Jensen.  PROTEINS:
 Structure, Function, and Bioinformatics 73:765-783 (2008)
 
 PROPKA3: Consistent Treatment of Internal and Surface Residues in Empirical
-pKa predictions.  Mats H.M. Olsson, Chresten R. Sondergard, Michal Rostkowski, 
-and Jan H. Jensen.  Journal of Chemical Theory and Computation, 7(2):525-537 
+pKa predictions.  Mats H.M. Olsson, Chresten R. Sondergard, Michal Rostkowski,
+and Jan H. Jensen.  Journal of Chemical Theory and Computation, 7(2):525-537
 (2011)
 
-Improved Treatment of Ligands and Coupling Effects in Empirical Calculation 
+Improved Treatment of Ligands and Coupling Effects in Empirical Calculation
 and Rationalization of pKa Values.  Chresten R. Sondergaard, Mats H.M. Olsson,
 Michal Rostkowski, and Jan H. Jensen.  Journal of Chemical Theory and
 Computation, (2011)
@@ -441,8 +446,8 @@ def get_determinants_header():
     """
     str_ = """
 ---------  -----   ------   ---------------------    --------------    --------------    --------------
-                            DESOLVATION  EFFECTS       SIDECHAIN          BACKBONE        COULOMBIC    
- RESIDUE    pKa    BURIED     REGULAR      RE        HYDROGEN BOND     HYDROGEN BOND      INTERACTION  
+                            DESOLVATION  EFFECTS       SIDECHAIN          BACKBONE        COULOMBIC
+ RESIDUE    pKa    BURIED     REGULAR      RE        HYDROGEN BOND     HYDROGEN BOND      INTERACTION
 ---------  -----   ------   ---------   ---------    --------------    --------------    --------------
 """
     return str_

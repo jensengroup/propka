@@ -1,4 +1,12 @@
-"""Protonate a structure."""
+"""
+Protonate a structure
+=====================
+
+The :class:`Protonate` processes a
+:class:`propka.molecular_container.MolecularContainer` and adds
+protons.
+
+"""
 import math
 import propka.bonds
 import propka.atom

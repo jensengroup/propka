@@ -1,4 +1,10 @@
-"""Energy calculations."""
+"""
+Energy calculations
+===================
+
+Energy calculations.
+
+"""
 import math
 from propka.lib import warning
 from propka.calculations import squared_distance, get_smallest_distance

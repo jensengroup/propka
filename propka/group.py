@@ -1,4 +1,9 @@
-"""Routines and classes for storing groups important to PROPKA calculations."""
+"""
+Data structures for groups
+==========================
+
+Routines and classes for storing groups important to PROPKA calculations.
+"""
 import math
 import propka.ligand
 import propka.protonate
@@ -10,6 +15,7 @@ from propka.lib import info, warning
 # Constants that start with "UNK_" are a mystery to me
 UNK_PKA_SCALING = -1.36
 PROTONATOR = propka.protonate.Protonate(verbose=False)
+#: acids
 EXPECTED_ATOMS_ACID_INTERACTIONS = {
     'COO': {'O': 2}, 'HIS': {'H': 2, 'N': 2}, 'CYS': {'S': 1}, 'TYR': {'O': 1},
     'LYS': {'N': 1}, 'ARG': {'H': 5, 'N': 3}, 'ROH': {'O': 1},
@@ -21,6 +27,7 @@ EXPECTED_ATOMS_ACID_INTERACTIONS = {
     'C2N': {'H': 4, 'N': 2}, 'OCO': {'O': 2}, 'N30': {'H': 4, 'N': 1},
     'N31': {'H': 3, 'N': 1}, 'N32': {'H': 2, 'N': 1}, 'N33': {'H': 1, 'N': 1},
     'NP1': {'H': 2, 'N': 1}, 'N1': {'N': 1}}
+#: bases
 EXPECTED_ATOMS_BASE_INTERACTIONS = {
     'COO': {'O': 2}, 'HIS': {'N': 2}, 'CYS': {'S': 1}, 'TYR': {'O': 1},
     'LYS': {'N': 1}, 'ARG': {'N': 3}, 'ROH': {'O': 1}, 'AMD': {'O': 1},

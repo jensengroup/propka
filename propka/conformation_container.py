@@ -1,4 +1,9 @@
-"""Container for molecular conformations"""
+"""
+Molecular data structures
+=========================
+
+Container data structure for molecular conformations.
+"""
 import functools
 import propka.ligand
 from propka.output import make_interaction_map
@@ -10,11 +15,12 @@ from propka.group import Group, is_group
 from propka.lib import info
 
 
-# A large number that gets multipled with the integer obtained from applying
-# ord() to the atom chain ID.  Used in calculating atom keys for sorting.
+#: A large number that gets multipled with the integer obtained from applying
+#: :func:`ord` to the atom chain ID.  Used in calculating atom keys for sorting.
 UNICODE_MULTIPLIER = 1e7
-# A number that gets mutiplied with an atom's residue number.  Used in
-# calculating keys for atom sorting.
+
+#: A number that gets mutiplied with an atom's residue number.  Used in
+#: calculating keys for atom sorting.
 RESIDUE_MULTIPLIER = 1000
 
 

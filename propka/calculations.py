@@ -1,8 +1,14 @@
-"""PROPKA calculations."""
+"""
+Calculations
+============
+
+Mathematical helper functions.
+"""
+
 import math
 
 
-# Maximum distance used to bound calculations of smallest distance
+#: Maximum distance used to bound calculations of smallest distance
 MAX_DISTANCE = 1e6
 
 

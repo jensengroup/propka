@@ -1,21 +1,37 @@
-"""Holds parameters and settings."""
+"""
+Configuration file parameters
+=============================
+
+Holds parameters and settings that can be set in :file:`propka.cfg`. The file format consists of lines of  ``keyword value [value ...]``, blank lines, and comment lines (introduced with ``#``).
+
+The module attributes below list the names and types of all key words
+in configuration file.
+
+"""
 from propka.lib import info, warning
 
 
-# names and types of all key words in configuration file
+#: matrices
 MATRICES = ['interaction_matrix']
+#: pari-wise matrices
 PAIR_WISE_MATRICES = ['sidechain_cutoffs']
+#: :class:`dict` containing numbers
 NUMBER_DICTIONARIES = [
     'VanDerWaalsVolume', 'charge', 'model_pkas', 'ions', 'valence_electrons',
     'custom_model_pkas']
+#: :class:`dict` containing lists
 LIST_DICTIONARIES = ['backbone_NH_hydrogen_bond', 'backbone_CO_hydrogen_bond']
+#: :class:`dict` containing strings
 STRING_DICTIONARIES = ['protein_group_mapping']
+#: :class:`list` containing strings
 STRING_LISTS = [
     'ignore_residues', 'angular_dependent_sidechain_interactions',
     'acid_list', 'base_list', 'exclude_sidechain_interactions',
     'backbone_reorganisation_list', 'write_out_order']
+#: distances (:class:`float`)
 DISTANCES = ['desolv_cutoff', 'buried_cutoff', 'coulomb_cutoff1',
              'coulomb_cutoff2']
+#: other parameters
 PARAMETERS = [
     'Nmin', 'Nmax', 'desolvationSurfaceScalingFactor', 'desolvationPrefactor',
     'desolvationAllowance', 'coulomb_diel', 'COO_HIS_exception',
@@ -27,6 +43,7 @@ PARAMETERS = [
     'remove_penalised_group', 'max_intrinsic_pka_diff',
     'min_interaction_energy', 'max_free_energy_diff', 'min_swap_pka_shift',
     'min_pka', 'max_pka', 'sidechain_interaction']
+# :class:`str` parameters
 STRINGS = ['version', 'output_file_tag', 'ligand_typing', 'pH', 'reference']
 
 

@@ -8,7 +8,7 @@
  Quickstart Guide
 ==================
 
-PROPKA can be used either as a module or via the installed script :command:`propka3`; i.e., either
+PROPKA can be used either as a module or via the installed script :program:`propka3`; i.e., either
 
 .. code-block:: bash
 
@@ -26,9 +26,9 @@ works for invoking PROPKA.
 Predicting protein residue |pKa| values
 =======================================
 
-Most users run PROPKA by invoking the program with a PDB file as its
-argument; e.g., for PDB 1HPX_ (HIV-1 protease complexed with the
-inhibitor KNI-272)
+Most users run PROPKA by invoking the :program:`propka3` program with
+a PDB file as its argument; e.g., for PDB 1HPX_ (HIV-1 protease
+complexed with the inhibitor KNI-272)
 
 .. code-block:: bash
 

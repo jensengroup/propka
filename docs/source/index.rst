@@ -18,6 +18,9 @@ PROPKA 3 predicts the |pKa| values of ionizable groups in proteins
 [Sondergaard2011]_ and protein-ligand complexes based on the 3D
 structure [Olsson2011]_.
 
+This package installs the :program:`propka3` command and the
+:mod:`propka` Python package.
+
    
 License and source code
 =======================
@@ -81,6 +84,7 @@ Indices and tables
 
    installation
    quickstart
+   api
    references
 
   

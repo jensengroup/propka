@@ -1,4 +1,11 @@
-"""Atom class - contains all atom information found in the PDB file"""
+"""
+Atom
+====
+
+The :class:`Atom` class contains all atom information found in the PDB file.
+
+"""
+
 import string
 from propka.lib import make_tidy_atom_label
 from . import hybrid36

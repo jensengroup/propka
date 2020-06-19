@@ -1,7 +1,17 @@
-"""Functions to manipulate Determinant objects.
+"""
+Working with Determinants
+=========================
 
-TODO - it is confusing to have both `determinant.py` and `determinants.py`.
-Should these be merged?
+Functions to manipulate :class:`propka.determinant.Determinant` objects.
+
+.. TODO::
+
+   It is confusing to have both `determinant.py` and `determinants.py`.
+   Should these be merged?
+
+.. SeeAlso::
+   :mod:`propka.determinant`
+
 """
 import math
 import propka.iterative
