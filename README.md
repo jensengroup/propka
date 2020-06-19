@@ -19,7 +19,7 @@ The code in this repository is named _PROPKA 3_ and it is based on the original 
 
 ## Requirements
 
-PROPKA 3 requires Python 3.5 or higher.  Additional requirements are specified in the `requirements.txt` file and automatically satisfied when installing with [pip](https://pip.pypa.io).
+PROPKA 3 requires Python 3.6 or higher.  Additional requirements are specified in the `requirements.txt` file and automatically satisfied when installing with [pip](https://pip.pypa.io).
 
 ## Installation
 
