@@ -13,6 +13,10 @@ in publications:
 
 * Olsson, Mats HM, Chresten R. Sondergaard, Michal Rostkowski, and Jan H. Jensen. "PROPKA3: consistent treatment of internal and surface residues in empirical pKa predictions." Journal of Chemical Theory and Computation 7, no. 2 (2011): 525-537. doi:[10.1021/ct100578z](https://doi.org/10.1021/ct100578z)
 
+## PROPKA versions
+
+The code in this repository is named _PROPKA 3_ and it is based on the original PROPKA 3.1 release (described in the papers above). It has undergone various changes, which is reflected in the version numbering. For instance, version 3.2 contains a number of API changes and code refactoring that introduce incompatibilities between the original 3.1 release and the more recent versions. In the future, we will increase the minor version number to indicate further changes to the code base (e.g., release 3.3 or 3.4). The major release number is not expected to change unless major changes to the underlying algorithms are implemented.
+
 ## Requirements
 
 PROPKA 3 requires Python 3.5 or higher.  Additional requirements are specified in the `requirements.txt` file and automatically satisfied when installing with [pip](https://pip.pypa.io).
@@ -75,6 +79,7 @@ Most users run PROPKA by invoking the program with a PDB file as its argument; e
 
 Please see [`tests/README.md`](tests/README.md) for testing instructions.
 Please run these tests after making changes to the code and _before_ pushing commits.
+
 
 ## References / Citations
 
