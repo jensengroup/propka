@@ -42,11 +42,11 @@ jobs:
         coverage html
     - name: Store coverage text results
       uses: actions/upload-artifact@v1
-        with:
-          name: coverage-text
-          path: coverage.txt
+      with:
+        name: coverage-text
+        path: coverage.txt
     - name: Store coverage HTML results
       uses: actions/upload-artifact@v1
-        with:
-          name: coverage-html
-          path: htmlcov/*
+      with:
+        name: coverage-html
+        path: htmlcov/*
