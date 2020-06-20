@@ -1,5 +1,7 @@
 # PROPKA 3
 
+![Tests](https://github.com/jensengroup/propka/workflows/Tests/badge.svg)
+
 PROPKA predicts the pKa values of ionizable groups in proteins
 (version 3.0) and protein-ligand complexes (version 3.1 and later)
 based on the 3D structure.
