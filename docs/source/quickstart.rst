@@ -8,19 +8,21 @@
  Quickstart Guide
 ==================
 
-PROPKA can be used either as a module or via the installed script :program:`propka3`; i.e., either
+PROPKA can be used either via the installed script :program:`propka3`
+or as a Python module. When using the :ref:`propka3-command`, use
 
 .. code-block:: bash
 
-   propka3
+   propka3  FILENAME
 
-or :mod:`propka`
+As a module (:mod:`propka`), also provide the input filename
 
 .. code-block:: bash
 		
-   python -m propka
+   python -m propka FILENAME
 
-works for invoking PROPKA.
+In both cases, additional options may be added, as described in more
+detail for the :ref:`propka3-command`.
 
 
 Predicting protein residue |pKa| values

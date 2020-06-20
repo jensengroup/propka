@@ -1,8 +1,10 @@
 .. -*- coding: utf-8 -*-
 
-================================
- The :program:`propka3` command
-================================
+.. _propka3-command:
+
+============================
+ :program:`propka3` command
+============================
 
 PROPKA predicts the pKa values of ionizable groups in proteins and
 protein-ligand complexes based in the 3D structure. The
