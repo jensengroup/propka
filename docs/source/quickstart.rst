@@ -181,7 +181,7 @@ Getting help
 
 A brief list of available options can be obtained by running PROPKA
 with no options. A longer list of options and descriptions is
-available using the :option:`--help` option:
+available using the :option:`propka3 --help` option:
 
 .. code-block:: bash
 

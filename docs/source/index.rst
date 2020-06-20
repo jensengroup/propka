@@ -84,6 +84,7 @@ Indices and tables
 
    installation
    quickstart
+   command
    api
    references
 
