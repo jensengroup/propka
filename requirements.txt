@@ -1,2 +1,4 @@
 pytest
 numpy
+sphinx
+sphinx_rtd_theme
