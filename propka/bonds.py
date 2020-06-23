@@ -1,4 +1,10 @@
-"""PROPKA representation of bonds."""
+"""
+Bonds
+=====
+
+PROPKA representation of bonds.
+
+"""
 import math
 import json
 import pkg_resources

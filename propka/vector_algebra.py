@@ -1,4 +1,9 @@
-"""Vector algebra for PROPKA."""
+"""
+Vector calculations
+===================
+
+Vector algebra for PROPKA.
+"""
 import math
 from propka.lib import info, get_sorted_configurations
 

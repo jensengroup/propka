@@ -1,7 +1,18 @@
-"""Holds the Determinant class
+"""
+Determinant
+===========
 
-TODO - it is confusing to have both `determinant.py` and `determinants.py`.
-Should these be merged?
+Provides the :class:`Determinant` class.
+
+.. TODO::
+
+   It is confusing to have both `determinant.py` and `determinants.py`.
+   Should these be merged?
+
+.. SeeAlso::
+   - :mod:`propka.determinants`
+   - :mod:`propka.iterative`
+
 """
 
 

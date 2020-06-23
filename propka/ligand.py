@@ -1,8 +1,17 @@
-"""Ligand classes and functions."""
+"""
+Ligand atom typing
+==================
+
+This module contains the :func:`assign_sybyl_type` function to analyze
+all :class:`propka.atom.Atom` in terms of SYBYL atom types (see
+:data:`ALL_SYBYL_TYPES`).
+
+"""
+
 from propka.calculations import squared_distance
 from propka.vector_algebra import Vector
 
-
+#: SYBYL atom types
 ALL_SYBYL_TYPES = [
     'C.3',   #  carbon sp3
     'H',     #  hydrogen
@@ -58,7 +67,7 @@ ALL_SYBYL_TYPES = [
     'Mo',    #  molybdenum
     'Sn']    #  tin
 
-
+#: PROPKA input types
 PROPKA_INPUT_TYPES = ['1P', '1N', '2P', '2N', 'C3', 'H', 'C2', 'Hsp', 'C1',
                       'Ht3', 'Car', 'LP', 'Cca', 'Du', 'N3', 'DuC', 'N2',
                       'Any', 'N1', 'Hal', 'Nar', 'Het', 'Nam', 'Hev', 'Npl',

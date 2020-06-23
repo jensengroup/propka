@@ -1,6 +1,10 @@
-"""Iterative functions for pKa calculations.
+"""
+Working with Determinants
+=========================
 
-These appear to mostly involve determinants.
+Iterative functions for pKa calculations. These appear to mostly
+involve :class:`propka.determinant.Determinant` instances.
+
 """
 from propka.determinant import Determinant
 from propka.lib import info, debug

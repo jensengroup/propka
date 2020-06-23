@@ -1,4 +1,10 @@
-"""Describe coupling between groups."""
+"""
+Coupling between groups
+=======================
+
+Describe and analyze energetic coupling between groups.
+"""
+
 import itertools
 import propka.lib
 from propka.group import Group

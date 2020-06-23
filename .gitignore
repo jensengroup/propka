@@ -5,3 +5,11 @@
 *.egg-info
 # Visual studio code
 .vscode
+
+# editor files
+*~
+
+# generated files
+docs/build
+docs/source/api/*.rst
+build/

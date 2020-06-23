@@ -1,6 +1,6 @@
 """PROPKA 3
 
-See https://github.com/jensengroup/propka-3.1 for more information.
+See https://github.com/jensengroup/propka for more information.
 
 Please cite these PROPKA references in publications:
 

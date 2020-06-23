@@ -1,4 +1,14 @@
-"""Ligand pKa values"""
+"""
+Ligand pKa values from Marvin
+=============================
+
+Ligand pKa values can be obtained from the commercial `Marvin`_
+software (namely, the :program:`cxcalc` and :program:`molconvert`
+programs are required).
+
+.. _Marvin: https://chemaxon.com/products/marvin
+
+"""
 import os
 import subprocess
 import sys

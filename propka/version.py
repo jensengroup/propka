@@ -1,4 +1,8 @@
-"""Contains version-specific methods and parameters.
+"""
+Version-based configuration
+===========================
+
+Contains version-specific methods and parameters.
 
 TODO - this module unnecessarily confuses the code.  Can we eliminate it?
 """
