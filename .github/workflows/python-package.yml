@@ -40,6 +40,8 @@ jobs:
         coverage run -m pytest
         coverage report -m | tee coverage.txt
         coverage html
+    - name: Upload coverage to https://codecov.io/gh/jensengroup/propka
+      run: bash <(curl -s https://codecov.io/bash)
     - name: Store coverage text results
       uses: actions/upload-artifact@v2
       with:
