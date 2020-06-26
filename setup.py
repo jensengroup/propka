@@ -41,7 +41,7 @@ See http://propka.org/ for the PROPKA web server.
         'Environment :: Console',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: GNU Lesser General Public License v2 (LGPLv2)',
-        'Operating System :: POSIX', 
+        'Operating System :: POSIX',
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: Microsoft :: Windows',
         'Programming Language :: Python',
@@ -56,6 +56,6 @@ See http://propka.org/ for the PROPKA web server.
     entry_points={'console_scripts': ['propka3 = propka.run:main', ]},
     zip_safe=True,
     python_requires='>=3.6',
-    tests_require=["pandas", "numpy", "pytest"],
+    tests_require=["numpy", "pytest"],
     test_suite="tests",
     )
