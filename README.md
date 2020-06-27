@@ -1,6 +1,8 @@
 # PROPKA 3
 
 ![Tests](https://github.com/jensengroup/propka/workflows/Tests/badge.svg)
+![codecov](https://codecov.io/gh/jensengroup/propka/branch/master/graph/badge.svg)](https://codecov.io/gh/jensengroup/propka)
+[![PyPI version](https://badge.fury.io/py/propka.svg)](https://badge.fury.io/py/propka)
 
 PROPKA predicts the pKa values of ionizable groups in proteins
 (version 3.0) and protein-ligand complexes (version 3.1 and later)
