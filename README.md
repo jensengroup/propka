@@ -3,6 +3,7 @@
 ![Tests](https://github.com/jensengroup/propka/workflows/Tests/badge.svg)
 [![codecov](https://codecov.io/gh/jensengroup/propka/branch/master/graph/badge.svg)](https://codecov.io/gh/jensengroup/propka)
 [![PyPI version](https://badge.fury.io/py/propka.svg)](https://badge.fury.io/py/propka)
+[![RTD status](https://readthedocs.org/projects/propka/badge/)](https://propka.readthedocs.io/)
 
 PROPKA predicts the pKa values of ionizable groups in proteins
 (version 3.0) and protein-ligand complexes (version 3.1 and later)
@@ -78,6 +79,9 @@ Most users run PROPKA by invoking the program with a PDB file as its argument; e
 Please see [`tests/README.md`](tests/README.md) for testing instructions.
 Please run these tests after making changes to the code and _before_ pushing commits.
 
+## Additional documentation
+
+Additional documentation can be found at https://propka.readthedocs.io/.
 
 ## References / Citations
 
