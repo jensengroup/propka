@@ -28,6 +28,8 @@ PROPKA 3 requires Python 3.6 or higher.  Additional requirements are specified i
 
 ## Installation
 
+PROPKA can be installed on your own computer (as described below) or run from a [web interface](http://server.poissonboltzmann.org) (please [register](http://eepurl.com/by4eQr) first).
+
 ### PIP-based installation
 
 The easiest way to install PROPKA is via the [PyPI archive](https://pypi.org/project/PROPKA/) with the command
