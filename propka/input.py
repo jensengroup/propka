@@ -23,7 +23,7 @@ def open_file_for_reading(input_file):
         then will attempt fseek(0).
     """
     try:
-        input_file.fseek(0)
+        input_file.seek(0)
         return input_file
     except AttributeError:
         pass
@@ -53,7 +53,7 @@ def read_molecule_file(input_file, mol_container):
         # input is a pdb file. read in atoms and top up containers to make
         # sure that all atoms are present in all conformations
         conformations, conformation_names = read_pdb(
-            input_path, mol_container.version.parameters, mol_container)
+            input_file, mol_container.version.parameters, mol_container)
         if len(conformations) == 0:
             str_ = ('Error: The pdb file does not seems to contain any '
                     'molecular conformations')
