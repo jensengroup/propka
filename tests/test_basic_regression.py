@@ -152,3 +152,66 @@ def test_regression(pdb, options, tmp_path):
     run_propka(options, pdb_path, tmp_path)
     if ref_path is not None:
         compare_output(pdb, tmp_path, ref_path)
+
+
+def run_propka_stream(options, input_file, tmp_path):
+    """Run PROPKA software.
+
+    Args:
+        options:  list of PROPKA options
+        input_file:  file-like PDB object
+        tmp_path:  path for working directory
+    """
+    options += [input_file.name]
+    args = loadOptions(options)
+    try:
+        _LOGGER.warning(
+            "Working in tmpdir {0:s} because of PROPKA file output; "
+            "need to fix this.".format(str(tmp_path)))
+        cwd = Path.cwd()
+        os.chdir(tmp_path)
+        parameters = read_parameter_file(args.parameters, Parameters())
+        molecule = MolecularContainer(parameters, args)
+        molecule = read_molecule_file(input_file, molecule,
+                                      filename=input_file.name)
+        molecule.calculate_pka()
+        molecule.write_pka()
+        if args.generate_propka_input:
+            molecule.write_propka()
+    finally:
+        os.chdir(cwd)
+
+
+@pytest.mark.parametrize("pdb, options", [
+    pytest.param("1FTJ-Chain-A", [], id="1FTJ-Chain-A: no options"),
+    pytest.param('1HPX', [], id="1HPX: no options"),
+    pytest.param('4DFR', [], id="4DFR: no options"),
+    pytest.param('3SGB', [], id="3SGB: no options"),
+    pytest.param('3SGB-subset', [
+        "--titrate_only",
+        "E:17,E:18,E:19,E:29,E:44,E:45,E:46,E:118,E:119,E:120,E:139"],
+                 id="3SGB: --titrate_only"),
+    pytest.param('1HPX-warn', ['--quiet'], id="1HPX-warn: --quiet")])
+def test_filestream_regression(pdb, options, tmp_path):
+    """Basic regression but using streams for the input PDB file"""
+    path_dict = get_test_dirs()
+    ref_path = path_dict["results"] / ("{0:s}.dat".format(pdb))
+    if ref_path.is_file():
+        ref_path = ref_path.resolve()
+    else:
+        _LOGGER.warning("Missing results file for comparison: {0:s}".format(
+                        str(ref_path)))
+        ref_path = None
+    pdb_path = path_dict["pdbs"] / ("{0:s}.pdb".format(pdb))
+    if pdb_path.is_file():
+        pdb_path = pdb_path.resolve()
+        input_file = open(pdb_path)
+    else:
+        errstr = "Missing PDB file: {0:s}".format(pdb_path)
+        raise FileNotFoundError(errstr)
+    tmp_path = Path(tmp_path).resolve()
+
+    run_propka_stream(options, input_file, tmp_path)
+
+    if ref_path is not None:
+        compare_output(pdb, tmp_path, ref_path)
