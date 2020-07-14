@@ -35,18 +35,29 @@ def open_file_for_reading(input_file):
     return file_
 
 
-def read_molecule_file(input_file, mol_container):
+def read_molecule_file(input_file, mol_container, filename=None):
     """Read input file (PDB or PROPKA) for a molecular container
 
     Args
         input_file:  input file to read
         mol_container:  MolecularContainer object
+        filename: str, optional input filename when using a filestream
     Returns
         updated MolecularContainer object
     Raises
         ValuError if invalid input given
     """
-    input_path = Path(input_file)
+    try:
+        input_path = Path(input_file)
+    except TypeError:
+        try:
+            input_path = Path(filename)
+        except TypeError:
+            errmsg = ("Path of provided input_file could not be determined "
+                      "if passing a stream-like object, please provide an "
+                      "appropriate string for the filename argument.")
+            raise TypeError(errmsg) from None
+
     mol_container.name = input_path.stem
     input_file_extension = input_path.suffix
     if input_file_extension.lower() == '.pdb':
