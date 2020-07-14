@@ -215,3 +215,4 @@ def test_filestream_regression(pdb, options, tmp_path):
 
     if ref_path is not None:
         compare_output(pdb, tmp_path, ref_path)
+    input_file.close()
