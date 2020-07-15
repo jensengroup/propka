@@ -3,6 +3,7 @@ import logging
 import os
 import re
 from pathlib import Path
+from io import StringIO
 import pytest
 from numpy.testing import assert_almost_equal
 from propka.parameters import Parameters
@@ -154,7 +155,7 @@ def test_regression(pdb, options, tmp_path):
         compare_output(pdb, tmp_path, ref_path)
 
 
-def run_propka_stream(options, input_file, tmp_path):
+def run_propka_stream(options, input_file, filename, tmp_path):
     """Run PROPKA software.
 
     Args:
@@ -162,7 +163,7 @@ def run_propka_stream(options, input_file, tmp_path):
         input_file:  file-like PDB object
         tmp_path:  path for working directory
     """
-    options += [input_file.name]
+    options += [filename]
     args = loadOptions(options)
     try:
         _LOGGER.warning(
@@ -173,7 +174,7 @@ def run_propka_stream(options, input_file, tmp_path):
         parameters = read_parameter_file(args.parameters, Parameters())
         molecule = MolecularContainer(parameters, args)
         molecule = read_molecule_file(input_file, molecule,
-                                      filename=input_file.name)
+                                      filename=filename)
         molecule.calculate_pka()
         molecule.write_pka()
         if args.generate_propka_input:
@@ -205,14 +206,15 @@ def test_filestream_regression(pdb, options, tmp_path):
     pdb_path = path_dict["pdbs"] / ("{0:s}.pdb".format(pdb))
     if pdb_path.is_file():
         pdb_path = pdb_path.resolve()
-        input_file = open(pdb_path)
+        #input_file = open(pdb_path)
+        with open(pdb_path, 'r') as writer:
+            io_file = StringIO(writer.read())
     else:
         errstr = "Missing PDB file: {0:s}".format(pdb_path)
         raise FileNotFoundError(errstr)
     tmp_path = Path(tmp_path).resolve()
 
-    run_propka_stream(options, input_file, tmp_path)
+    run_propka_stream(options, io_file, f"{pdb}.pdb", tmp_path)
 
     if ref_path is not None:
         compare_output(pdb, tmp_path, ref_path)
-    input_file.close()

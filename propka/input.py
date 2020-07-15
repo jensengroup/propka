@@ -20,7 +20,7 @@ def open_file_for_reading(input_file):
 
     Args:
         input_file: path to file or file-like object. If file-like object,
-        then will attempt fseek(0).
+        then will attempt seek(0).
     """
     try:
         input_file.seek(0)
@@ -36,7 +36,7 @@ def open_file_for_reading(input_file):
 
 
 def read_molecule_file(input_file, mol_container, filename=None):
-    """Read input file (PDB or PROPKA) for a molecular container
+    """Read input file or stream (PDB or PROPKA) for a molecular container
 
     Args
         input_file:  input file to read
