@@ -38,14 +38,39 @@ def open_file_for_reading(input_file):
 def read_molecule_file(input_file, mol_container, filename=None):
     """Read input file or stream (PDB or PROPKA) for a molecular container
 
-    Args
+    Args:
         input_file:  input file to read
         mol_container:  MolecularContainer object
-        filename: str, optional input filename when using a filestream
-    Returns
+        filename (str): optional input filename when using a filestream
+
+    Returns:
         updated MolecularContainer object
-    Raises
+
+    Raises:
         ValuError if invalid input given
+
+    Examples:
+        There are two main cases for using ``read_molecule_file``. The first
+        (and most common) is to pass the input file (``input_file``) as a
+        string which gives the path of the molecule file to be read (here we
+        also pass a ``MoleculeContainer`` object named ``mol_container``).
+
+        >>> read_molecule_file('test.pdb', mol_container)
+        <propka.molecular_container.MolecularContainer at 0x7f6e0c8f2310>
+
+        The other use case is when passing a file-like object, e.g. a
+        ``StringIO`` class, instance as the input file. In order to decide how
+        to process ``input_file``, ``read_molecule_file`` requires a file name.
+        Since file-like objects do not usually have an associated file name, we
+        must pass a value to the ``filename`` argument. This helps recognise
+        the file type (based on the extension being either `.pdb` or
+        `.propka_input`) and also associates that given ``filename`` with the
+        input MolecularContainer object.
+
+        >>> read_molecule_file(string_io_object, mol_container,
+                               filename='test.pdb')
+        <propka.molecular_container.MolecularContainer at 0x7f6e0c8f2310>
+
     """
     try:
         input_path = Path(input_file)
