@@ -39,7 +39,7 @@ def read_molecule_file(input_file, mol_container, filename=None):
     """Read input file or stream (PDB or PROPKA) for a molecular container
 
     Args:
-        input_file:  input file to read
+        input_file:  input file or stream to read
         mol_container:  MolecularContainer object
         filename (str): optional input filename when using a filestream
 
