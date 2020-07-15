@@ -152,4 +152,3 @@ def test_regression(pdb, options, tmp_path):
     run_propka(options, pdb_path, tmp_path)
     if ref_path is not None:
         compare_output(pdb, tmp_path, ref_path)
-
