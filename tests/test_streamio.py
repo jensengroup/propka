@@ -89,7 +89,7 @@ def test_stringio_filestream(tmpdir, pdb, options):
     filestream.close()
 
 
-def test_valuerror_nofiletype(tmpdir):
+def test_valuerror_nofiletype():
     """Tests for raised ValueError when an unknown filename is passed to
     read_molecule_file"""
     pdb = "1FTJ-Chain-A"
@@ -105,7 +105,7 @@ def test_valuerror_nofiletype(tmpdir):
         run_propka_stream(options, filestream, filename="test.dat")
 
 
-def test_valuerror_notpdb(tmpdir):
+def test_valuerror_notpdb():
     """Tests for raised ValueError when a stream object that isn't a PDB
     is passed to read_molecule_file"""
     pdb = "1FTJ-Chain-A"
