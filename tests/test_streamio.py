@@ -113,8 +113,7 @@ def test_valuerror_notpdb(tmpdir):
 
     ref_path, pdb_path = get_paths(pdb)
 
-    with open(pdb_path, 'r') as writer:
-        filestream = StringIO()
+    filestream = StringIO()
 
     errmsg = "The pdb file does not seem to contain any "
     with pytest.raises(ValueError, match=errmsg):

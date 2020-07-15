@@ -3,7 +3,6 @@ import logging
 import os
 import re
 from pathlib import Path
-from io import StringIO
 import pytest
 from numpy.testing import assert_almost_equal
 from propka.parameters import Parameters
