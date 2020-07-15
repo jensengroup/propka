@@ -35,13 +35,15 @@ def open_file_for_reading(input_file):
     return file_
 
 
-def read_molecule_file(input_file, mol_container, filename=None):
+def read_molecule_file(filename: str, mol_container, stream=None):
     """Read input file or stream (PDB or PROPKA) for a molecular container
 
     Args:
-        input_file:  input file or stream to read
-        mol_container:  MolecularContainer object
-        filename (str): optional input filename when using a filestream
+        filename(str):  name of input file. If not using a filestream via the
+            ``stream`` argument, should be a path to the file to be read.
+        mol_container:  MolecularContainer object.
+        stream: optional filestream handle. If ``None``, then open
+            ``filename`` as a local file for reading.
 
     Returns:
         updated MolecularContainer object
@@ -51,7 +53,7 @@ def read_molecule_file(input_file, mol_container, filename=None):
 
     Examples:
         There are two main cases for using ``read_molecule_file``. The first
-        (and most common) is to pass the input file (``input_file``) as a
+        (and most common) is to pass the input file (``filename``) as a
         string which gives the path of the molecule file to be read (here we
         also pass a ``MoleculeContainer`` object named ``mol_container``).
 
@@ -59,39 +61,36 @@ def read_molecule_file(input_file, mol_container, filename=None):
         <propka.molecular_container.MolecularContainer at 0x7f6e0c8f2310>
 
         The other use case is when passing a file-like object, e.g. a
-        ``StringIO`` class, instance as the input file. In order to decide how
-        to process ``input_file``, ``read_molecule_file`` requires a file name.
-        Since file-like objects do not usually have an associated file name, we
-        must pass a value to the ``filename`` argument. This helps recognise
-        the file type (based on the extension being either `.pdb` or
-        `.propka_input`) and also associates that given ``filename`` with the
-        input MolecularContainer object.
+        ``StringIO`` class, instance. This is done by passing the object via
+        the ``stream`` argument. Since file-like objects do not usually have
+        an associated file name, an appropirate file name should be passed to
+        the ``filename`` argument. In this case, ``filename`` is not opened for
+        reading, but instead is used to help recognise the file type (based on
+        the extension being either `.pdb` or `.propka_input`) and also uses
+        that given ``filename`` to assign a name to the input
+        MolecularContainer object.
 
-        >>> read_molecule_file(string_io_object, mol_container,
-                               filename='test.pdb')
+        >>> read_molecule_file('test.pdb', mol_container,
+                               stream=string_io_object)
         <propka.molecular_container.MolecularContainer at 0x7f6e0c8f2310>
 
     """
-    try:
-        input_path = Path(input_file)
-    except TypeError:
-        try:
-            input_path = Path(filename)
-        except TypeError:
-            errmsg = ("Path of provided input_file could not be determined "
-                      "if passing a stream-like object, please provide an "
-                      "appropriate string for the filename argument.")
-            raise TypeError(errmsg) from None
-
+    input_path = Path(filename)
     mol_container.name = input_path.stem
     input_file_extension = input_path.suffix
+
+    if stream is not None:
+        input_file = stream
+    else:
+        input_file = filename
+
     if input_file_extension.lower() == '.pdb':
         # input is a pdb file. read in atoms and top up containers to make
         # sure that all atoms are present in all conformations
         conformations, conformation_names = read_pdb(
             input_file, mol_container.version.parameters, mol_container)
         if len(conformations) == 0:
-            str_ = ('Error: The pdb file does not seems to contain any '
+            str_ = ('Error: The pdb file does not seem to contain any '
                     'molecular conformations')
             raise ValueError(str_)
         mol_container.conformations = conformations

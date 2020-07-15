@@ -30,13 +30,12 @@ def run_propka_stream(options, input_file, filename):
         options:  list of PROPKA options
         input_file:  file-like PDB object
         filename: filename for the file-like PDB object
-        tmp_path:  path for working directory
     """
     options += [filename]
     args = loadOptions(options)
     parameters = read_parameter_file(args.parameters, Parameters())
     molecule = MolecularContainer(parameters, args)
-    molecule = read_molecule_file(input_file, molecule, filename)
+    molecule = read_molecule_file(filename, molecule, stream=input_file)
     molecule.calculate_pka()
     molecule.write_pka()
     if args.generate_propka_input:
@@ -90,9 +89,9 @@ def test_stringio_filestream(tmpdir, pdb, options):
     filestream.close()
 
 
-def test_typerror_nofilename(tmpdir):
-    """Tests for raised TypeError when not passing a filename to
-    read_molecule_file and using a file-like object without a name"""
+def test_valuerror_nofiletype(tmpdir):
+    """Tests for raised ValueError when an unknown filename is passed to
+    read_molecule_file"""
     pdb = "1FTJ-Chain-A"
     options = []
 
@@ -101,8 +100,22 @@ def test_typerror_nofilename(tmpdir):
     with open(pdb_path, 'r') as writer:
         filestream = StringIO(writer.read())
 
-    with tmpdir.as_cwd():
-        errmsg = "Path of provided input_file could not be determined"
-        with pytest.raises(TypeError, match=errmsg):
-            # default value of filename is None
-            run_propka_stream(options, filestream, filename=None)
+    errmsg = "Unknown input file type"
+    with pytest.raises(ValueError, match=errmsg):
+        run_propka_stream(options, filestream, filename="test.dat")
+
+
+def test_valuerror_notpdb(tmpdir):
+    """Tests for raised ValueError when a stream object that isn't a PDB
+    is passed to read_molecule_file"""
+    pdb = "1FTJ-Chain-A"
+    options = []
+
+    ref_path, pdb_path = get_paths(pdb)
+
+    with open(pdb_path, 'r') as writer:
+        filestream = StringIO()
+
+    errmsg = "The pdb file does not seem to contain any "
+    with pytest.raises(ValueError, match=errmsg):
+        run_propka_stream(options, filestream, filename="test.pdb")
