@@ -80,11 +80,15 @@ def single(filename: str, optargs: list, stream=None, write_pka: bool = True):
 
     parameters = read_parameter_file(options.parameters, Parameters())
 
-    # The file we pass as `filename` is the one that is worked on, anything
-    # else in optargs will be ignored
-    options.filenames.pop(0)
-    if len(options.filenames) > 0:
-        _LOGGER.warning("Ignoring filenames: {0:s}".format(options.filenames))
+    # Only filename present should be the one passed via the arguments list
+    # Anything else will probably have been passed using optargs and the `-f`
+    # flag. Note: can be mulitple -f entries and all are appended before the
+    # input filename
+    if len(options.filenames) > 1:
+        ignored_list = options.filenames[:-1]
+        # overwrite the options.filenames entry
+        options.filenames = options.filenames[-1]
+        _LOGGER.warning(f"Ignoring filenames: {ignored_list}")
 
     my_molecule = MolecularContainer(parameters, options)
     my_molecule = read_molecule_file(filename, my_molecule, stream=stream)

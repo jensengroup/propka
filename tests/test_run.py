@@ -86,3 +86,19 @@ def test_single_propka_input(tmpdir):
     with tmpdir.as_cwd():
         pkrun.single(filename, options, stream=filestream)
         assert os.path.isfile(f"{pdb}.propka_input")
+
+
+def test_single_extra_files_logwarn(tmpdir, caplog):
+    """Tests that a logging warning is thrown if passing files via optargs"""
+    pdb = "1FTJ-Chain-A"
+    options = ['-f foo.pdb bar.pdb', '-f test.pdb test2.pdb',
+               '--generate-propka-input']
+    ref_path, pdb_path = get_paths(pdb)
+    filename = str(pdb_path)
+
+    with tmpdir.as_cwd():
+        pkrun.single(filename, options)
+
+        wmsg = ("Ignoring filenames: [' foo.pdb bar.pdb', "
+                "' test.pdb test2.pdb']")
+        assert wmsg in caplog.records[0].message
