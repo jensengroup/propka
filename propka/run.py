@@ -36,7 +36,8 @@ def main(optargs=None):
             my_molecule.write_propka()
 
 
-def single(filename: str, optargs: list, stream=None, write_pka: bool = True):
+def single(filename: str, optargs: list = None, stream=None,
+           write_pka: bool = True):
     """Run a single PROPKA calculation using ``filename`` as input.
 
     Args:
@@ -74,7 +75,7 @@ def single(filename: str, optargs: list, stream=None, write_pka: bool = True):
 
     """
     # Deal with input optarg options
-    optargs = optargs if optargs is not None else []
+    optargs = list(optargs) if optargs is not None else []
     optargs += [filename]
     options = loadOptions(optargs)
 

@@ -24,7 +24,6 @@ _LOGGER = logging.getLogger(__name__)
 def test_single_file(tmpdir, pdb, options):
     """Basic regression test using propka.run.single and local file for the
     input PDB file"""
-    # Get the relevant paths
     ref_path, pdb_path = get_paths(pdb)
     filename = str(pdb_path)
 
@@ -43,7 +42,6 @@ def test_single_file(tmpdir, pdb, options):
 ])
 def test_single_filestream(tmpdir, pdb, options):
     """Basic regression test using StringIO streams for the input PDB file"""
-    # Get the relevant paths
     ref_path, pdb_path = get_paths(pdb)
     filename = f"{pdb}.pdb"
 
@@ -61,14 +59,13 @@ def test_single_nopka(tmpdir):
     """Basic test to check that the pKa file is not written when write_pka is
     `False`"""
     pdb = "1FTJ-Chain-A"
-    options = []
     ref_path, pdb_path = get_paths(pdb)
     filename = f"{pdb}.pdb"
 
     with open(pdb_path, 'r') as writer:
         filestream = StringIO(writer.read())
 
-    pkrun.single(filename, options, stream=filestream, write_pka=False)
+    pkrun.single(filename, stream=filestream, write_pka=False)
     assert not os.path.isfile(f"{pdb}.pka")
 
 
