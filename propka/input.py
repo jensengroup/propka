@@ -7,7 +7,6 @@ Input routines.
 from pathlib import Path
 from pkg_resources import resource_filename
 from propka.lib import protein_precheck
-from propka.output import write_propka
 from propka.atom import Atom
 from propka.conformation_container import ConformationContainer
 from propka.group import initialize_atom_group
@@ -41,34 +40,36 @@ def read_molecule_file(filename: str, mol_container, stream=None):
     Args:
         filename(str):  name of input file. If not using a filestream via the
             ``stream`` argument, should be a path to the file to be read.
-        mol_container:  MolecularContainer object.
+        mol_container:  :class:`~propka.molecular_container.MolecularContainer`
+            object.
         stream: optional filestream handle. If ``None``, then open
             ``filename`` as a local file for reading.
 
     Returns:
-        updated MolecularContainer object
+        updated :class:`~propka.molecular_container.MolecularContainer` object.
 
     Raises:
-        ValuError if invalid input given
+        ValuError: if invalid input given
 
     Examples:
         There are two main cases for using ``read_molecule_file``. The first
         (and most common) is to pass the input file (``filename``) as a
         string which gives the path of the molecule file to be read (here we
-        also pass a ``MoleculeContainer`` object named ``mol_container``).
+        also pass a :class:`~propka.molecular_container.MolecularContainer`
+        object named ``mol_container``).
 
         >>> read_molecule_file('test.pdb', mol_container)
         <propka.molecular_container.MolecularContainer at 0x7f6e0c8f2310>
 
         The other use case is when passing a file-like object, e.g. a
-        ``StringIO`` class, instance. This is done by passing the object via
-        the ``stream`` argument. Since file-like objects do not usually have
-        an associated file name, an appropirate file name should be passed to
-        the ``filename`` argument. In this case, ``filename`` is not opened for
-        reading, but instead is used to help recognise the file type (based on
-        the extension being either `.pdb` or `.propka_input`) and also uses
-        that given ``filename`` to assign a name to the input
-        MolecularContainer object.
+        :class:`io.StringIO` class, instance. This is done by passing the
+        object via the ``stream`` argument. Since file-like objects do not
+        usually have an associated file name, an appropirate file name should
+        be passed to the ``filename`` argument. In this case, ``filename`` is
+        not opened for reading, but instead is used to help recognise the file
+        type (based on the extension being either `.pdb` or `.propka_input`)
+        and also uses that given ``filename`` to assign a name to the input
+        :class:`~propka.molecular_container.MolecularContainer` object.
 
         >>> read_molecule_file('test.pdb', mol_container,
                                stream=string_io_object)
