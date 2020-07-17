@@ -14,12 +14,12 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @pytest.mark.parametrize("pdb, options", [
-    pytest.param("1FTJ-Chain-A", [], id="1FTJ-Chain-A: no options"),
-    pytest.param('3SGB-subset', [
+    pytest.param("1FTJ-Chain-A", (), id="1FTJ-Chain-A: no options"),
+    pytest.param('3SGB-subset', (
         "--titrate_only",
-        "E:17,E:18,E:19,E:29,E:44,E:45,E:46,E:118,E:119,E:120,E:139"],
+        "E:17,E:18,E:19,E:29,E:44,E:45,E:46,E:118,E:119,E:120,E:139"),
                  id="3SGB: --titrate_only"),
-    pytest.param('1HPX-warn', ['--quiet'], id="1HPX-warn: --quiet"),
+    pytest.param('1HPX-warn', ('--quiet',), id="1HPX-warn: --quiet"),
 ])
 def test_single_file(tmpdir, pdb, options):
     """Basic regression test using propka.run.single and local file for the
@@ -33,12 +33,12 @@ def test_single_file(tmpdir, pdb, options):
 
 
 @pytest.mark.parametrize("pdb, options", [
-    pytest.param("1FTJ-Chain-A", [], id="1FTJ-Chain-A: no options"),
-    pytest.param('3SGB-subset', [
+    pytest.param("1FTJ-Chain-A", (), id="1FTJ-Chain-A: no options"),
+    pytest.param('3SGB-subset', (
         "--titrate_only",
-        "E:17,E:18,E:19,E:29,E:44,E:45,E:46,E:118,E:119,E:120,E:139"],
+        "E:17,E:18,E:19,E:29,E:44,E:45,E:46,E:118,E:119,E:120,E:139"),
                  id="3SGB: --titrate_only"),
-    pytest.param('1HPX-warn', ['--quiet'], id="1HPX-warn: --quiet"),
+    pytest.param('1HPX-warn',('--quiet',), id="1HPX-warn: --quiet"),
 ])
 def test_single_filestream(tmpdir, pdb, options):
     """Basic regression test using StringIO streams for the input PDB file"""
@@ -73,7 +73,7 @@ def test_single_propka_input(tmpdir):
     """Basic test to check that the propka_input file is written when
     `--generate-propka-input` is passed"""
     pdb = "1FTJ-Chain-A"
-    options = ['--generate-propka-input']
+    options = ('--generate-propka-input',)
     ref_path, pdb_path = get_paths(pdb)
     filename = f"{pdb}.pdb"
 
@@ -88,14 +88,14 @@ def test_single_propka_input(tmpdir):
 def test_single_extra_files_logwarn(tmpdir, caplog):
     """Tests that a logging warning is thrown if passing files via optargs"""
     pdb = "1FTJ-Chain-A"
-    options = ['-f foo.pdb bar.pdb', '-f test.pdb test2.pdb',
-               '--generate-propka-input']
+    options = ('-f foo.pdb bar.pdb', '-f test.pdb test2.pdb',
+               '--generate-propka-input')
     ref_path, pdb_path = get_paths(pdb)
     filename = str(pdb_path)
 
     with tmpdir.as_cwd():
         pkrun.single(filename, options)
 
-        wmsg = ("Ignoring filenames: [' foo.pdb bar.pdb', "
+        wmsg = ("Ignoring extra filenames passed: [' foo.pdb bar.pdb', "
                 "' test.pdb test2.pdb']")
         assert wmsg in caplog.records[0].message

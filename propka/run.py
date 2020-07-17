@@ -36,62 +36,77 @@ def main(optargs=None):
             my_molecule.write_propka()
 
 
-def single(filename: str, optargs: list = None, stream=None,
+def single(filename: str, optargs: tuple = (), stream=None,
            write_pka: bool = True):
     """Run a single PROPKA calculation using ``filename`` as input.
 
     Args:
         filename (str): name of input file. If filestream is not passed via
-            ``stream``, should be path to the file to be read.
-        optargs (list): Optional, commandline options for propka.
+            ``stream``, should be a path to the file to be read.
+        optargs (tuple): Optional, commandline options for propka. Extra files
+            passed via ``optargs`` will be ignored, see Notes.
         stream : optional filestream handle. If ``None``, then ``filename``
             will be used as path to input file for reading.
         write_pka (bool): Controls if the pKa file should be writen to disk.
 
-    Example:
-    Given an input file "protein.pdb", run the equivalent of ``propka3
-    --mutation=N25R/N181D -v --pH=7.2 protein.pdb`` as::
+    Returns:
+        :class:`~propka.molecular_container.MolecularContainer` object.
 
-        propka.run.single("protein.pdb",
-                          optargs=["--mutation=N25R/N181D", "-v", "--pH=7.2"])
+    Examples:
+        Given an input file "protein.pdb", run the equivalent of ``propka3
+        --mutation=N25R/N181D -v --pH=7.2 protein.pdb`` as::
 
-    By default, a pKa file will be written. However in some cases one may wish
-    to not output this file and just have access to the
-    MolecularContainer object. If so, then pass ``False`` to ``write_pka``::
+            propka.run.single("protein.pdb", 
+                optargs=["--mutation=N25R/N181D", "-v", "--pH=7.2"])
 
-        mol = propka.run.single("protein.pdb", write_pka=False)
+        By default, a pKa file will be written. However in some cases one may
+        wish to not output this file and just have access to the
+        :class:`~propka.molecular_container.MolecularContainer` object. If so,
+        then pass ``False`` to ``write_pka``::
 
-    In some cases, one may also want to pass a file-like (e.g. :class:`StringIO`) object
-    instead of a file path as a string. In these cases the file-like object
-    should be passed to the ``stream`` argument and a string indicating the file type
-    in the ``filename`` argument; this string only has to look like a valid file name, it 
-    does not need to exist because the data are actually read from ``stream``. 
-    This approach is necessary because file-like objects do not usually have names, 
-    and propka uses the ``filename`` argument  to determine the 
-    input file type, and assigns the file name for the :class:`MolecularContainer` object::
+            mol = propka.run.single("protein.pdb", write_pka=False)
 
-        mol = propka.run.single('input.pdb', stream=string_io_file)
+        In some cases, one may also want to pass a file-like (e.g.
+        :class:`io.StringIO`) object instead of a file path as a string. In
+        these cases the file-like object should be passed to the ``stream``
+        argument and a string indicating the file type in the ``filename``
+        argument; this string only has to look like a valid file name, it does
+        not need to exist because the data are actually read from ``stream``.
+        This approach is necessary because file-like objects do not usually
+        have names, and propka uses the ``filename`` argument  to determine the
+        input file type, and assigns the file name for the
+        :class:`~propka.molecular_container.MolecularContainer` object::
 
-    In this case, a PDB file-like object was passed as `string_io_file`. The
-    resultant pKa file will be written out as `input.pka`.
+            mol = propka.run.single('input.pdb', stream=string_io_file)
+
+        In this case, a PDB file-like object was passed as `string_io_file`.
+        The resultant pKa file will be written out as `input.pka`.
+
+    Notes:
+        * Only a single input structure file will be processed, defined by
+          ``filename`` (and ``stream`` if passing a file-like object). Any
+          additional files passed via the `-f` or `--file` flag to optargs will
+          be ignored.
+
+
+    .. seealso::
+
+        :func:`propka.input.read_molecule_file`
 
     """
     # Deal with input optarg options
-    optargs = list(optargs) if optargs is not None else []
-    optargs += [filename]
+    optargs = tuple(optargs)
+    optargs += (filename,)
     options = loadOptions(optargs)
 
     parameters = read_parameter_file(options.parameters, Parameters())
 
-    # Only filename present should be the one passed via the arguments list
-    # Anything else will probably have been passed using optargs and the `-f`
-    # flag. Note: can be mulitple -f entries and all are appended before the
-    # input filename
-    if len(options.filenames) > 1:
-        ignored_list = options.filenames[:-1]
-        # overwrite the options.filenames entry
-        options.filenames = options.filenames[-1]
-        _LOGGER.warning(f"Ignoring filenames: {ignored_list}")
+    # Only filename present should be the one passed via the arguments
+    # Anything else will probably have been passed using optargs' `-f` flag.
+    ignored_list = [i for i in options.filenames if i != filename]
+    if ignored_list:
+        _LOGGER.warning(f"Ignoring extra filenames passed: {ignored_list}")
+    options.filenames = [filename]
 
     my_molecule = MolecularContainer(parameters, options)
     my_molecule = read_molecule_file(filename, my_molecule, stream=stream)
