@@ -49,7 +49,7 @@ def read_molecule_file(filename: str, mol_container, stream=None):
         updated :class:`~propka.molecular_container.MolecularContainer` object.
 
     Raises:
-        ValuError if invalid input given
+        ValuError: if invalid input given
 
     Examples:
         There are two main cases for using ``read_molecule_file``. The first
