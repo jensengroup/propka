@@ -61,12 +61,14 @@ def single(filename: str, optargs: list = None, stream=None,
 
         mol = propka.run.single("protein.pdb", write_pka=False)
 
-    In some cases, one may also want to pass a file-like (e.g. StringIO) object
+    In some cases, one may also want to pass a file-like (e.g. :class:`StringIO`) object
     instead of a file path as a string. In these cases the file-like object
-    should be passed to the ``stream`` argument. Since file-like objects do not
-    usually have names, and the ``filename`` argument must be provided to
-    help propka determine the input file type, and assigns the file name for
-    the MolecularContainer object::
+    should be passed to the ``stream`` argument and a string indicating the file type
+    in the ``filename`` argument; this string only has to look like a valid file name, it 
+    does not need to exist because the data are actually read from ``stream``. 
+    This approach is necessary because file-like objects do not usually have names, 
+    and propka uses the ``filename`` argument  to determine the 
+    input file type, and assigns the file name for the :class:`MolecularContainer` object::
 
         mol = propka.run.single('input.pdb', stream=string_io_file)
 
