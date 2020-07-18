@@ -2,12 +2,13 @@
 # PROPKA 3
 
 from setuptools import setup, find_packages
+import versioneer
 
-VERSION = "3.2.0"
 
 setup(
     name="propka",
-    version=VERSION,
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     description="Heuristic pKa calculations with ligands", long_description="""
 PROPKA predicts the pKa values of ionizable groups in proteins (version 3.0) and
 protein-ligand complexes (version 3.1 and later) based on the 3D structure.
