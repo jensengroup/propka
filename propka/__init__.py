@@ -18,3 +18,7 @@ __all__ = ["atom", "bonds", "calculations", "conformation_container",
            "hybrid36", "iterative", "input", "lib", "ligand_pka_values",
            "ligand", "molecular_container", "output", "parameters",
            "protonate", "run", "vector_algebra", "version"]
+
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions

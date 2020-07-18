@@ -24,11 +24,14 @@ import sphinx_rtd_theme
 # -- Project information -----------------------------------------------------
 
 project = 'PROPKA 3'
-copyright = '2020, Jan H. Jensen, Chresten R. Søndergaard, Mats H. M. Olsson, Michał Rostkowski, Nathan A. Baker, Matvey Adzhigirey, Oliver Beckstein, Jimmy Charnley Kromann, Mike Beachy, Toni G, Thomas Holder'
-author = 'Jan H. Jensen, Chresten R. Søndergaard, Mats H. M. Olsson, Michał Rostkowski, Nathan A. Baker, Matvey Adzhigirey, Oliver Beckstein, Jimmy Charnley Kromann, Mike Beachy, Toni G, Thomas Holder'
+author = ('Jan H. Jensen, Chresten R. Søndergaard, Mats H. M. Olsson, '
+          'Michał Rostkowski, Nathan A. Baker, Matvey Adzhigirey, '
+          'Oliver Beckstein, Jimmy Charnley Kromann, Mike Beachy, '
+          'Toni G, Thomas Holder, Irfan Alibay')
+copyright = '2020, ' + author
 
 # The full version, including alpha/beta/rc tags
-release = '3.2.0'
+release = __import__('propka').__version__
 
 
 # -- General configuration ---------------------------------------------------
@@ -39,14 +42,14 @@ extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx',
               'sphinx.ext.mathjax', 'sphinx.ext.viewcode',
               'sphinx.ext.napoleon', 'sphinx.ext.todo',
               'sphinx.ext.autosummary',
-##              'sphinx_sitemap',
+              'sphinx_sitemap',
               'sphinx_rtd_theme']
 
 mathjax_path = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
 
 # for sitemap with https://github.com/jdillard/sphinx-sitemap
 # change if we put it under a custom domain; for right now, assume RTD
-##site_url = "https://propka.readthedocs.io"
+site_url = "https://propka.readthedocs.io"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

@@ -37,7 +37,8 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest and coverage
       run: |
-        coverage run --source=propka -m pytest
+        # configure coverage with entries in setup.cfg
+        coverage run -m pytest
         coverage report -m | tee coverage.txt
         coverage html
     - name: Upload coverage to https://codecov.io/gh/jensengroup/propka

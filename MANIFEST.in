@@ -1,4 +1,6 @@
 include README.md INSTALL 
-include setup.py 
+include setup.py setup.cfg
 include propka.cfg
 
+include versioneer.py
+include propka/_version.py
