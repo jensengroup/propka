@@ -6,6 +6,7 @@ Output routines.
 """
 from datetime import date
 from propka.lib import info
+from . import __version__
 
 
 def open_file_for_writing(input_file):
@@ -368,7 +369,7 @@ def get_propka_header():
         string
     """
     today = date.today()
-    str_ = "propka3.2 {0!s:>93s}\n".format(today)
+    str_ = f"propka{__version__:<53} {today!s:>43}\n"
     str_ += """
 -------------------------------------------------------------------------------
 --                                                                           --
