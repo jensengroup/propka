@@ -332,7 +332,7 @@ def get_charge_profile_section(protein, conformation='AVR', _=None):
     if pi_pro is None or pi_mod is None:
         str_ += "Could not determine the pI\n\n"
     else:
-        str_ += ("The pI is {0:>5.2f} (folded) and {1:>5.2f} (unfolded)\n")
+        str_ += f"The pI is {pi_pro:>5.2f} (folded) and {pi_mod:>5.2f} (unfolded)\n"
     return str_
 
 
