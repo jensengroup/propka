@@ -48,10 +48,10 @@ class MolecularContainer:
 
     def top_up_conformations(self):
         """Makes sure that all atoms are present in all conformations."""
-        for name in self.conformation_names:
-            if (name != '1A' and (len(self.conformations[name])
-                                  < len(self.conformations['1A']))):
-                self.conformations[name].top_up(self.conformations['1A'])
+        first = self.conformations[self.conformation_names[0]]
+        for name in self.conformation_names[1:]:
+            if len(self.conformations[name]) < len(first):
+                self.conformations[name].top_up(first)
 
     def find_covalently_coupled_groups(self):
         """Find covalently coupled groups."""
