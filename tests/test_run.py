@@ -30,6 +30,7 @@ def test_single_file(tmpdir, pdb, options):
     with tmpdir.as_cwd():
         pkrun.single(filename, options)
         compare_output(pdb, Path.cwd(), ref_path)
+        assert os.path.isfile(f'{pdb}.pka')
 
 
 @pytest.mark.parametrize("pdb, options", [
@@ -51,6 +52,7 @@ def test_single_filestream(tmpdir, pdb, options):
     with tmpdir.as_cwd():
         pkrun.single(filename, options, stream=filestream)
         compare_output(pdb, Path.cwd(), ref_path)
+        assert os.path.isfile(f'{pdb}.pka')
 
     filestream.close()
 
@@ -69,27 +71,10 @@ def test_single_nopka(tmpdir):
     assert not os.path.isfile(f"{pdb}.pka")
 
 
-def test_single_propka_input(tmpdir):
-    """Basic test to check that the propka_input file is written when
-    `--generate-propka-input` is passed"""
-    pdb = "1FTJ-Chain-A"
-    options = ('--generate-propka-input',)
-    ref_path, pdb_path = get_paths(pdb)
-    filename = f"{pdb}.pdb"
-
-    with open(pdb_path, 'r') as writer:
-        filestream = StringIO(writer.read())
-
-    with tmpdir.as_cwd():
-        pkrun.single(filename, options, stream=filestream)
-        assert os.path.isfile(f"{pdb}.propka_input")
-
-
 def test_single_extra_files_logwarn(tmpdir, caplog):
     """Tests that a logging warning is thrown if passing files via optargs"""
     pdb = "1FTJ-Chain-A"
-    options = ('-f foo.pdb bar.pdb', '-f test.pdb test2.pdb',
-               '--generate-propka-input')
+    options = ('-f foo.pdb bar.pdb', '-f test.pdb test2.pdb')
     ref_path, pdb_path = get_paths(pdb)
     filename = str(pdb_path)
 

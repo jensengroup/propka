@@ -3,6 +3,11 @@ Output
 ======
 
 Output routines.
+
+
+.. versionchanged::3.4.0
+   Removed :func:`write_proka` as writing PROPKA input files is no longer
+   supported.
 """
 from datetime import date
 from propka.lib import info
@@ -588,31 +593,4 @@ def write_mol2_for_atoms(atoms, filename):
     out.write(atoms_section)
     out.write(bonds_section)
     out.write(substructure_section)
-    out.close()
-
-def write_propka(molecular_container, filename):
-    """Write PROPKA input file for molecular container.
-
-    Args:
-        molecular_container:  molecular container
-        filename:  output file name
-    """
-    out = open_file_for_writing(filename)
-    for conformation_name in molecular_container.conformation_names:
-        out.write('MODEL {0:s}\n'.format(conformation_name))
-        # write atoms
-        for atom in molecular_container.conformations[conformation_name].atoms:
-            out.write(atom.make_input_line())
-        # write bonds
-        for atom in molecular_container.conformations[conformation_name].atoms:
-            out.write(atom.make_conect_line())
-        # write covalently coupled groups
-        for group in (
-                molecular_container.conformations[conformation_name].groups):
-            out.write(group.make_covalently_coupled_line())
-        # write non-covalently coupled groups
-        for group in (
-                molecular_container.conformations[conformation_name].groups):
-            out.write(group.make_non_covalently_coupled_line())
-        out.write('ENDMDL\n')
     out.close()

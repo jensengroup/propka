@@ -38,8 +38,6 @@ def run_propka_stream(options, input_file, filename):
     molecule = read_molecule_file(filename, molecule, stream=input_file)
     molecule.calculate_pka()
     molecule.write_pka()
-    if args.generate_propka_input:
-        molecule.write_propka()
 
 
 @pytest.mark.parametrize("pdb, options", [

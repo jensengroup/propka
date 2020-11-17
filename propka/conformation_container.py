@@ -25,7 +25,13 @@ RESIDUE_MULTIPLIER = 1000
 
 
 class ConformationContainer:
-    """Container for molecular conformations"""
+    """Container for molecular conformations
+
+
+    .. versionchanged:: 3.4.0
+       Removed :meth:`additional_setup_when_reading_input_files` as reading
+       PROPKA inputs is no longer supported.
+    """
 
     def __init__(self, name='', parameters=None, molecular_container=None):
         """Initialize conformation container.

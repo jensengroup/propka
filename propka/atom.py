@@ -13,9 +13,6 @@ from . import hybrid36
 
 # Format strings that get used in multiple places (or are very complex)
 PKA_FMT = "{:6.2f}"
-INPUT_LINE_FMT = (
-    "{type:6s}{r.numb:>5d} {atom_label} {r.res_name}{r.chain_id:>2s}"
-    "{r.res_num:>4d}{r.x:>12.3f}{r.y:>8.3f}{r.z:>8.3f}{group:>6s}{pka:>6s} \n")
 PDB_LINE_FMT1 = (
     "{type:6s}{r.numb:>5d} {atom_label} {r.res_name}{r.chain_id:>2s}"
     "{r.res_num:>4d}{r.x:>12.3f}{r.y:>8.3f}{r.z:>8.3f}{r.occ:>6s}"
@@ -33,7 +30,13 @@ STR_FMT = (
 
 
 class Atom:
-    """Atom class - contains all atom information found in the PDB file"""
+    """Atom class - contains all atom information found in the PDB file
+
+
+    .. versionchanged:: 3.4.0
+       :meth:`make_input_line` and :meth:`get_input_parameters` have been
+       removed as reading/writing PROPKA input is no longer supported.
+    """
 
     def __init__(self, line=None):
         """Initialize Atom object.
@@ -255,31 +258,6 @@ class Atom:
         new_atom.icode = self.icode
         return new_atom
 
-    def make_input_line(self):
-        """PDB line for this atom.
-
-        TODO - Could be @property method/attribute
-        TODO - figure out difference between make_pdb_line, make_input_line,
-               and make_pdb_line2
-
-        Returns:
-            String with PDB-format line.
-        """
-        group = '-'
-        model_pka = '-'
-        if self.group:
-            group = self.group.type
-            if self.terminal == 'C-':
-                group = 'C-' ## circumventing C-/COO parameter unification
-
-            if self.group.titratable:
-                model_pka = PKA_FMT.format(self.group.model_pka)
-        str_ = INPUT_LINE_FMT.format(
-            type=self.type.upper(), r=self,
-            atom_label=make_tidy_atom_label(self.name, self.element),
-            group=group, pka=model_pka)
-        return str_
-
     def make_conect_line(self):
         """PDB line for bonding within this molecule.
 
@@ -298,45 +276,11 @@ class Atom:
         res += '\n'
         return res
 
-    def get_input_parameters(self):
-        """Extract the input parameters stored in the occupancy and b-factor
-        fields in input files"""
-        # Set the group type
-        if self.occ != '-':
-            # make sure to set the terminal
-            if self.occ in ['N+', 'C-']:
-                self.terminal = self.occ
-            # save the ligand group charge
-            if self.occ == 'BLG':
-                self.charge = +1
-            elif self.occ == 'ALG':
-                self.charge = -1
-            # generic ions
-            if self.occ in ['1P', '2P', '1N', '2N']:
-                self.res_name = self.occ
-                self.occ = 'Ion'
-            # correct the group type
-            self.occ = self.occ.replace('N+', 'Nterm')
-            self.occ = self.occ.replace('C-', 'Cterm')
-            self.occ = self.occ.replace('ION', 'Ion')
-            self.occ = self.occ.replace('ALG', 'titratable_ligand')
-            self.occ = self.occ.replace('BLG', 'titratable_ligand')
-            self.occ = self.occ.replace('LG', 'non_titratable_ligand')
-            self.group_label = "{0:s}_group".format(self.occ)
-        # set the model pKa value
-        if self.beta != '-':
-            self.group_model_pka = float(self.beta)
-            self.group_model_pka_set = True
-        # set occ and beta to standard values
-        self.occ = '1.00'
-        self.beta = '0.00'
-
     def make_pdb_line(self):
         """Create PDB line.
 
         TODO - this could/should be a @property method/attribute
-        TODO - figure out difference between make_pdb_line, make_input_line,
-               and make_pdb_line2
+        TODO - figure out difference between make_pdb_line, and make_pdb_line2
 
         Returns:
             String with PDB line.
@@ -367,8 +311,7 @@ class Atom:
         """Create a PDB line.
 
         TODO - this could/should be a @property method/attribute
-        TODO - figure out difference between make_pdb_line, make_input_line,
-               and make_pdb_line2
+        TODO - figure out difference between make_pdb_line, and make_pdb_line2
 
         Returns:
             String with PDB line.

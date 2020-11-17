@@ -3,6 +3,11 @@ Input handling
 ==============
 
 Input routines.
+
+
+.. versionchanged:: 3.4.0
+   Methods to read PROPKA input files (:func:`read_propka` and
+   :func:`get_atom_lines_from_input`) have been removed.
 """
 from pathlib import Path
 from pkg_resources import resource_filename
@@ -67,14 +72,17 @@ def read_molecule_file(filename: str, mol_container, stream=None):
         usually have an associated file name, an appropirate file name should
         be passed to the ``filename`` argument. In this case, ``filename`` is
         not opened for reading, but instead is used to help recognise the file
-        type (based on the extension being either `.pdb` or `.propka_input`)
-        and also uses that given ``filename`` to assign a name to the input
+        type (based on the extension being `.pdb`) and also uses that given
+        ``filename`` to assign a name to the input
         :class:`~propka.molecular_container.MolecularContainer` object.
 
         >>> read_molecule_file('test.pdb', mol_container,
                                stream=string_io_object)
         <propka.molecular_container.MolecularContainer at 0x7f6e0c8f2310>
 
+
+    .. versionchanged:: 3.4.0
+       PROPKA input files (extension: `.propka_input`) are no longer read.
     """
     input_path = Path(filename)
     mol_container.name = input_path.stem
@@ -109,17 +117,6 @@ def read_molecule_file(filename: str, mol_container, stream=None):
             mol_container.conformations[name].sort_atoms()
         # find coupled groups
         mol_container.find_covalently_coupled_groups()
-    elif input_file_extension.lower() == '.propka_input':
-        # input is a propka_input file
-        conformations, conformation_names = read_propka(
-            input_file, mol_container.version.parameters, mol_container)
-        mol_container.conformations = conformations
-        mol_container.conformation_names = conformation_names
-        # Extract groups - this merely sets up the groups found in the
-        # input file
-        mol_container.extract_groups()
-        # do some additional set up
-        mol_container.additional_setup_when_reading_input_file()
     else:
         str_ = "Unknown input file type {0!s} for file {1!s}".format(
             input_file_extension, input_path)
@@ -219,94 +216,6 @@ def get_atom_lines_from_pdb(pdb_file, ignore_residues=[], keep_protons=False,
                 yield (conformation, atom)
             terminal = None
 
-
-def read_propka(input_file, parameters, molecule):
-    """Read PROPKA input file for molecular container.
-
-    Args:
-        input_file:  input file
-        parameters:  parameters for parsing/setup
-        molecule:  molecular container
-    Returns:
-        list with [conformations, names of conformations]
-    """
-    conformations = {}
-    # read in all atoms in the input file
-    lines = get_atom_lines_from_input(input_file)
-    for (name, atom) in lines:
-        if not name in conformations.keys():
-            conformations[name] = ConformationContainer(
-                name=name, parameters=parameters,
-                molecular_container=molecule)
-        conformations[name].add_atom(atom)
-    # make a sorted list of conformation names
-    names = sorted(conformations.keys(), key=conformation_sorter)
-    return [conformations, names]
-
-
-def get_atom_lines_from_input(input_file, tags=['ATOM  ', 'HETATM']):
-    """Get atom lines from a PROPKA input file.
-
-    Args:
-        input_file:  input file
-        tags:  tags defining atom lines
-    Yields:
-        conformation container, list of atoms
-    """
-    lines = open_file_for_reading(input_file).readlines()
-    conformation = ''
-    atoms = {}
-    numbers = []
-    for line in lines:
-        tag = line[0:6]
-        # set the conformation
-        if tag == 'MODEL ':
-            conformation = line[6:].strip()
-        # found an atom - save it
-        if tag in tags:
-            atom = Atom(line=line)
-            atom.get_input_parameters()
-            initialize_atom_group(atom)
-            atom.groups_extracted = 1
-            atom.is_protonated = True
-            atoms[atom.numb] = atom
-            numbers.append(atom.numb)
-        # found bonding information - apply it
-        if tag == 'CONECT' and len(line) > 14:
-            conect_numbers = [line[i:i+5] for i in range(6, len(line)-1, 5)]
-            center_atom = atoms[int(conect_numbers[0])]
-            for num in conect_numbers[1:]:
-                bond_atom = atoms[int(num)]
-                # remember to check for cysteine bridges
-                if center_atom.element == 'S' and bond_atom.element == 'S':
-                    center_atom.cysteine_bridge = True
-                    bond_atom.cysteine_bridge = True
-                # set up bonding
-                if not bond_atom in center_atom.bonded_atoms:
-                    center_atom.bonded_atoms.append(bond_atom)
-                if not center_atom in bond_atom.bonded_atoms:
-                    bond_atom.bonded_atoms.append(center_atom)
-        # found info on covalent coupling
-        if tag == 'CCOUPL' and len(line) > 14:
-            conect_numbers = [line[i:i+5] for i in range(6, len(line)-1, 5)]
-            center_atom = atoms[int(conect_numbers[0])]
-            for num in conect_numbers[1:]:
-                cov_atom = atoms[int(num)]
-                center_atom.group.couple_covalently(cov_atom.group)
-        # found info on non-covalent coupling
-        if tag == 'NCOUPL' and len(line) > 14:
-            conect_numbers = [line[i:i+5] for i in range(6, len(line)-1, 5)]
-            center_atom = atoms[int(conect_numbers[0])]
-            for num in conect_numbers[1:]:
-                cov_atom = atoms[int(num)]
-                center_atom.group.couple_non_covalently(cov_atom.group)
-        # this conformation is done - yield the atoms
-        if tag == 'ENDMDL':
-            for num in numbers:
-                yield (conformation, atoms[num])
-            # prepare for next conformation
-            atoms = {}
-            numbers = []
 
 def read_pdb(pdb_file, parameters, molecule):
     """Parse a PDB file.

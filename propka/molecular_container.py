@@ -6,7 +6,7 @@ Molecular container for storing all contents of PDB files.
 """
 import os
 import propka.version
-from propka.output import write_propka, write_pka, print_header, print_result
+from propka.output import write_pka, print_header, print_result
 from propka.conformation_container import ConformationContainer
 from propka.lib import info, warning, make_grid
 
@@ -22,6 +22,12 @@ class MolecularContainer:
 
     TODO - this class name does not conform to PEP8 but has external use.
     We should deprecate and change eventually.
+
+
+    .. versionchanged:: 3.4.0
+       Removed :meth:`write_propka` and
+       :meth:`additional_setup_when_reading_input_file` as reading and writing
+       PROPKA input files is no longer supported.
     """
 
     def __init__(self, parameters, options=None):
@@ -72,11 +78,6 @@ class MolecularContainer:
         for name in self.conformation_names:
             self.conformations[name].extract_groups()
 
-    def additional_setup_when_reading_input_file(self):
-        """Additional setup."""
-        for name in self.conformation_names:
-            self.conformations[name].additional_setup_when_reading_input_file()
-
     def calculate_pka(self):
         """Calculate pKa values."""
         # calculate for each conformation
@@ -122,16 +123,6 @@ class MolecularContainer:
         avr_conformation.chains = self.conformations[
             self.conformation_names[0]].chains
         self.conformations['AVR'] = avr_conformation
-
-    def write_propka(self, filename=None):
-        """Write PROPKA input file.
-
-        Args:
-            filename:  file to write to
-        """
-        if filename is None:
-            filename = os.path.join('{0:s}.propka_input'.format(self.name))
-        write_propka(self, filename)
 
     def write_pka(self, filename=None, reference="neutral",
                   direction="folding", options=None):
