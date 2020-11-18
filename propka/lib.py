@@ -202,7 +202,7 @@ def build_parser(parser=None):
        input files is no longer supported.
     """
     if parser is not None:
-        group = parser.add_argument_group(title="PROPKA invoation options")
+        group = parser.add_argument_group(title="PROPKA invocation options")
     else:
         parser = argparse.ArgumentParser(
             description=("PROPKA predicts the pKa values of ionizable "
