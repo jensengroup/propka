@@ -12,7 +12,6 @@ from . import hybrid36
 
 
 # Format strings that get used in multiple places (or are very complex)
-PKA_FMT = "{:6.2f}"
 PDB_LINE_FMT1 = (
     "{type:6s}{r.numb:>5d} {atom_label} {r.res_name}{r.chain_id:>2s}"
     "{r.res_num:>4d}{r.x:>12.3f}{r.y:>8.3f}{r.z:>8.3f}{r.occ:>6s}"

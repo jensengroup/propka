@@ -64,19 +64,6 @@ class ConformationContainer:
             if group:
                 self.setup_and_add_group(group)
 
-    def additional_setup_when_reading_input_file(self):
-        """Generate interaction map and charge centers."""
-        # if a group is coupled and we are reading a .propka_input file, then
-        # some more configuration might be needed
-        map_ = make_interaction_map(
-            'Covalent coupling map for {0:s}'.format(str(self)),
-            self.get_covalently_coupled_groups(),
-            lambda g1, g2: g1 in g2.covalently_coupled_groups)
-        info(map_)
-        # check if we should set a common charge centre as well
-        if self.parameters.common_charge_centre:
-            self.set_common_charge_centres()
-
     def set_common_charge_centres(self):
         """Assign charge centers to groups."""
         for system in self.get_coupled_systems(
