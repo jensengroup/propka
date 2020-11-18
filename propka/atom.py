@@ -58,9 +58,6 @@ class Atom:
         self.z = None
         self.group = None
         self.group_type = None
-        self.group_label = None
-        self.group_model_pka = None
-        self.group_model_pka_set = None
         self.number_of_bonded_elements = {}
         self.cysteine_bridge = False
         self.bonded_atoms = []
