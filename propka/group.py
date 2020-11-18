@@ -3,6 +3,11 @@ Data structures for groups
 ==========================
 
 Routines and classes for storing groups important to PROPKA calculations.
+
+
+.. versionchanged:: 3.4.0
+   Removed :func:`initialize_atom_group` as reading PROPKA inputs is no longer
+   supported.
 """
 import math
 import propka.ligand
@@ -1390,15 +1395,3 @@ def is_ion_group(parameters, atom):
     if atom.res_name.strip() in parameters.ions.keys():
         return IonGroup(atom)
     return None
-
-def initialize_atom_group(atom):
-    """Initialize an atom group.
-
-    Args:
-        atom:  atom to initialize
-    """
-        # try to initialise the group
-    group_attr = globals()[atom.group_label]
-    atom.group = group_attr(atom)
-    atom.group.model_pka = atom.group_model_pka
-    atom.group.model_pka_set = atom.group_model_pka_set

@@ -14,7 +14,6 @@ from pkg_resources import resource_filename
 from propka.lib import protein_precheck
 from propka.atom import Atom
 from propka.conformation_container import ConformationContainer
-from propka.group import initialize_atom_group
 
 
 def open_file_for_reading(input_file):
