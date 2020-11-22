@@ -765,7 +765,13 @@ class AMDGroup(Group):
         the_oxygen = self.atom.get_bonded_elements('O')
         the_nitrogen = self.atom.get_bonded_elements('N')
         # add protons to the nitrogen
-        PROTONATOR.protonate_atom(the_nitrogen[0])
+        try:
+            PROTONATOR.protonate_atom(the_nitrogen[0])
+        except IndexError:
+            raise IndexError(
+                "Unable to find bonded elements for the nitrogen associated "
+                "with amide group %s" % self.atom
+            )
         the_hydrogens = the_nitrogen[0].get_bonded_elements('H')
         # set the center using the oxygen and nitrogen amide atoms
         self.set_center(the_oxygen+the_nitrogen)
