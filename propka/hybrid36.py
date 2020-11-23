@@ -39,21 +39,21 @@ def decode(input_string):
     else:
         sign = 1
 
-    if len(input_string) == 0:
-        raise ValueError(value_error_message.format(input_string))
-
     # See http://cci.lbl.gov/hybrid_36/ for documentation on the format.
 
     num_chars = len(input_string)
+    if num_chars == 0:
+        raise ValueError(value_error_message.format(input_string))
+
     first_char = input_string[0]
 
     if first_char in _HYBRID36_DIGITS:
         return sign * int(input_string)
     elif first_char in _HYBRID36_UPPER_CHARS:
-        reference = - (10 * 36 ** (num_chars - 1) - 10 ** num_chars)
+        reference = -(10 * 36 ** (num_chars - 1) - 10 ** num_chars)
         _hybrid36_set = _HYBRID36_UPPER_SET
     elif first_char in _HYBRID36_LOWER_CHARS:
-        reference = (16 * 36 ** (num_chars - 1) + 10 ** num_chars)
+        reference = 16 * 36 ** (num_chars - 1) + 10 ** num_chars
         _hybrid36_set = _HYBRID36_LOWER_SET
     else:
         raise ValueError(value_error_message.format(original_input_string))

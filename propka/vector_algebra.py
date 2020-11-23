@@ -38,14 +38,10 @@ class Vector:
                 self.z = atom2.z - self.z
 
     def __add__(self, other):
-        return Vector(self.x + other.x,
-                      self.y + other.y,
-                      self.z + other.z)
+        return Vector(self.x + other.x, self.y + other.y, self.z + other.z)
 
     def __sub__(self, other):
-        return Vector(self.x - other.x,
-                      self.y - other.y,
-                      self.z - other.z)
+        return Vector(self.x - other.x, self.y - other.y, self.z - other.z)
 
     def __mul__(self, other):
         """Dot product, scalar and matrix multiplication."""
@@ -53,17 +49,23 @@ class Vector:
             return self.x * other.x + self.y * other.y + self.z * other.z
         elif isinstance(other, Matrix4x4):
             return Vector(
-                xi=other.a11*self.x + other.a12*self.y + other.a13*self.z
-                + other.a14*1.0,
-                yi=other.a21*self.x + other.a22*self.y + other.a23*self.z
-                + other.a24*1.0,
-                zi=other.a31*self.x + other.a32*self.y + other.a33*self.z
-                + other.a34*1.0
-                )
+                xi=other.a11 * self.x
+                + other.a12 * self.y
+                + other.a13 * self.z
+                + other.a14 * 1.0,
+                yi=other.a21 * self.x
+                + other.a22 * self.y
+                + other.a23 * self.z
+                + other.a24 * 1.0,
+                zi=other.a31 * self.x
+                + other.a32 * self.y
+                + other.a33 * self.z
+                + other.a34 * 1.0,
+            )
         elif type(other) in [int, float]:
             return Vector(self.x * other, self.y * other, self.z * other)
         else:
-            info('{0:s} not supported'.format(type(other)))
+            info(f"{type(other):s} not supported")
             raise TypeError
 
     def __rmul__(self, other):
@@ -71,14 +73,14 @@ class Vector:
 
     def __pow__(self, other):
         """Cross product."""
-        return Vector(self.y * other.z - self.z * other.y,
-                      self.z * other.x - self.x * other.z,
-                      self.x * other.y - self.y * other.x)
+        return Vector(
+            self.y * other.z - self.z * other.y,
+            self.z * other.x - self.x * other.z,
+            self.x * other.y - self.y * other.x,
+        )
 
     def __neg__(self):
-        res = Vector(xi=-self.x,
-                     yi=-self.y,
-                     zi=-self.z)
+        res = Vector(xi=-self.x, yi=-self.y, zi=-self.z)
         return res
 
     def sq_length(self):
@@ -90,11 +92,10 @@ class Vector:
         return math.sqrt(self.sq_length())
 
     def __str__(self):
-        return '{0:>10.4f} {1:>10.4f} {2:>10.4f}'.format(
-            self.x, self.y, self.z)
+        return f"{self.x:>10.4f} {self.y:>10.4f} {self.z:>10.4f}"
 
     def __repr__(self):
-        return '<vector>'
+        return "<vector>"
 
     def orthogonal(self):
         """ Returns a vector orthogonal to self """
@@ -105,19 +106,33 @@ class Vector:
 
     def rescale(self, new_length):
         """ Rescale vector to new length while preserving direction """
-        frac = new_length/(self.length())
-        res = Vector(xi=self.x*frac, yi=self.y*frac, zi=self.z*frac)
+        frac = new_length / (self.length())
+        res = Vector(xi=self.x * frac, yi=self.y * frac, zi=self.z * frac)
         return res
 
 
 class Matrix4x4:
     """A 4-by-4 matrix class."""
 
-    def __init__(self,
-                 a11i=0.0, a12i=0.0, a13i=0.0, a14i=0.0,
-                 a21i=0.0, a22i=0.0, a23i=0.0, a24i=0.0,
-                 a31i=0.0, a32i=0.0, a33i=0.0, a34i=0.0,
-                 a41i=0.0, a42i=0.0, a43i=0.0, a44i=0.0):
+    def __init__(
+        self,
+        a11i=0.0,
+        a12i=0.0,
+        a13i=0.0,
+        a14i=0.0,
+        a21i=0.0,
+        a22i=0.0,
+        a23i=0.0,
+        a24i=0.0,
+        a31i=0.0,
+        a32i=0.0,
+        a33i=0.0,
+        a34i=0.0,
+        a41i=0.0,
+        a42i=0.0,
+        a43i=0.0,
+        a44i=0.0,
+    ):
         """Initialize with matrix elements."""
         # Row 1
         self.a11 = a11i
@@ -176,10 +191,10 @@ def signed_angle_around_axis(avec, bvec, axis):
     Returns:
         angle in radians
     """
-    norma = avec**axis
-    normb = bvec**axis
+    norma = avec ** axis
+    normb = bvec ** axis
     ang = angle(norma, normb)
-    dot_ = bvec*(avec**axis)
+    dot_ = bvec * (avec ** axis)
     if dot_ < 0:
         ang = -ang
     return ang
@@ -198,17 +213,25 @@ def rotate_vector_around_an_axis(theta, axis, vec):
     gamma = 0.0
     if axis.y != 0:
         if axis.x != 0:
-            gamma = -axis.x/abs(axis.x)*math.asin(
-                axis.y/(math.sqrt(axis.x*axis.x + axis.y*axis.y)))
+            gamma = (
+                -axis.x
+                / abs(axis.x)
+                * math.asin(
+                    axis.y / (math.sqrt(axis.x * axis.x + axis.y * axis.y))
+                )
+            )
         else:
-            gamma = math.pi/2.0
+            gamma = math.pi / 2.0
         rot_z = rotate_atoms_around_z_axis(gamma)
         vec = rot_z * vec
         axis = rot_z * axis
     beta = 0.0
     if axis.x != 0:
-        beta = -axis.x/abs(axis.x)*math.acos(
-            axis.z/math.sqrt(axis.x*axis.x + axis.z*axis.z))
+        beta = (
+            -axis.x
+            / abs(axis.x)
+            * math.acos(axis.z / math.sqrt(axis.x * axis.x + axis.z * axis.z))
+        )
         rot_y = rotate_atoms_around_y_axis(beta)
         vec = rot_y * vec
         axis = rot_y * axis
@@ -245,8 +268,8 @@ def rotate_atoms_around_z_axis(theta):
         a41i=0.0,
         a42i=0.0,
         a43i=0.0,
-        a44i=1.0
-        )
+        a44i=1.0,
+    )
 
 
 def rotate_atoms_around_y_axis(theta):
@@ -273,8 +296,8 @@ def rotate_atoms_around_y_axis(theta):
         a41i=0.0,
         a42i=0.0,
         a43i=0.0,
-        a44i=1.0
-        )
+        a44i=1.0,
+    )
 
 
 class MultiVector:
@@ -299,10 +322,10 @@ class MultiVector:
             if atom2 is not None:
                 keys2 = get_sorted_configurations(atom2.configurations.keys())
                 if self.keys != keys2:
-                    str_ = ('Cannot make multi vector: Atomic configurations '
-                            'mismatch for\n   {0:s}\n   {1:s}\n'.format(
-                                atom1, atom2))
-                    raise KeyError(str_)
+                    raise KeyError(
+                        "Cannot make multi vector: Atomic configurations "
+                        f"mismatch for\n   {atom1:s}\n   {atom2:s}\n"
+                    )
             for key in self.keys:
                 atom1.setConfiguration(key)
                 if atom2 != 0:
@@ -317,9 +340,9 @@ class MultiVector:
             return self.do_job(name)
 
     def __str__(self):
-        res = ''
+        res = ""
         for i, key in enumerate(self.keys):
-            res += '{0:s} {1:s}\n'.format(key, self.vectors[i])
+            res += f"{key} {self.vectors[i]}\n"
         return res
 
     def do_job(self, job):
@@ -350,30 +373,29 @@ class MultiVector:
             other:  other MultiVector object
         """
         if self.keys != other.keys:
-            raise 'Incompatible keys'
+            raise "Incompatible keys"
         self.result = MultiVector()
         for i in range(len(self.vectors)):
             self.result.vectors.append(
                 # TODO - eliminate eval() or entire class
-                eval(
-                    'self.vectors[{0:d}] {1:s} other.vectors[{2:d}]'.format(
-                        i, operation, i)))
+                eval(f"self.vectors[{i:d}] {operation} other.vectors[{i:d}]")
+            )
             self.result.keys.append(self.keys[i])
 
     def __add__(self, other):
-        self.generic_operation('+', other)
+        self.generic_operation("+", other)
         return self.result
 
     def __sub__(self, other):
-        self.generic_operation('-', other)
+        self.generic_operation("-", other)
         return self.result
 
     def __mul__(self, other):
-        self.generic_operation('*', other)
+        self.generic_operation("*", other)
         return self.result
 
     def __pow__(self, other):
-        self.generic_operation('**', other)
+        self.generic_operation("**", other)
         return self.result
 
     @staticmethod
@@ -382,7 +404,7 @@ class MultiVector:
         return
 
     def __neg__(self):
-        self.generic_operation('*', -1.0)
+        self.generic_operation("*", -1.0)
         return self.result
 
     def rescale(self, new_length):
@@ -411,10 +433,13 @@ def rotate_multi_vector_around_an_axis(theta, axis, vec):
         vec:  multi-vector vector
     """
     if axis.keys != vec.keys:
-        raise 'Incompatible keys in rotate MultiVector'
+        raise "Incompatible keys in rotate MultiVector"
     res = MultiVector()
     for i, key in enumerate(vec.keys):
-        res.vectors.append(rotate_vector_around_an_axis(
-            theta, axis.vectors[i], vec.vectors[i]))
+        res.vectors.append(
+            rotate_vector_around_an_axis(
+                theta, axis.vectors[i], vec.vectors[i]
+            )
+        )
         res.keys.append(key)
     return res

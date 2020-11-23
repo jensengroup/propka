@@ -28,9 +28,9 @@ def open_file_for_reading(input_file):
         pass
 
     try:
-        file_ = open(input_file, 'rt')
+        file_ = open(input_file, "rt")
     except:
-        raise IOError('Cannot find file {0:s}'.format(input_file))
+        raise IOError(f"Cannot find file {input_file}")
     return file_
 
 
@@ -80,26 +80,25 @@ def read_molecule_file(filename: str, mol_container, stream=None):
     mol_container.name = input_path.stem
     input_file_extension = input_path.suffix
 
-    if stream is not None:
-        input_file = stream
-    else:
-        input_file = filename
-
-    if input_file_extension.lower() == '.pdb':
+    input_file = stream if stream is not None else filename
+    if input_file_extension.lower() == ".pdb":
         # input is a pdb file. read in atoms and top up containers to make
         # sure that all atoms are present in all conformations
         conformations, conformation_names = read_pdb(
-            input_file, mol_container.version.parameters, mol_container)
+            input_file, mol_container.version.parameters, mol_container
+        )
         if len(conformations) == 0:
-            str_ = ('Error: The pdb file does not seem to contain any '
-                    'molecular conformations')
-            raise ValueError(str_)
+            raise ValueError(
+                "Error: The pdb file does not seem to contain any "
+                "molecular conformations"
+            )
         mol_container.conformations = conformations
         mol_container.conformation_names = conformation_names
         mol_container.top_up_conformations()
         # make a structure precheck
         protein_precheck(
-            mol_container.conformations, mol_container.conformation_names)
+            mol_container.conformations, mol_container.conformation_names
+        )
         # set up atom bonding and protonation
         mol_container.version.setup_bonding_and_protonation(mol_container)
         # Extract groups
@@ -109,10 +108,11 @@ def read_molecule_file(filename: str, mol_container, stream=None):
             mol_container.conformations[name].sort_atoms()
         # find coupled groups
         mol_container.find_covalently_coupled_groups()
-    elif input_file_extension.lower() == '.propka_input':
+    elif input_file_extension.lower() == ".propka_input":
         # input is a propka_input file
         conformations, conformation_names = read_propka(
-            input_file, mol_container.version.parameters, mol_container)
+            input_file, mol_container.version.parameters, mol_container
+        )
         mol_container.conformations = conformations
         mol_container.conformation_names = conformation_names
         # Extract groups - this merely sets up the groups found in the
@@ -121,9 +121,10 @@ def read_molecule_file(filename: str, mol_container, stream=None):
         # do some additional set up
         mol_container.additional_setup_when_reading_input_file()
     else:
-        str_ = "Unknown input file type {0!s} for file {1!s}".format(
-            input_file_extension, input_path)
-        raise ValueError(str_)
+        raise ValueError(
+            f"Unknown input file type {input_file_extension} "
+            f"for file {input_path}"
+        )
     return mol_container
 
 
@@ -151,11 +152,16 @@ def conformation_sorter(conf):
     """TODO - figure out what this function does."""
     model = int(conf[:-1])
     altloc = conf[-1:]
-    return model*100+ord(altloc)
+    return model * 100 + ord(altloc)
 
 
-def get_atom_lines_from_pdb(pdb_file, ignore_residues=[], keep_protons=False,
-                            tags=['ATOM  ', 'HETATM'], chains=None):
+def get_atom_lines_from_pdb(
+    pdb_file,
+    ignore_residues=[],
+    keep_protons=False,
+    tags=["ATOM  ", "HETATM"],
+    chains=None,
+):
     """Get atom lines from PDB file.
 
     Args:
@@ -166,30 +172,30 @@ def get_atom_lines_from_pdb(pdb_file, ignore_residues=[], keep_protons=False,
         chains:  list of chains
     """
     lines = open_file_for_reading(pdb_file).readlines()
-    nterm_residue = 'next_residue'
+    nterm_residue = "next_residue"
     old_residue = None
     terminal = None
     model = 1
     for line in lines:
         tag = line[0:6]
         # set the model number
-        if tag == 'MODEL ':
+        if tag == "MODEL ":
             model = int(line[6:])
-            nterm_residue = 'next_residue'
-        if tag == 'TER   ':
-            nterm_residue = 'next_residue'
+            nterm_residue = "next_residue"
+        if tag == "TER   ":
+            nterm_residue = "next_residue"
         if tag in tags:
             alt_conf_tag = line[16]
-            residue_name = line[12: 16]
-            residue_number = line[22: 26]
+            residue_name = line[12:16]
+            residue_number = line[22:26]
             # check if we want this residue
-            if line[17: 20] in ignore_residues:
+            if line[17:20] in ignore_residues:
                 continue
             if chains and line[21] not in chains:
                 continue
             # set the Nterm residue number - nessecary because we may need to
             # identify more than one N+ group for structures with alt_conf tags
-            if nterm_residue == 'next_residue' and tag == 'ATOM  ':
+            if nterm_residue == "next_residue" and tag == "ATOM  ":
                 # make sure that we reached a new residue - nessecary if OXT is
                 # not the last atom inthe previous residue
                 if old_residue != residue_number:
@@ -197,25 +203,27 @@ def get_atom_lines_from_pdb(pdb_file, ignore_residues=[], keep_protons=False,
                     old_residue = None
             # Identify the configuration
             # convert digits to letters
-            if alt_conf_tag in '123456789':
-                alt_conf_tag = chr(ord(alt_conf_tag)+16)
-            if alt_conf_tag == ' ':
-                alt_conf_tag = 'A'
-            conformation = '{0:d}{1:s}'.format(model, alt_conf_tag)
+            if alt_conf_tag in "123456789":
+                alt_conf_tag = chr(ord(alt_conf_tag) + 16)
+            if alt_conf_tag == " ":
+                alt_conf_tag = "A"
+            conformation = f"{model:d}{alt_conf_tag:s}"
             # set the terminal
-            if  tag == 'ATOM  ':
-                if (residue_name.strip() == 'N'
-                        and nterm_residue == residue_number):
-                    terminal = 'N+'
-                if  residue_name.strip() in ['OXT', 'O\'\'']:
-                    terminal = 'C-'
-                    nterm_residue = 'next_residue'
+            if tag == "ATOM  ":
+                if (
+                    residue_name.strip() == "N"
+                    and nterm_residue == residue_number
+                ):
+                    terminal = "N+"
+                if residue_name.strip() in ["OXT", "O''"]:
+                    terminal = "C-"
+                    nterm_residue = "next_residue"
                     old_residue = residue_number
             # and yield the atom
             atom = Atom(line=line)
             atom.terminal = terminal
-            #ignore hydrogen
-            if not (atom.element == 'H' and not keep_protons):
+            # ignore hydrogen
+            if not (atom.element == "H" and not keep_protons):
                 yield (conformation, atom)
             terminal = None
 
@@ -234,17 +242,17 @@ def read_propka(input_file, parameters, molecule):
     # read in all atoms in the input file
     lines = get_atom_lines_from_input(input_file)
     for (name, atom) in lines:
-        if not name in conformations.keys():
+        if name not in conformations:
             conformations[name] = ConformationContainer(
-                name=name, parameters=parameters,
-                molecular_container=molecule)
+                name=name, parameters=parameters, molecular_container=molecule
+            )
         conformations[name].add_atom(atom)
     # make a sorted list of conformation names
     names = sorted(conformations.keys(), key=conformation_sorter)
     return [conformations, names]
 
 
-def get_atom_lines_from_input(input_file, tags=['ATOM  ', 'HETATM']):
+def get_atom_lines_from_input(input_file, tags=["ATOM  ", "HETATM"]):
     """Get atom lines from a PROPKA input file.
 
     Args:
@@ -254,13 +262,13 @@ def get_atom_lines_from_input(input_file, tags=['ATOM  ', 'HETATM']):
         conformation container, list of atoms
     """
     lines = open_file_for_reading(input_file).readlines()
-    conformation = ''
+    conformation = ""
     atoms = {}
     numbers = []
     for line in lines:
         tag = line[0:6]
         # set the conformation
-        if tag == 'MODEL ':
+        if tag == "MODEL ":
             conformation = line[6:].strip()
         # found an atom - save it
         if tag in tags:
@@ -272,41 +280,48 @@ def get_atom_lines_from_input(input_file, tags=['ATOM  ', 'HETATM']):
             atoms[atom.numb] = atom
             numbers.append(atom.numb)
         # found bonding information - apply it
-        if tag == 'CONECT' and len(line) > 14:
-            conect_numbers = [line[i:i+5] for i in range(6, len(line)-1, 5)]
+        if tag == "CONECT" and len(line) > 14:
+            conect_numbers = [
+                line[i : i + 5] for i in range(6, len(line) - 1, 5)
+            ]
             center_atom = atoms[int(conect_numbers[0])]
             for num in conect_numbers[1:]:
                 bond_atom = atoms[int(num)]
                 # remember to check for cysteine bridges
-                if center_atom.element == 'S' and bond_atom.element == 'S':
+                if center_atom.element == "S" and bond_atom.element == "S":
                     center_atom.cysteine_bridge = True
                     bond_atom.cysteine_bridge = True
                 # set up bonding
-                if not bond_atom in center_atom.bonded_atoms:
+                if bond_atom not in center_atom.bonded_atoms:
                     center_atom.bonded_atoms.append(bond_atom)
-                if not center_atom in bond_atom.bonded_atoms:
+                if center_atom not in bond_atom.bonded_atoms:
                     bond_atom.bonded_atoms.append(center_atom)
         # found info on covalent coupling
-        if tag == 'CCOUPL' and len(line) > 14:
-            conect_numbers = [line[i:i+5] for i in range(6, len(line)-1, 5)]
+        if tag == "CCOUPL" and len(line) > 14:
+            conect_numbers = [
+                line[i : i + 5] for i in range(6, len(line) - 1, 5)
+            ]
             center_atom = atoms[int(conect_numbers[0])]
             for num in conect_numbers[1:]:
                 cov_atom = atoms[int(num)]
                 center_atom.group.couple_covalently(cov_atom.group)
         # found info on non-covalent coupling
-        if tag == 'NCOUPL' and len(line) > 14:
-            conect_numbers = [line[i:i+5] for i in range(6, len(line)-1, 5)]
+        if tag == "NCOUPL" and len(line) > 14:
+            conect_numbers = [
+                line[i : i + 5] for i in range(6, len(line) - 1, 5)
+            ]
             center_atom = atoms[int(conect_numbers[0])]
             for num in conect_numbers[1:]:
                 cov_atom = atoms[int(num)]
                 center_atom.group.couple_non_covalently(cov_atom.group)
         # this conformation is done - yield the atoms
-        if tag == 'ENDMDL':
+        if tag == "ENDMDL":
             for num in numbers:
                 yield (conformation, atoms[num])
             # prepare for next conformation
             atoms = {}
             numbers = []
+
 
 def read_pdb(pdb_file, parameters, molecule):
     """Parse a PDB file.
@@ -323,13 +338,16 @@ def read_pdb(pdb_file, parameters, molecule):
     conformations = {}
     # read in all atoms in the file
     lines = get_atom_lines_from_pdb(
-        pdb_file, ignore_residues=parameters.ignore_residues,
+        pdb_file,
+        ignore_residues=parameters.ignore_residues,
         keep_protons=molecule.options.keep_protons,
-        chains=molecule.options.chains)
+        chains=molecule.options.chains,
+    )
     for (name, atom) in lines:
-        if not name in conformations.keys():
+        if name not in conformations:
             conformations[name] = ConformationContainer(
-                name=name, parameters=parameters, molecular_container=molecule)
+                name=name, parameters=parameters, molecular_container=molecule
+            )
         conformations[name].add_atom(atom)
     # make a sorted list of conformation names
     names = sorted(conformations.keys(), key=conformation_sorter)

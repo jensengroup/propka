@@ -12,24 +12,28 @@ from . import hybrid36
 
 
 # Format strings that get used in multiple places (or are very complex)
-PKA_FMT = "{:6.2f}"
 INPUT_LINE_FMT = (
     "{type:6s}{r.numb:>5d} {atom_label} {r.res_name}{r.chain_id:>2s}"
-    "{r.res_num:>4d}{r.x:>12.3f}{r.y:>8.3f}{r.z:>8.3f}{group:>6s}{pka:>6s} \n")
+    "{r.res_num:>4d}{r.x:>12.3f}{r.y:>8.3f}{r.z:>8.3f}{group:>6s}{pka:>6s} \n"
+)
 PDB_LINE_FMT1 = (
     "{type:6s}{r.numb:>5d} {atom_label} {r.res_name}{r.chain_id:>2s}"
     "{r.res_num:>4d}{r.x:>12.3f}{r.y:>8.3f}{r.z:>8.3f}{r.occ:>6s}"
-    "{r.beta:>6s}\n")
+    "{r.beta:>6s}\n"
+)
 MOL2_LINE_FMT = (
     "{id:<4d} {atom_label:4s} "
     "{r.x:>10.4f} {r.y:>10.4f} {r.z:>10.4f} "
-    "{r.sybyl_type:>6s} {r.res_num:>6d} {r.res_name:>10s}     0.0000\n")
+    "{r.sybyl_type:>6s} {r.res_num:>6d} {r.res_name:>10s}     0.0000\n"
+)
 PDB_LINE_FMT2 = (
     "ATOM {numb:>6d} {atom_label} {res_name}{chain_id:>2s}{res_num:>4d}"
-    "{x:>12.3f}{y:>8.3f}{z:>8.3f}{occ:>6.2f}{beta:>6.2f}\n")
+    "{x:>12.3f}{y:>8.3f}{z:>8.3f}{occ:>6.2f}{beta:>6.2f}\n"
+)
 STR_FMT = (
     "{r.numb:>5d}-{r.name:>4s} {r.res_num:>5d}-{r.res_name:>3s} "
-    "({r.chain_id:1s}) [{r.x:>8.3f} {r.y:>8.3f} {r.z:>8.3f}] {r.element:s}")
+    "({r.chain_id:1s}) [{r.x:>8.3f} {r.y:>8.3f} {r.z:>8.3f}] {r.element:s}"
+)
 
 
 class Atom:
@@ -77,11 +81,12 @@ class Atom:
         self.num_pi_elec_conj_2_3_bonds = 0
         self.groups_extracted = 0
         self.set_properties(line)
-        fmt = "{r.name:3s}{r.res_num:>4d}{r.chain_id:>2s}"
-        self.residue_label = fmt.format(r=self)
+        self.residue_label = (
+            f"{self.name:3s}{self.res_num:>4d}{self.chain_id:>2s}"
+        )
 
         # ligand atom types
-        self.sybyl_type = ''
+        self.sybyl_type = ""
         self.sybyl_assigned = False
         self.marvin_pka = False
 
@@ -91,19 +96,19 @@ class Atom:
         Args:
             line:  PDB file line
         """
-        self.name = ''
+        self.name = ""
         self.numb = 0
         self.x = 0.0
         self.y = 0.0
         self.z = 0.0
         self.res_num = 0
-        self.res_name = ''
-        self.chain_id = 'A'
-        self.type = ''
-        self.occ = '1.0'
-        self.beta = '0.0'
-        self.element = ''
-        self.icode = ''
+        self.res_name = ""
+        self.chain_id = "A"
+        self.type = ""
+        self.occ = "1.0"
+        self.beta = "0.0"
+        self.element = ""
+        self.icode = ""
 
         if line:
             self.name = line[12:16].strip()
@@ -112,16 +117,16 @@ class Atom:
             self.y = float(line[38:46].strip())
             self.z = float(line[46:54].strip())
             self.res_num = int(line[22:26].strip())
-            self.res_name = "{0:<3s}".format(line[17:20].strip())
+            self.res_name = f"{line[17:20].strip():<3s}"
             self.chain_id = line[21]
             # Set chain id to "_" if it is just white space.
             if not self.chain_id.strip():
-                self.chain_id = '_'
+                self.chain_id = "_"
             self.type = line[:6].strip().lower()
 
             # TODO - define nucleic acid residue names elsewhere
-            if self.res_name in ['DA ', 'DC ', 'DG ', 'DT ']:
-                self.type = 'hetatm'
+            if self.res_name in ["DA ", "DC ", "DG ", "DT "]:
+                self.type = "hetatm"
 
             self.occ = line[55:60].strip()
             self.beta = line[60:66].strip()
@@ -132,8 +137,9 @@ class Atom:
             if len(self.name) == 4:
                 self.element = self.element[0]
             if len(self.element) == 2:
-                self.element = '{0:1s}{1:1s}'.format(
-                    self.element[0], self.element[1].lower())
+                self.element = (
+                    f"{self.element[0]:1s}{self.element[1].lower():1s}"
+                )
 
     def set_group_type(self, type_):
         """Set group type of atom.
@@ -161,11 +167,11 @@ class Atom:
         Returns:
             array of bonded atoms.
         """
-        res = []
-        for bond_atom in self.bonded_atoms:
-            if bond_atom.element == element:
-                res.append(bond_atom)
-        return res
+        return [
+            bond_atom
+            for bond_atom in self.bonded_atoms
+            if bond_atom.element == element
+        ]
 
     def get_bonded_heavy_atoms(self):
         """Get the atoms bonded to this one that aren't hydrogen.
@@ -173,7 +179,7 @@ class Atom:
         Returns:
             list of atoms.
         """
-        return [ba for ba in self.bonded_atoms if ba.element != 'H']
+        return [ba for ba in self.bonded_atoms if ba.element != "H"]
 
     def is_atom_within_bond_distance(self, other_atom, max_bonds, cur_bond):
         """Check if <other_atom> is found within <max_bonds> bonds of self.
@@ -187,15 +193,25 @@ class Atom:
         for ba in self.bonded_atoms:
             if ba == other_atom:
                 return True
-            if max_bonds > cur_bond:
-                if ba.is_atom_within_bond_distance(other_atom, max_bonds,
-                                                   cur_bond+1):
-                    return True
+            if max_bonds > cur_bond and ba.is_atom_within_bond_distance(
+                other_atom, max_bonds, cur_bond + 1
+            ):
+                return True
         return False
 
-    def set_property(self, numb=None, name=None, res_name=None, chain_id=None,
-                     res_num=None, x=None, y=None, z=None, occ=None,
-                     beta=None):
+    def set_property(
+        self,
+        numb=None,
+        name=None,
+        res_name=None,
+        chain_id=None,
+        res_num=None,
+        x=None,
+        y=None,
+        z=None,
+        occ=None,
+        beta=None,
+    ):
         """Set properties of the atom object.
 
         Args:
@@ -265,20 +281,22 @@ class Atom:
         Returns:
             String with PDB-format line.
         """
-        group = '-'
-        model_pka = '-'
+        group = "-"
+        model_pka = "-"
         if self.group:
             group = self.group.type
-            if self.terminal == 'C-':
-                group = 'C-' ## circumventing C-/COO parameter unification
+            if self.terminal == "C-":
+                group = "C-"  ## circumventing C-/COO parameter unification
 
             if self.group.titratable:
-                model_pka = PKA_FMT.format(self.group.model_pka)
-        str_ = INPUT_LINE_FMT.format(
-            type=self.type.upper(), r=self,
+                model_pka = f"{self.group.model_pka:6.2f}"
+        return INPUT_LINE_FMT.format(
+            type=self.type.upper(),
+            r=self,
             atom_label=make_tidy_atom_label(self.name, self.element),
-            group=group, pka=model_pka)
-        return str_
+            group=group,
+            pka=model_pka,
+        )
 
     def make_conect_line(self):
         """PDB line for bonding within this molecule.
@@ -286,50 +304,48 @@ class Atom:
         Returns:
             String with PDB line.
         """
-        res = 'CONECT{0:5d}'.format(self.numb)
+        res = f"CONECT{self.numb:5d}"
 
-        bonded = []
-        for atom in self.bonded_atoms:
-            bonded.append(atom.numb)
+        bonded = [atom.numb for atom in self.bonded_atoms]
         bonded.sort()
 
         for bond in bonded:
-            res += '{0:5d}'.format(bond)
-        res += '\n'
+            res += f"{bond:5d}"
+        res += "\n"
         return res
 
     def get_input_parameters(self):
         """Extract the input parameters stored in the occupancy and b-factor
         fields in input files"""
         # Set the group type
-        if self.occ != '-':
+        if self.occ != "-":
             # make sure to set the terminal
-            if self.occ in ['N+', 'C-']:
+            if self.occ in ["N+", "C-"]:
                 self.terminal = self.occ
             # save the ligand group charge
-            if self.occ == 'BLG':
+            if self.occ == "BLG":
                 self.charge = +1
-            elif self.occ == 'ALG':
+            elif self.occ == "ALG":
                 self.charge = -1
             # generic ions
-            if self.occ in ['1P', '2P', '1N', '2N']:
+            if self.occ in ["1P", "2P", "1N", "2N"]:
                 self.res_name = self.occ
-                self.occ = 'Ion'
+                self.occ = "Ion"
             # correct the group type
-            self.occ = self.occ.replace('N+', 'Nterm')
-            self.occ = self.occ.replace('C-', 'Cterm')
-            self.occ = self.occ.replace('ION', 'Ion')
-            self.occ = self.occ.replace('ALG', 'titratable_ligand')
-            self.occ = self.occ.replace('BLG', 'titratable_ligand')
-            self.occ = self.occ.replace('LG', 'non_titratable_ligand')
-            self.group_label = "{0:s}_group".format(self.occ)
+            self.occ = self.occ.replace("N+", "Nterm")
+            self.occ = self.occ.replace("C-", "Cterm")
+            self.occ = self.occ.replace("ION", "Ion")
+            self.occ = self.occ.replace("ALG", "titratable_ligand")
+            self.occ = self.occ.replace("BLG", "titratable_ligand")
+            self.occ = self.occ.replace("LG", "non_titratable_ligand")
+            self.group_label = f"{self.occ}_group"
         # set the model pKa value
-        if self.beta != '-':
+        if self.beta != "-":
             self.group_model_pka = float(self.beta)
             self.group_model_pka_set = True
         # set occ and beta to standard values
-        self.occ = '1.00'
-        self.beta = '0.00'
+        self.occ = "1.00"
+        self.beta = "0.00"
 
     def make_pdb_line(self):
         """Create PDB line.
@@ -341,10 +357,11 @@ class Atom:
         Returns:
             String with PDB line.
         """
-        str_ = PDB_LINE_FMT1.format(
-            type=self.type.upper(), r=self,
-            atom_label=make_tidy_atom_label(self.name, self.element))
-        return str_
+        return PDB_LINE_FMT1.format(
+            type=self.type.upper(),
+            r=self,
+            atom_label=make_tidy_atom_label(self.name, self.element),
+        )
 
     def make_mol2_line(self, id_):
         """Create MOL2 line.
@@ -356,14 +373,25 @@ class Atom:
         Returns:
             String with MOL2 line.
         """
-        str_ = MOL2_LINE_FMT.format(
-            id=id_, r=self,
-            atom_label=make_tidy_atom_label(self.name, self.element))
-        return str_
+        return MOL2_LINE_FMT.format(
+            id=id_,
+            r=self,
+            atom_label=make_tidy_atom_label(self.name, self.element),
+        )
 
-    def make_pdb_line2(self, numb=None, name=None, res_name=None, chain_id=None,
-                       res_num=None, x=None, y=None, z=None, occ=None,
-                       beta=None):
+    def make_pdb_line2(
+        self,
+        numb=None,
+        name=None,
+        res_name=None,
+        chain_id=None,
+        res_num=None,
+        x=None,
+        y=None,
+        z=None,
+        occ=None,
+        beta=None,
+    ):
         """Create a PDB line.
 
         TODO - this could/should be a @property method/attribute
@@ -393,12 +421,18 @@ class Atom:
             occ = self.occ
         if beta is None:
             beta = self.beta
-        str_ = PDB_LINE_FMT2.format(
-            numb=numb, res_name=res_name, chain_id=chain_id, res_num=res_num,
-            x=x, y=y, z=z, occ=occ, beta=beta,
-            atom_label=make_tidy_atom_label(name, self.element)
+        return PDB_LINE_FMT2.format(
+            numb=numb,
+            res_name=res_name,
+            chain_id=chain_id,
+            res_num=res_num,
+            x=x,
+            y=y,
+            z=z,
+            occ=occ,
+            beta=beta,
+            atom_label=make_tidy_atom_label(name, self.element),
         )
-        return str_
 
     def get_tidy_label(self):
         """Returns a 'tidier' atom label for printing the new pdbfile
@@ -414,7 +448,7 @@ class Atom:
         return STR_FMT.format(r=self)
 
     def set_residue(self, residue):
-        """ Makes a reference to the parent residue
+        """Makes a reference to the parent residue
 
         Args:
             residue:  the parent residue

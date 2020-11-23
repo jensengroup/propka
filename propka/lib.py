@@ -17,10 +17,28 @@ _STDOUT_HANDLER.setFormatter(logging.Formatter("%(message)s"))
 _LOGGER.addHandler(_STDOUT_HANDLER)
 
 
-EXPECTED_ATOM_NUMBERS = {'ALA': 5, 'ARG': 11, 'ASN': 8, 'ASP': 8, 'CYS': 6,
-                         'GLY': 4, 'GLN': 9, 'GLU': 9, 'HIS': 10, 'ILE': 8,
-                         'LEU': 8, 'LYS': 9, 'MET': 8, 'PHE': 11, 'PRO': 7,
-                         'SER': 6, 'THR': 7, 'TRP': 14, 'TYR': 12, 'VAL': 7}
+EXPECTED_ATOM_NUMBERS = {
+    "ALA": 5,
+    "ARG": 11,
+    "ASN": 8,
+    "ASP": 8,
+    "CYS": 6,
+    "GLY": 4,
+    "GLN": 9,
+    "GLU": 9,
+    "HIS": 10,
+    "ILE": 8,
+    "LEU": 8,
+    "LYS": 9,
+    "MET": 8,
+    "PHE": 11,
+    "PRO": 7,
+    "SER": 6,
+    "THR": 7,
+    "TRP": 14,
+    "TYR": 12,
+    "VAL": 7,
+}
 
 
 def protein_precheck(conformations, names):
@@ -34,7 +52,7 @@ def protein_precheck(conformations, names):
         # Group the atoms by their residue:
         atoms_by_residue = {}
         for atom in atoms:
-            if atom.element != 'H':
+            if atom.element != "H":
                 res_id = resid_from_atom(atom)
                 try:
                     atoms_by_residue[res_id].append(atom)
@@ -42,26 +60,24 @@ def protein_precheck(conformations, names):
                     atoms_by_residue[res_id] = [atom]
         for res_id, res_atoms in atoms_by_residue.items():
             res_name = res_atoms[0].res_name
-            residue_label = '{0:>3s}{1:>5s}'.format(res_name, res_id)
+            residue_label = f"{res_name:>3s}{res_id:>5s}"
             # ignore ligand residues
             if res_name not in EXPECTED_ATOM_NUMBERS:
                 continue
             # check for c-terminal
-            if 'C-' in [a.terminal for a in res_atoms]:
-                if len(res_atoms) != EXPECTED_ATOM_NUMBERS[res_name]+1:
-                    str_ = ("Unexpected number ({num:d}) of atoms in residue "
-                            "{res:s} in conformation {conf:s}".format(
-                                num=len(res_atoms), res=residue_label,
-                                conf=name))
-                    warning(str_)
+            if "C-" in [a.terminal for a in res_atoms]:
+                if len(res_atoms) != EXPECTED_ATOM_NUMBERS[res_name] + 1:
+                    warning(
+                        f"Unexpected number ({len(res_atoms):d}) of atoms in "
+                        f"residue {residue_label} in conformation {name}"
+                    )
                 continue
             # check number of atoms in residue
             if len(res_atoms) != EXPECTED_ATOM_NUMBERS[res_name]:
-                str_ = ("Unexpected number ({num:d}) of atoms in residue "
-                        "{res:s} in conformation {conf:s}".format(
-                            num=len(res_atoms), res=residue_label,
-                            conf=name))
-                warning(str_)
+                warning(
+                    f"Unexpected number ({len(res_atoms):d}) of atoms in "
+                    f"residue {residue_label} in conformation {name}"
+                )
 
 
 def resid_from_atom(atom):
@@ -72,8 +88,7 @@ def resid_from_atom(atom):
     Returns
         string
     """
-    return '{0:>4d} {1:s} {2:s}'.format(
-        atom.res_num, atom.chain_id, atom.icode)
+    return f"{atom.res_num:>4d} {atom.chain_id} {atom.icode}"
 
 
 def split_atoms_into_molecules(atoms):
@@ -101,7 +116,9 @@ def make_molecule(atom, atoms):
         list of atoms
     """
     bonded_atoms = [a for a in atoms if atom in a.bonded_atoms]
-    res_atoms = [atom,]
+    res_atoms = [
+        atom,
+    ]
     for bond_atom in bonded_atoms:
         if bond_atom in atoms:
             atoms.remove(bond_atom)
@@ -152,7 +169,7 @@ def make_combination(combis, interaction):
     """
     res = []
     for combi in combis:
-        res.append(combi+[interaction])
+        res.append(combi + [interaction])
         res.append(combi)
     return res
 
@@ -170,8 +187,9 @@ def parse_res_string(res_str):
     try:
         chain, resnum_str = res_str.split(":")
     except ValueError:
-        raise ValueError("Invalid residue string (must contain 2 "
-                         "colon-separated values)")
+        raise ValueError(
+            "Invalid residue string (must contain 2 " "colon-separated values)"
+        )
     try:
         resnum = int(resnum_str)
     except ValueError:
@@ -200,98 +218,200 @@ def build_parser(parser=None):
         group = parser.add_argument_group(title="PROPKA invoation options")
     else:
         parser = argparse.ArgumentParser(
-            description=("PROPKA predicts the pKa values of ionizable "
-                         "groups in proteins and protein-ligand "
-                         "complexes based in the 3D structure"),
-            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+            description=(
+                "PROPKA predicts the pKa values of ionizable "
+                "groups in proteins and protein-ligand "
+                "complexes based in the 3D structure"
+            ),
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        )
         # This is duck-typing at its finest
         group = parser
         group.add_argument("input_pdb", help="read data from <filename>")
     group.add_argument(
-        "-f", "--file", action="append", dest="filenames", default=[],
-        help="read data from <filename>, i.e. <filename> is added to arguments")
+        "-f",
+        "--file",
+        action="append",
+        dest="filenames",
+        default=[],
+        help="read data from <filename>, i.e. <filename> is added to arguments",
+    )
     group.add_argument(
-        "-r", "--reference", dest="reference", default="neutral",
-        help=("setting which reference to use for stability calculations "
-              "[neutral/low-pH]"))
+        "-r",
+        "--reference",
+        dest="reference",
+        default="neutral",
+        help=(
+            "setting which reference to use for stability calculations "
+            "[neutral/low-pH]"
+        ),
+    )
     group.add_argument(
-        "-c", "--chain", action="append", dest="chains",
-        help=('creating the protein with only a specified chain. Specify '
-              '" " for chains without ID [all]'))
+        "-c",
+        "--chain",
+        action="append",
+        dest="chains",
+        help=(
+            "creating the protein with only a specified chain. Specify "
+            '" " for chains without ID [all]'
+        ),
+    )
     group.add_argument(
-        "-i", "--titrate_only", dest="titrate_only",
-        help=('Treat only the specified residues as titratable. Value should '
-              'be a comma-separated list of "chain:resnum" values; for example: '
-              '-i "A:10,A:11"'))
+        "-i",
+        "--titrate_only",
+        dest="titrate_only",
+        help=(
+            "Treat only the specified residues as titratable. Value should "
+            'be a comma-separated list of "chain:resnum" values; for example: '
+            '-i "A:10,A:11"'
+        ),
+    )
     group.add_argument(
-        "-t", "--thermophile", action="append", dest="thermophiles",
-        help=("defining a thermophile filename; usually used in "
-              "'alignment-mutations'"))
+        "-t",
+        "--thermophile",
+        action="append",
+        dest="thermophiles",
+        help=(
+            "defining a thermophile filename; usually used in "
+            "'alignment-mutations'"
+        ),
+    )
     group.add_argument(
-        "-a", "--alignment", action="append", dest="alignment",
-        help=("alignment file connecting <filename> and <thermophile> "
-              "[<thermophile>.pir]"))
+        "-a",
+        "--alignment",
+        action="append",
+        dest="alignment",
+        help=(
+            "alignment file connecting <filename> and <thermophile> "
+            "[<thermophile>.pir]"
+        ),
+    )
     group.add_argument(
-        "-m", "--mutation", action="append", dest="mutations",
-        help=("specifying mutation labels which is used to modify "
-              "<filename> according to, e.g. N25R/N181D"))
+        "-m",
+        "--mutation",
+        action="append",
+        dest="mutations",
+        help=(
+            "specifying mutation labels which is used to modify "
+            "<filename> according to, e.g. N25R/N181D"
+        ),
+    )
     group.add_argument(
-        "-v", "--version", dest="version_label", default="Jan15",
-        help="specifying the sub-version of propka [Jan15/Dec19]")
+        "-v",
+        "--version",
+        dest="version_label",
+        default="Jan15",
+        help="specifying the sub-version of propka [Jan15/Dec19]",
+    )
     group.add_argument(
-        "-p", "--parameters", dest="parameters",
+        "-p",
+        "--parameters",
+        dest="parameters",
         default=pkg_resources.resource_filename(__name__, "propka.cfg"),
-        help="set the parameter file [{default:s}]")
+        help="set the parameter file [{default:s}]",
+    )
     try:
         group.add_argument(
             "--log-level",
             choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-            help="logging level verbosity", default="INFO")
+            help="logging level verbosity",
+            default="INFO",
+        )
     except argparse.ArgumentError:
         # It is possible that --log-level has already been set by APBS
         pass
     group.add_argument(
-        "-o", "--pH", dest="pH", type=float, default=7.0,
-        help="setting pH-value used in e.g. stability calculations [7.0]")
+        "-o",
+        "--pH",
+        dest="pH",
+        type=float,
+        default=7.0,
+        help="setting pH-value used in e.g. stability calculations [7.0]",
+    )
     group.add_argument(
-        "-w", "--window", dest="window", nargs=3, type=float,
+        "-w",
+        "--window",
+        dest="window",
+        nargs=3,
+        type=float,
         default=(0.0, 14.0, 1.0),
-        help=("setting the pH-window to show e.g. stability profiles "
-              "[0.0, 14.0, 1.0]"))
+        help=(
+            "setting the pH-window to show e.g. stability profiles "
+            "[0.0, 14.0, 1.0]"
+        ),
+    )
     group.add_argument(
-        "-g", "--grid", dest="grid", nargs=3, type=float,
+        "-g",
+        "--grid",
+        dest="grid",
+        nargs=3,
+        type=float,
         default=(0.0, 14.0, 0.1),
-        help=("setting the pH-grid to calculate e.g. stability "
-              "related properties [0.0, 14.0, 0.1]"))
+        help=(
+            "setting the pH-grid to calculate e.g. stability "
+            "related properties [0.0, 14.0, 0.1]"
+        ),
+    )
     group.add_argument(
-        "--mutator", dest="mutator",
-        help="setting approach for mutating <filename> [alignment/scwrl/jackal]")
+        "--mutator",
+        dest="mutator",
+        help="setting approach for mutating <filename> [alignment/scwrl/jackal]",
+    )
     group.add_argument(
-        "--mutator-option", dest="mutator_options", action="append",
-        help="setting property for mutator [e.g. type=\"side-chain\"]")
+        "--mutator-option",
+        dest="mutator_options",
+        action="append",
+        help='setting property for mutator [e.g. type="side-chain"]',
+    )
     group.add_argument(
-        "-d", "--display-coupled-residues", dest="display_coupled_residues",
+        "-d",
+        "--display-coupled-residues",
+        dest="display_coupled_residues",
         action="store_true",
-        help=("Displays alternative pKa values due "
-              "to coupling of titratable groups"))
+        help=(
+            "Displays alternative pKa values due "
+            "to coupling of titratable groups"
+        ),
+    )
     group.add_argument(
-        "-l", "--reuse-ligand-mol2-files", dest="reuse_ligand_mol2_file",
-        action="store_true", default=False,
-        help=("Reuses the ligand mol2 files allowing the user to alter "
-              "ligand bond orders"))
+        "-l",
+        "--reuse-ligand-mol2-files",
+        dest="reuse_ligand_mol2_file",
+        action="store_true",
+        default=False,
+        help=(
+            "Reuses the ligand mol2 files allowing the user to alter "
+            "ligand bond orders"
+        ),
+    )
     group.add_argument(
-        "-k", "--keep-protons", dest="keep_protons", action="store_true",
-        help="Keep protons in input file", default=False)
+        "-k",
+        "--keep-protons",
+        dest="keep_protons",
+        action="store_true",
+        help="Keep protons in input file",
+        default=False,
+    )
     group.add_argument(
-        "-q", "--quiet", action="store_const", const="WARNING",
-        dest="log_level", help="suppress non-warning messages")
+        "-q",
+        "--quiet",
+        action="store_const",
+        const="WARNING",
+        dest="log_level",
+        help="suppress non-warning messages",
+    )
     group.add_argument(
-        "--generate-propka-input", action="store_true",
-        help="Generate a PROPKA input file")
+        "--generate-propka-input",
+        action="store_true",
+        help="Generate a PROPKA input file",
+    )
     group.add_argument(
-        "--protonate-all", dest="protonate_all", action="store_true",
+        "--protonate-all",
+        dest="protonate_all",
+        action="store_true",
         help="Protonate all atoms (will not influence pKa calculation)",
-        default=False)
+        default=False,
+    )
     return parser
 
 
@@ -315,12 +435,13 @@ def loadOptions(args=None):
     # Convert titrate_only string to a list of (chain, resnum) items:
     if options.titrate_only is not None:
         res_list = []
-        for res_str in options.titrate_only.split(','):
+        for res_str in options.titrate_only.split(","):
             try:
                 chain, resnum, inscode = parse_res_string(res_str)
             except ValueError:
                 _LOGGER.critical(
-                    'Invalid residue string: "{0:s}"'.format(res_str))
+                    'Invalid residue string: "{0:s}"'.format(res_str)
+                )
                 sys.exit(1)
             res_list.append((chain, resnum, inscode))
         options.titrate_only = res_list
@@ -340,15 +461,15 @@ def make_tidy_atom_label(name, element):
     Returns:
         string
     """
-    if len(name) > 4: # if longer than 4, just truncate the name
+    if len(name) > 4:  # if longer than 4, just truncate the name
         label = name[0:4]
-    elif len(name) == 4: # if length is 4, otherwise use the name as it is
+    elif len(name) == 4:  # if length is 4, otherwise use the name as it is
         label = name
-    else: # if less than 4 characters long, insert white space as needed
+    else:  # if less than 4 characters long, insert white space as needed
         if len(element) == 1:
-            label = ' {0:<3s}'.format(name)
-        else: # The element should occupy the two first chars
-            label = '{0:<4s}'.format(name)
+            label = f" {name:<3s}"
+        else:  # The element should occupy the two first chars
+            label = f"{name:<4s}"
     return label
 
 
@@ -367,7 +488,7 @@ def get_sorted_configurations(configuration_keys):
 
 def configuration_compare(conf):
     """TODO - figure out what this function does."""
-    return 100*int(conf[1:-2]) + ord(conf[-1])
+    return 100 * int(conf[1:-2]) + ord(conf[-1])
 
 
 def _args_to_str(arg_list):

@@ -27,9 +27,9 @@ class LigandPkaValues:
         """
         self.parameters = parameters
         # attempt to find Marvin executables in the path
-        self.molconvert = self.find_in_path('molconvert')
-        self.cxcalc = self.find_in_path('cxcalc')
-        info('Found Marvin executables:')
+        self.molconvert = self.find_in_path("molconvert")
+        self.cxcalc = self.find_in_path("cxcalc")
+        info("Found Marvin executables:")
         info(self.cxcalc)
         info(self.molconvert)
 
@@ -42,20 +42,24 @@ class LigandPkaValues:
         Returns:
             location of program
         """
-        path = os.environ.get('PATH').split(os.pathsep)
+        path = os.environ.get("PATH").split(os.pathsep)
         locs = [
-            i for i in filter(lambda loc: os.access(loc, os.F_OK),
-                              map(lambda dir: os.path.join(dir, program),
-                                  path))]
-        if len(locs) == 0:
-            str_ = "'Error: Could not find {0:s}.".format(program)
-            str_ += ' Please make sure that it is found in the path.'
+            i
+            for i in filter(
+                lambda loc: os.access(loc, os.F_OK),
+                map(lambda dir: os.path.join(dir, program), path),
+            )
+        ]
+        if not locs:
+            str_ = f"'Error: Could not find {program}."
+            str_ += " Please make sure that it is found in the path."
             info(str_)
             sys.exit(-1)
         return locs[0]
 
     def get_marvin_pkas_for_pdb_file(
-            self, molecule, parameters, num_pkas=10, min_ph=-10, max_ph=20):
+        self, molecule, parameters, num_pkas=10, min_ph=-10, max_ph=20
+    ):
         """Use Marvin executables to get pKas for a PDB file.
 
         Args:
@@ -66,10 +70,12 @@ class LigandPkaValues:
             max_ph:  maximum pH value
         """
         self.get_marvin_pkas_for_molecular_container(
-            molecule, num_pkas=num_pkas, min_ph=min_ph, max_ph=max_ph)
+            molecule, num_pkas=num_pkas, min_ph=min_ph, max_ph=max_ph
+        )
 
-    def get_marvin_pkas_for_molecular_container(self, molecule, num_pkas=10,
-                                                min_ph=-10, max_ph=20):
+    def get_marvin_pkas_for_molecular_container(
+        self, molecule, num_pkas=10, min_ph=-10, max_ph=20
+    ):
         """Use Marvin executables to calculate pKas for a molecular container.
 
         Args:
@@ -79,16 +85,25 @@ class LigandPkaValues:
             max_ph:  maximum pH value
         """
         for name in molecule.conformation_names:
-            filename = '{0:s}_{1:s}'.format(molecule.name, name)
+            filename = f"{molecule.name}_{name}"
             self.get_marvin_pkas_for_conformation_container(
-                molecule.conformations[name], name=filename,
+                molecule.conformations[name],
+                name=filename,
                 reuse=molecule.options.reuse_ligand_mol2_file,
-                num_pkas=num_pkas, min_ph=min_ph, max_ph=max_ph)
+                num_pkas=num_pkas,
+                min_ph=min_ph,
+                max_ph=max_ph,
+            )
 
-    def get_marvin_pkas_for_conformation_container(self, conformation,
-                                                   name='temp', reuse=False,
-                                                   num_pkas=10, min_ph=-10,
-                                                   max_ph=20):
+    def get_marvin_pkas_for_conformation_container(
+        self,
+        conformation,
+        name="temp",
+        reuse=False,
+        num_pkas=10,
+        min_ph=-10,
+        max_ph=20,
+    ):
         """Use Marvin executables to calculate pKas for a conformation container.
 
         Args:
@@ -101,11 +116,23 @@ class LigandPkaValues:
         """
         conformation.marvin_pkas_calculated = True
         self.get_marvin_pkas_for_atoms(
-            conformation.get_heavy_ligand_atoms(), name=name, reuse=reuse,
-            num_pkas=num_pkas, min_ph=min_ph, max_ph=max_ph)
+            conformation.get_heavy_ligand_atoms(),
+            name=name,
+            reuse=reuse,
+            num_pkas=num_pkas,
+            min_ph=min_ph,
+            max_ph=max_ph,
+        )
 
-    def get_marvin_pkas_for_atoms(self, atoms, name='temp', reuse=False,
-                                  num_pkas=10, min_ph=-10, max_ph=20):
+    def get_marvin_pkas_for_atoms(
+        self,
+        atoms,
+        name="temp",
+        reuse=False,
+        num_pkas=10,
+        min_ph=-10,
+        max_ph=20,
+    ):
         """Use Marvin executables to calculate pKas for a list of atoms.
 
         Args:
@@ -119,14 +146,25 @@ class LigandPkaValues:
         # do one molecule at the time so we don't confuse marvin
         molecules = split_atoms_into_molecules(atoms)
         for i, molecule in enumerate(molecules):
-            filename = '{0:s}_{1:d}.mol2'.format(name, i+1)
+            filename = f"{name}_{i + 1:d}.mol2"
             self.get_marvin_pkas_for_molecule(
-                molecule, filename=filename, reuse=reuse, num_pkas=num_pkas,
-                min_ph=min_ph, max_ph=max_ph)
+                molecule,
+                filename=filename,
+                reuse=reuse,
+                num_pkas=num_pkas,
+                min_ph=min_ph,
+                max_ph=max_ph,
+            )
 
-    def get_marvin_pkas_for_molecule(self, atoms, filename='__tmp_ligand.mol2',
-                                     reuse=False, num_pkas=10, min_ph=-10,
-                                     max_ph=20):
+    def get_marvin_pkas_for_molecule(
+        self,
+        atoms,
+        filename="__tmp_ligand.mol2",
+        reuse=False,
+        num_pkas=10,
+        min_ph=-10,
+        max_ph=20,
+    ):
         """Use Marvin executables to calculate pKas for a molecule.
 
         Args:
@@ -143,41 +181,51 @@ class LigandPkaValues:
         # check that we actually have a file to work with
         if not os.path.isfile(filename):
             errstr = (
-                "Didn't find a user-modified file '{0:s}' "
-                "- generating one".format(
-                    filename))
+                f"Didn't find a user-modified file '{filename}' "
+                "- generating one"
+            )
             warning(errstr)
             write_mol2_for_atoms(atoms, filename)
         # Marvin calculate pKa values
-        fmt = (
-            'pka -a {num1} -b {num2} --min {min_ph} '
-            '--max {max_ph} -d large')
         options = (
-            fmt.format(
-                num1=num_pkas, num2=num_pkas, min_ph=min_ph, max_ph=max_ph))
+            f"pka -a {num_pkas} -b {num_pkas} "
+            f"--min {min_ph} --max {max_ph} -d large"
+        )
         (output, errors) = subprocess.Popen(
-            [self.cxcalc, filename]+options.split(), stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE).communicate()
+            [self.cxcalc, filename] + options.split(),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        ).communicate()
         if len(errors) > 0:
-            info('***********************************************************'
-                 '*********************************************')
-            info('* Warning: Marvin execution failed:                        '
-                 '                                            *')
-            info('* {0:<100s} *'.format(errors))
-            info('*                                                          '
-                 '                                            *')
-            info('* Please edit the ligand mol2 file and re-run PropKa with '
-                 'the -l option: {0:>29s} *'.format(filename))
-            info('***********************************************************'
-                 '*********************************************')
+            info(
+                "***********************************************************"
+                "*********************************************"
+            )
+            info(
+                "* Warning: Marvin execution failed:                        "
+                "                                            *"
+            )
+            info(f"* {errors:<100s} *")
+            info(
+                "*                                                          "
+                "                                            *"
+            )
+            info(
+                "* Please edit the ligand mol2 file and re-run PropKa with "
+                f"the -l option: {filename:>29s} *"
+            )
+            info(
+                "***********************************************************"
+                "*********************************************"
+            )
             sys.exit(-1)
         # extract calculated pkas
         indices, pkas, types = self.extract_pkas(output)
         # store calculated pka values
         for i, index in enumerate(indices):
             atoms[index].marvin_pka = pkas[i]
-            atoms[index].charge = {'a': -1, 'b': 1}[types[i]]
-            info('{0:s} model pKa: {1:<.2f}'.format(atoms[index], pkas[i]))
+            atoms[index].charge = {"a": -1, "b": 1}[types[i]]
+            info(f"{atoms[index]} model pKa: {pkas[i]:<.2f}")
 
     @staticmethod
     def extract_pkas(output):
@@ -191,15 +239,17 @@ class LigandPkaValues:
             3. Types
         """
         # split output
-        [tags, values, _] = output.decode().split('\n')
-        tags = tags.split('\t')
-        values = values.split('\t')
+        [tags, values, _] = output.decode().split("\n")
+        tags = tags.split("\t")
+        values = values.split("\t")
         # format values
         types = [
-            tags[i][0] for i in range(1, len(tags)-1)
-            if len(values) > i and values[i] != '']
-        indices = [int(a)-1 for a in values[-1].split(',') if a != '']
-        values = [float(v.replace(',', '.')) for v in values[1:-1] if v != '']
+            tags[i][0]
+            for i in range(1, len(tags) - 1)
+            if len(values) > i and values[i] != ""
+        ]
+        indices = [int(a) - 1 for a in values[-1].split(",") if a != ""]
+        values = [float(v.replace(",", ".")) for v in values[1:-1] if v != ""]
         if len(indices) != len(values) != len(types):
-            raise Exception('Lengths of atoms and pka values mismatch')
+            raise Exception("Lengths of atoms and pka values mismatch")
         return indices, values, types

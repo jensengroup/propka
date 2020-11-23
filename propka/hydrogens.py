@@ -12,7 +12,6 @@ from propka.bonds import BondMaker
 from propka.atom import Atom
 
 
-
 def setup_bonding_and_protonation(molecular_container):
     """Set up bonding and protonation for a molecule.
 
@@ -68,7 +67,7 @@ def protonate_30_style(molecular_container):
         molecular_container:  molecule
     """
     for name in molecular_container.conformation_names:
-        info('Now protonating', name)
+        info("Now protonating", name)
         # split atom into residues
         curres = -1000000
         residue = []
@@ -78,23 +77,24 @@ def protonate_30_style(molecular_container):
             if atom.res_num != curres:
                 curres = atom.res_num
                 if len(residue) > 0:
-                    #backbone
+                    # backbone
                     [o_atom, c_atom] = add_backbone_hydrogen(
-                        residue, o_atom, c_atom)
-                    #arginine
-                    if residue[0].res_name == 'ARG':
+                        residue, o_atom, c_atom
+                    )
+                    # arginine
+                    if residue[0].res_name == "ARG":
                         add_arg_hydrogen(residue)
-                    #histidine
-                    if residue[0].res_name == 'HIS':
+                    # histidine
+                    if residue[0].res_name == "HIS":
                         add_his_hydrogen(residue)
-                    #tryptophan
-                    if residue[0].res_name == 'TRP':
+                    # tryptophan
+                    if residue[0].res_name == "TRP":
                         add_trp_hydrogen(residue)
-                    #amides
-                    if residue[0].res_name in ['GLN', 'ASN']:
+                    # amides
+                    if residue[0].res_name in ["GLN", "ASN"]:
                         add_amd_hydrogen(residue)
                     residue = []
-            if atom.type == 'atom':
+            if atom.type == "atom":
                 residue.append(atom)
 
 
@@ -116,7 +116,7 @@ def add_arg_hydrogen(residue):
     Returns:
         list of hydrogen atoms
     """
-    #info('Adding arg H',residue)
+    # info('Adding arg H',residue)
     for atom in residue:
         if atom.name == "CD":
             cd_atom = atom
@@ -172,6 +172,7 @@ def add_trp_hydrogen(residue):
     """
     cd_atom = None
     ne_atom = None
+    ce_atom = None
     for atom in residue:
         if atom.name == "CD1":
             cd_atom = atom
@@ -180,9 +181,10 @@ def add_trp_hydrogen(residue):
         elif atom.name == "CE2":
             ce_atom = atom
     if (cd_atom is None) or (ne_atom is None) or (ce_atom is None):
-        str_ = "Unable to find all atoms for {0:s} {1:s}".format(
-            residue[0].res_name, residue[0].res_num)
-        raise ValueError(str_)
+        raise ValueError(
+            f"Unable to find all atoms for {residue[0].res_name} "
+            f"{residue[0].res_num}"
+        )
     he_atom = protonate_sp2(cd_atom, ne_atom, ce_atom)
     he_atom.name = "HNE"
 
@@ -197,19 +199,23 @@ def add_amd_hydrogen(residue):
     o_atom = None
     n_atom = None
     for atom in residue:
-        if ((atom.res_name == "GLN" and atom.name == "CD")
-                or (atom.res_name == "ASN" and atom.name == "CG")):
+        if (atom.res_name == "GLN" and atom.name == "CD") or (
+            atom.res_name == "ASN" and atom.name == "CG"
+        ):
             c_atom = atom
-        elif ((atom.res_name == "GLN" and atom.name == "OE1")
-              or (atom.res_name == "ASN" and atom.name == "OD1")):
+        elif (atom.res_name == "GLN" and atom.name == "OE1") or (
+            atom.res_name == "ASN" and atom.name == "OD1"
+        ):
             o_atom = atom
-        elif ((atom.res_name == "GLN" and atom.name == "NE2")
-              or (atom.res_name == "ASN" and atom.name == "ND2")):
+        elif (atom.res_name == "GLN" and atom.name == "NE2") or (
+            atom.res_name == "ASN" and atom.name == "ND2"
+        ):
             n_atom = atom
     if (c_atom is None) or (o_atom is None) or (n_atom is None):
-        str_ = "Unable to find all atoms for {0:s} {1:s}".format(
-            residue[0].res_name, residue[0].res_num)
-        raise ValueError(str_)
+        raise ValueError(
+            f"Unable to find all atoms for {residue[0].res_name} "
+            f"{residue[0].res_num}"
+        )
     h1_atom = protonate_direction(n_atom, o_atom, c_atom)
     h1_atom.name = "HN1"
     h2_atom = protonate_average_direction(n_atom, c_atom, o_atom)
@@ -262,13 +268,13 @@ def protonate_direction(x1_atom, x2_atom, x3_atom):
     Returns:
         new hydrogen atom
     """
-    dx = (x3_atom.x - x2_atom.x)
-    dy = (x3_atom.y - x2_atom.y)
-    dz = (x3_atom.z - x2_atom.z)
-    length = math.sqrt(dx*dx + dy*dy + dz*dz)
-    x = x1_atom.x + dx/length
-    y = x1_atom.y + dy/length
-    z = x1_atom.z + dz/length
+    dx = x3_atom.x - x2_atom.x
+    dy = x3_atom.y - x2_atom.y
+    dz = x3_atom.z - x2_atom.z
+    length = math.sqrt(dx * dx + dy * dy + dz * dz)
+    x = x1_atom.x + dx / length
+    y = x1_atom.y + dy / length
+    z = x1_atom.z + dz / length
     h_atom = make_new_h(x1_atom, x, y, z)
     h_atom.name = "H"
     return h_atom
@@ -288,13 +294,13 @@ def protonate_average_direction(x1_atom, x2_atom, x3_atom):
     Returns:
         new hydrogen atom
     """
-    dx = (x3_atom.x + x1_atom.x)*0.5 - x2_atom.x
-    dy = (x3_atom.y + x1_atom.y)*0.5 - x2_atom.y
-    dz = (x3_atom.z + x1_atom.z)*0.5 - x2_atom.z
-    length = math.sqrt(dx*dx + dy*dy + dz*dz)
-    x = x1_atom.x + dx/length
-    y = x1_atom.y + dy/length
-    z = x1_atom.z + dz/length
+    dx = (x3_atom.x + x1_atom.x) * 0.5 - x2_atom.x
+    dy = (x3_atom.y + x1_atom.y) * 0.5 - x2_atom.y
+    dz = (x3_atom.z + x1_atom.z) * 0.5 - x2_atom.z
+    length = math.sqrt(dx * dx + dy * dy + dz * dz)
+    x = x1_atom.x + dx / length
+    y = x1_atom.y + dy / length
+    z = x1_atom.z + dz / length
     h_atom = make_new_h(x1_atom, x, y, z)
     h_atom.name = "H"
     return h_atom
@@ -310,13 +316,13 @@ def protonate_sp2(x1_atom, x2_atom, x3_atom):
     Returns:
         new hydrogen atom
     """
-    dx = (x1_atom.x + x3_atom.x)*0.5 - x2_atom.x
-    dy = (x1_atom.y + x3_atom.y)*0.5 - x2_atom.y
-    dz = (x1_atom.z + x3_atom.z)*0.5 - x2_atom.z
-    length = math.sqrt(dx*dx + dy*dy + dz*dz)
-    x = x2_atom.x - dx/length
-    y = x2_atom.y - dy/length
-    z = x2_atom.z - dz/length
+    dx = (x1_atom.x + x3_atom.x) * 0.5 - x2_atom.x
+    dy = (x1_atom.y + x3_atom.y) * 0.5 - x2_atom.y
+    dz = (x1_atom.z + x3_atom.z) * 0.5 - x2_atom.z
+    length = math.sqrt(dx * dx + dy * dy + dz * dz)
+    x = x2_atom.x - dx / length
+    y = x2_atom.y - dy / length
+    z = x2_atom.z - dz / length
     h_atom = make_new_h(x2_atom, x, y, z)
     h_atom.name = "H"
     return h_atom
@@ -335,10 +341,18 @@ def make_new_h(atom, x, y, z):
     """
     new_h = Atom()
     new_h.set_property(
-        numb=None, name='H{0:s}'.format(atom.name[1:]),
-        res_name=atom.res_name, chain_id=atom.chain_id,
-        res_num=atom.res_num, x=x, y=y, z=z, occ=None, beta=None)
-    new_h.element = 'H'
+        numb=None,
+        name=f"H{atom.name[1:]}",
+        res_name=atom.res_name,
+        chain_id=atom.chain_id,
+        res_num=atom.res_num,
+        x=x,
+        y=y,
+        z=z,
+        occ=None,
+        beta=None,
+    )
+    new_h.element = "H"
     new_h.bonded_atoms = [atom]
     new_h.charge = 0
     new_h.steric_number = 0
@@ -348,5 +362,3 @@ def make_new_h(atom, x, y, z):
     atom.bonded_atoms.append(new_h)
     atom.conformation_container.add_atom(new_h)
     return new_h
-
-

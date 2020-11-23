@@ -17,8 +17,8 @@ _LOGGER = logging.getLogger(__name__)
 def get_paths(pdb):
     """Helper function to get the path to the input and reference files"""
     path_dict = get_test_dirs()
-    ref_path = path_dict["results"] / ("{0:s}.dat".format(pdb))
-    pdb_path = path_dict["pdbs"] / ("{0:s}.pdb".format(pdb))
+    ref_path = path_dict["results"] / (f"{pdb}.dat")
+    pdb_path = path_dict["pdbs"] / (f"{pdb}.pdb")
 
     return ref_path.resolve(), pdb_path.resolve()
 
@@ -42,44 +42,55 @@ def run_propka_stream(options, input_file, filename):
         molecule.write_propka()
 
 
-@pytest.mark.parametrize("pdb, options", [
-    pytest.param("1FTJ-Chain-A", [], id="1FTJ-Chain-A: no options"),
-    pytest.param('3SGB-subset', [
-        "--titrate_only",
-        "E:17,E:18,E:19,E:29,E:44,E:45,E:46,E:118,E:119,E:120,E:139"],
-                 id="3SGB: --titrate_only"),
-    pytest.param('1HPX-warn', ['--quiet'], id="1HPX-warn: --quiet"),
-])
+@pytest.mark.parametrize(
+    "pdb, options",
+    [
+        pytest.param("1FTJ-Chain-A", [], id="1FTJ-Chain-A: no options"),
+        pytest.param(
+            "3SGB-subset",
+            [
+                "--titrate_only",
+                "E:17,E:18,E:19,E:29,E:44,E:45,E:46,E:118,E:119,E:120,E:139",
+            ],
+            id="3SGB: --titrate_only",
+        ),
+        pytest.param("1HPX-warn", ["--quiet"], id="1HPX-warn: --quiet"),
+    ],
+)
 def test_textio_filestream(tmpdir, pdb, options):
     """Basic regression test using TextIO streams for the input PDB file"""
     # Get the relevant paths
     ref_path, pdb_path = get_paths(pdb)
     filename = f"{pdb}.pdb"
 
-    filestream = open(pdb_path, 'r')
-
-    with tmpdir.as_cwd():
-        run_propka_stream(options, filestream, filename)
-        compare_output(pdb, Path.cwd(), ref_path)
-
-    filestream.close()
+    with open(pdb_path, "r") as filestream:
+        with tmpdir.as_cwd():
+            run_propka_stream(options, filestream, filename)
+            compare_output(pdb, Path.cwd(), ref_path)
 
 
-@pytest.mark.parametrize("pdb, options", [
-    pytest.param("1FTJ-Chain-A", [], id="1FTJ-Chain-A: no options"),
-    pytest.param('3SGB-subset', [
-        "--titrate_only",
-        "E:17,E:18,E:19,E:29,E:44,E:45,E:46,E:118,E:119,E:120,E:139"],
-                 id="3SGB: --titrate_only"),
-    pytest.param('1HPX-warn', ['--quiet'], id="1HPX-warn: --quiet"),
-])
+@pytest.mark.parametrize(
+    "pdb, options",
+    [
+        pytest.param("1FTJ-Chain-A", [], id="1FTJ-Chain-A: no options"),
+        pytest.param(
+            "3SGB-subset",
+            [
+                "--titrate_only",
+                "E:17,E:18,E:19,E:29,E:44,E:45,E:46,E:118,E:119,E:120,E:139",
+            ],
+            id="3SGB: --titrate_only",
+        ),
+        pytest.param("1HPX-warn", ["--quiet"], id="1HPX-warn: --quiet"),
+    ],
+)
 def test_stringio_filestream(tmpdir, pdb, options):
     """Basic regression test using StringIO streams for the input PDB file"""
     # Get the relevant paths
     ref_path, pdb_path = get_paths(pdb)
     filename = f"{pdb}.pdb"
 
-    with open(pdb_path, 'r') as writer:
+    with open(pdb_path, "r") as writer:
         filestream = StringIO(writer.read())
 
     with tmpdir.as_cwd():
@@ -93,15 +104,15 @@ def test_valuerror_nofiletype():
     """Tests for raised ValueError when an unknown filename is passed to
     read_molecule_file"""
     pdb = "1FTJ-Chain-A"
-    options = []
+    _, pdb_path = get_paths(pdb)
 
-    ref_path, pdb_path = get_paths(pdb)
-
-    with open(pdb_path, 'r') as writer:
+    with open(pdb_path, "r") as writer:
         filestream = StringIO(writer.read())
 
     errmsg = "Unknown input file type"
     with pytest.raises(ValueError, match=errmsg):
+        options = []
+
         run_propka_stream(options, filestream, filename="test.dat")
 
 
@@ -109,12 +120,11 @@ def test_valuerror_notpdb():
     """Tests for raised ValueError when a stream object that isn't a PDB
     is passed to read_molecule_file"""
     pdb = "1FTJ-Chain-A"
-    options = []
-
-    ref_path, pdb_path = get_paths(pdb)
+    _, _ = get_paths(pdb)
 
     filestream = StringIO()
 
     errmsg = "The pdb file does not seem to contain any "
     with pytest.raises(ValueError, match=errmsg):
+        options = []
         run_propka_stream(options, filestream, filename="test.pdb")

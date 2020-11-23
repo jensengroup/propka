@@ -37,8 +37,10 @@ def radial_volume_desolvation(parameters, group):
     min_dist_4th = MIN_DISTANCE_4TH
     for atom in all_atoms:
         # ignore atoms in the same residue
-        if (atom.res_num == group.atom.res_num
-                and atom.chain_id == group.atom.chain_id):
+        if (
+            atom.res_num == group.atom.res_num
+            and atom.chain_id == group.atom.chain_id
+        ):
             continue
         sq_dist = squared_distance(group, atom)
         # desolvation
@@ -46,21 +48,26 @@ def radial_volume_desolvation(parameters, group):
             # use a default relative volume of 1.0 if the volume of the element
             # is not found in parameters
             # insert check for methyl groups
-            if atom.element == 'C' and atom.name not in ['CA', 'C']:
-                dvol = parameters.VanDerWaalsVolume['C4']
+            if atom.element == "C" and atom.name not in ["CA", "C"]:
+                dvol = parameters.VanDerWaalsVolume["C4"]
             else:
                 dvol = parameters.VanDerWaalsVolume.get(atom.element, 1.0)
-            dv_inc = dvol/max(min_dist_4th, sq_dist*sq_dist)
+            dv_inc = dvol / max(min_dist_4th, sq_dist * sq_dist)
             volume += dv_inc
         # buried
         if sq_dist < parameters.buried_cutoff_squared:
             group.num_volume += 1
     group.buried = calculate_weight(parameters, group.num_volume)
     scale_factor = calculate_scale_factor(parameters, group.buried)
-    volume_after_allowance = max(0.00, volume-parameters.desolvationAllowance)
+    volume_after_allowance = max(
+        0.00, volume - parameters.desolvationAllowance
+    )
     group.energy_volume = (
-        group.charge * parameters.desolvationPrefactor
-        * volume_after_allowance * scale_factor)
+        group.charge
+        * parameters.desolvationPrefactor
+        * volume_after_allowance
+        * scale_factor
+    )
 
 
 def calculate_scale_factor(parameters, weight):
@@ -72,8 +79,9 @@ def calculate_scale_factor(parameters, weight):
     Returns:
         scaling factor
     """
-    scale_factor = 1.0 - (1.0 - parameters.desolvationSurfaceScalingFactor)*(1.0 - weight)
-    return scale_factor
+    return 1.0 - (1.0 - parameters.desolvationSurfaceScalingFactor) * (
+        1.0 - weight
+    )
 
 
 def calculate_weight(parameters, num_volume):
@@ -87,9 +95,9 @@ def calculate_weight(parameters, num_volume):
     Returns:
         desolvation weight
     """
-    weight = (
-        float(num_volume - parameters.Nmin)
-        / float(parameters.Nmax - parameters.Nmin))
+    weight = float(num_volume - parameters.Nmin) / float(
+        parameters.Nmax - parameters.Nmin
+    )
     weight = min(1.0, weight)
     weight = max(0.0, weight)
     return weight
@@ -105,9 +113,9 @@ def calculate_pair_weight(parameters, num_volume1, num_volume2):
         desolvation weight
     """
     num_volume = num_volume1 + num_volume2
-    num_min = 2*parameters.Nmin
-    num_max = 2*parameters.Nmax
-    weight = float(num_volume - num_min)/float(num_max - num_min)
+    num_min = 2 * parameters.Nmin
+    num_max = 2 * parameters.Nmax
+    weight = float(num_volume - num_min) / float(num_max - num_min)
     weight = min(1.0, weight)
     weight = max(0.0, weight)
     return weight
@@ -129,8 +137,8 @@ def hydrogen_bond_energy(dist, dpka_max, cutoffs, f_angle=1.0):
     elif dist > cutoffs[1]:
         value = 0.00
     else:
-        value = 1.0 - (dist - cutoffs[0])/(cutoffs[1] - cutoffs[0])
-    dpka = dpka_max*value*f_angle
+        value = 1.0 - (dist - cutoffs[0]) / (cutoffs[1] - cutoffs[0])
+    dpka = dpka_max * value * f_angle
     return abs(dpka)
 
 
@@ -162,9 +170,9 @@ def angle_distance_factors(atom1=None, atom2=None, atom3=None, center=None):
     dy_32 = atom2.y - atom3.y
     dz_32 = atom2.z - atom3.z
     dist_23 = math.sqrt(dx_32 * dx_32 + dy_32 * dy_32 + dz_32 * dz_32)
-    dx_32 = dx_32/dist_23
-    dy_32 = dy_32/dist_23
-    dz_32 = dz_32/dist_23
+    dx_32 = dx_32 / dist_23
+    dy_32 = dy_32 / dist_23
+    dz_32 = dz_32 / dist_23
     if atom1 is None:
         dx_21 = center[0] - atom2.x
         dy_21 = center[1] - atom2.y
@@ -174,10 +182,10 @@ def angle_distance_factors(atom1=None, atom2=None, atom3=None, center=None):
         dy_21 = atom1.y - atom2.y
         dz_21 = atom1.z - atom2.z
     dist_12 = math.sqrt(dx_21 * dx_21 + dy_21 * dy_21 + dz_21 * dz_21)
-    dx_21 = dx_21/dist_12
-    dy_21 = dy_21/dist_12
-    dz_21 = dz_21/dist_12
-    f_angle = dx_21*dx_32 + dy_21*dy_32 + dz_21*dz_32
+    dx_21 = dx_21 / dist_12
+    dy_21 = dy_21 / dist_12
+    dz_21 = dz_21 / dist_12
+    f_angle = dx_21 * dx_32 + dy_21 * dy_32 + dz_21 * dz_32
     return dist_12, f_angle, dist_23
 
 
@@ -194,15 +202,19 @@ def hydrogen_bond_interaction(group1, group2, version):
     # find the smallest distance between interacting atoms
     atoms1 = group1.get_interaction_atoms(group2)
     atoms2 = group2.get_interaction_atoms(group1)
-    [closest_atom1, dist, closest_atom2] = get_smallest_distance(atoms1, atoms2)
+    [closest_atom1, dist, closest_atom2] = get_smallest_distance(
+        atoms1, atoms2
+    )
     if None in [closest_atom1, closest_atom2]:
         warning(
-            'Side chain interaction failed for {0:s} and {1:s}'.format(
-                group1.label, group2.label))
+            f"Side chain interaction failed for {group1.label} and "
+            f"{group2.label}"
+        )
         return None
     # get the parameters
-    [dpka_max, cutoff] = version.get_hydrogen_bond_parameters(closest_atom1,
-                                                              closest_atom2)
+    [dpka_max, cutoff] = version.get_hydrogen_bond_parameters(
+        closest_atom1, closest_atom2
+    )
     if (dpka_max is None) or (None in cutoff):
         return None
     # check that the closest atoms are close enough
@@ -210,40 +222,53 @@ def hydrogen_bond_interaction(group1, group2, version):
         return None
     # check that bond distance criteria is met
     min_hbond_dist = version.parameters.min_bond_distance_for_hydrogen_bonds
-    if group1.atom.is_atom_within_bond_distance(group2.atom, min_hbond_dist, 1):
+    if group1.atom.is_atom_within_bond_distance(
+        group2.atom, min_hbond_dist, 1
+    ):
         return None
     # set angle factor
     f_angle = 1.0
-    if group2.type in version.parameters.angular_dependent_sidechain_interactions:
-        if closest_atom2.element == 'H':
+    if (
+        group2.type
+        in version.parameters.angular_dependent_sidechain_interactions
+    ):
+        if closest_atom2.element == "H":
             heavy_atom = closest_atom2.bonded_atoms[0]
             hydrogen = closest_atom2
-            dist, f_angle, _ = angle_distance_factors(closest_atom1, hydrogen,
-                                                      heavy_atom)
+            dist, f_angle, _ = angle_distance_factors(
+                closest_atom1, hydrogen, heavy_atom
+            )
         else:
             # Either the structure is corrupt (no hydrogen), or the heavy atom
             # is closer to the titratable atom than the hydrogen. In either
             # case, we set the angle factor to 0
             f_angle = 0.0
-    elif group1.type in version.parameters.angular_dependent_sidechain_interactions:
-        if closest_atom1.element == 'H':
+    elif (
+        group1.type
+        in version.parameters.angular_dependent_sidechain_interactions
+    ):
+        if closest_atom1.element == "H":
             heavy_atom = closest_atom1.bonded_atoms[0]
             hydrogen = closest_atom1
-            dist, f_angle, _ = angle_distance_factors(closest_atom2, hydrogen,
-                                                      heavy_atom)
+            dist, f_angle, _ = angle_distance_factors(
+                closest_atom2, hydrogen, heavy_atom
+            )
         else:
             # Either the structure is corrupt (no hydrogen), or the heavy atom
             # is closer to the titratable atom than the hydrogen. In either
             # case, we set the angle factor to 0
             f_angle = 0.0
-    weight = version.calculate_pair_weight(group1.num_volume, group2.num_volume)
+    weight = version.calculate_pair_weight(
+        group1.num_volume, group2.num_volume
+    )
     exception, value = version.check_exceptions(group1, group2)
     if exception:
         # Do nothing, value should have been assigned.
         pass
     else:
         value = version.calculate_side_chain_energy(
-            dist, dpka_max, cutoff, weight, f_angle)
+            dist, dpka_max, cutoff, weight, f_angle
+        )
     return value
 
 
@@ -261,9 +286,10 @@ def electrostatic_interaction(group1, group2, dist, version):
     # check if we should do coulomb interaction at all
     if not version.check_coulomb_pair(group1, group2, dist):
         return None
-    weight = version.calculate_pair_weight(group1.num_volume, group2.num_volume)
-    value = version.calculate_coulomb_energy(dist, weight)
-    return value
+    weight = version.calculate_pair_weight(
+        group1.num_volume, group2.num_volume
+    )
+    return version.calculate_coulomb_energy(dist, weight)
 
 
 def check_coulomb_pair(parameters, group1, group2, dist):
@@ -305,14 +331,14 @@ def coulomb_energy(dist, weight, parameters):
     Returns:
         pKa shift
     """
-    diel = UNK_DIELECTRIC1 - (UNK_DIELECTRIC1 - UNK_DIELECTRIC2)*weight
+    diel = UNK_DIELECTRIC1 - (UNK_DIELECTRIC1 - UNK_DIELECTRIC2) * weight
     dist = max(dist, parameters.coulomb_cutoff1)
-    scale = (
-        (dist - parameters.coulomb_cutoff2)
-        / (parameters.coulomb_cutoff1 - parameters.coulomb_cutoff2))
+    scale = (dist - parameters.coulomb_cutoff2) / (
+        parameters.coulomb_cutoff1 - parameters.coulomb_cutoff2
+    )
     scale = max(0.0, scale)
     scale = min(1.0, scale)
-    dpka = UNK_PKA_SCALING1/(diel*dist)*scale
+    dpka = UNK_PKA_SCALING1 / (diel * dist) * scale
     return abs(dpka)
 
 
@@ -334,17 +360,21 @@ def backbone_reorganization(_, conformation):
         weight = titratable_group.buried
         dpka = 0.00
         for bbc_group in bbc_groups:
-            center = [titratable_group.x, titratable_group.y, titratable_group.z]
+            center = [
+                titratable_group.x,
+                titratable_group.y,
+                titratable_group.z,
+            ]
             atom2 = bbc_group.get_interaction_atoms(titratable_group)[0]
-            dist, f_angle, _ = angle_distance_factors(atom2=atom2,
-                                                      atom3=bbc_group.atom,
-                                                      center=center)
+            dist, f_angle, _ = angle_distance_factors(
+                atom2=atom2, atom3=bbc_group.atom, center=center
+            )
             if dist < UNK_BACKBONE_DISTANCE1 and f_angle > UNK_FANGLE_MIN:
-                value = (
-                    1.0 - (dist-UNK_BACKBONE_DISTANCE2)
-                    / (UNK_BACKBONE_DISTANCE1-UNK_BACKBONE_DISTANCE2))
+                value = 1.0 - (dist - UNK_BACKBONE_DISTANCE2) / (
+                    UNK_BACKBONE_DISTANCE1 - UNK_BACKBONE_DISTANCE2
+                )
                 dpka += UNK_PKA_SCALING2 * min(1.0, value)
-        titratable_group.energy_local = dpka*weight
+        titratable_group.energy_local = dpka * weight
 
 
 def check_exceptions(version, group1, group2):
@@ -371,14 +401,26 @@ def check_exceptions(version, group1, group2):
         exception, value = check_coo_coo_exception(group1, group2, version)
     elif (res_type1 == "CYS") and (res_type2 == "CYS"):
         exception, value = check_cys_cys_exception(group1, group2, version)
-    elif ((res_type1 == "COO") and (res_type2 == "HIS")
-          or (res_type1 == "HIS") and (res_type2 == "COO")):
+    elif (
+        (res_type1 == "COO")
+        and (res_type2 == "HIS")
+        or (res_type1 == "HIS")
+        and (res_type2 == "COO")
+    ):
         exception, value = check_coo_his_exception(group1, group2, version)
-    elif ((res_type1 == "OCO") and (res_type2 == "HIS")
-          or (res_type1 == "HIS") and (res_type2 == "OCO")):
+    elif (
+        (res_type1 == "OCO")
+        and (res_type2 == "HIS")
+        or (res_type1 == "HIS")
+        and (res_type2 == "OCO")
+    ):
         exception, value = check_oco_his_exception(group1, group2, version)
-    elif ((res_type1 == "CYS") and (res_type2 == "HIS")
-          or (res_type1 == "HIS") and (res_type2 == "CYS")):
+    elif (
+        (res_type1 == "CYS")
+        and (res_type2 == "HIS")
+        or (res_type1 == "HIS")
+        and (res_type2 == "CYS")
+    ):
         exception, value = check_cys_his_exception(group1, group2, version)
     else:
         # do nothing, no exception for this pair
@@ -403,23 +445,26 @@ def check_coo_arg_exception(group_coo, group_arg, version):
     exception = True
     value_tot = 0.00
     # needs to be this way since you want to find shortest distance first
-    atoms_coo = []
-    atoms_coo.extend(group_coo.get_interaction_atoms(group_arg))
-    atoms_arg = []
-    atoms_arg.extend(group_arg.get_interaction_atoms(group_coo))
+    atoms_coo = list(group_coo.get_interaction_atoms(group_arg))
+    atoms_arg = list(group_arg.get_interaction_atoms(group_coo))
     for _ in ["shortest", "runner-up"]:
         # find the closest interaction pair
-        [closest_coo_atom, dist, closest_arg_atom] = get_smallest_distance(atoms_coo,
-                                                                           atoms_arg)
-        [dpka_max, cutoff] = version.get_hydrogen_bond_parameters(closest_coo_atom,
-                                                                  closest_arg_atom)
+        [closest_coo_atom, dist, closest_arg_atom] = get_smallest_distance(
+            atoms_coo, atoms_arg
+        )
+        [dpka_max, cutoff] = version.get_hydrogen_bond_parameters(
+            closest_coo_atom, closest_arg_atom
+        )
         # calculate and sum up interaction energy
         f_angle = 1.00
-        if group_arg.type in version.parameters.angular_dependent_sidechain_interactions:
+        if (
+            group_arg.type
+            in version.parameters.angular_dependent_sidechain_interactions
+        ):
             atom3 = closest_arg_atom.bonded_atoms[0]
-            dist, f_angle, _ = angle_distance_factors(closest_coo_atom,
-                                                      closest_arg_atom,
-                                                      atom3)
+            dist, f_angle, _ = angle_distance_factors(
+                closest_coo_atom, closest_arg_atom, atom3
+            )
         value = hydrogen_bond_energy(dist, dpka_max, cutoff, f_angle)
         value_tot += value
         # remove closest atoms before we attemp to find the runner-up pair
@@ -442,13 +487,17 @@ def check_coo_coo_exception(group1, group2, version):
     exception = True
     interact_groups12 = group1.get_interaction_atoms(group2)
     interact_groups21 = group2.get_interaction_atoms(group1)
-    [closest_atom1, dist, closest_atom2] = get_smallest_distance(interact_groups12,
-                                                                 interact_groups21)
-    [dpka_max, cutoff] = version.get_hydrogen_bond_parameters(closest_atom1,
-                                                              closest_atom2)
+    [closest_atom1, dist, closest_atom2] = get_smallest_distance(
+        interact_groups12, interact_groups21
+    )
+    [dpka_max, cutoff] = version.get_hydrogen_bond_parameters(
+        closest_atom1, closest_atom2
+    )
     f_angle = 1.00
     value = hydrogen_bond_energy(dist, dpka_max, cutoff, f_angle)
-    weight = calculate_pair_weight(version.parameters, group1.num_volume, group2.num_volume)
+    weight = calculate_pair_weight(
+        version.parameters, group1.num_volume, group2.num_volume
+    )
     value = value * (1.0 + weight)
     return exception, value
 
@@ -530,8 +579,8 @@ def check_buried(num_volume1, num_volume2):
     Returns:
         True if interaction is buried, False otherwise
     """
-    if ((num_volume1 + num_volume2 <= COMBINED_NUM_BURIED_MAX)
-            and (num_volume1 <= SEPARATE_NUM_BURIED_MAX
-                 or num_volume2 <= SEPARATE_NUM_BURIED_MAX)):
-        return False
-    return True
+    return (
+        num_volume1 + num_volume2 > COMBINED_NUM_BURIED_MAX
+        or num_volume1 > SEPARATE_NUM_BURIED_MAX
+        and num_volume2 > SEPARATE_NUM_BURIED_MAX
+    )

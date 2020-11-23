@@ -50,10 +50,9 @@ def get_test_dirs():
             if test_path.is_dir():
                 path_dict[key] = test_path
             else:
-                errstr = (
-                    "Can't find {0:s} test files in {1:s}".format(
-                        key, [TEST_DIR / path, path]))
-                raise FileNotFoundError(errstr)
+                raise FileNotFoundError(
+                    f"Can't find {key} test files in {[TEST_DIR / path, path]}"
+                )
     return path_dict
 
 
@@ -70,7 +69,8 @@ def run_propka(options, pdb_path, tmp_path):
     try:
         _LOGGER.warning(
             "Working in tmpdir {0:s} because of PROPKA file output; "
-            "need to fix this.".format(str(tmp_path)))
+            "need to fix this.".format(str(tmp_path))
+        )
         cwd = Path.cwd()
         os.chdir(tmp_path)
         parameters = read_parameter_file(args.parameters, Parameters())
@@ -100,7 +100,7 @@ def compare_output(pdb, tmp_path, ref_path):
             ref_data.append(float(line))
 
     test_data = []
-    pka_path = Path(tmp_path) / ("{0:s}.pka".format(pdb))
+    pka_path = Path(tmp_path) / (f"{pdb}.pka")
     with open(pka_path, "rt") as pka_file:
         at_pka = False
         for line in pka_file:
@@ -110,43 +110,56 @@ def compare_output(pdb, tmp_path, ref_path):
             elif line.startswith("---"):
                 at_pka = False
             else:
-                match = re.search(r'([0-9]+\.[0-9]+)', line)
+                match = re.search(r"([0-9]+\.[0-9]+)", line)
                 value = float(match.group(0))
                 test_data.append(value)
     errstr = (
-        "Error exceeds maximum allowed value ({0:d} decimal places)".format(
-            MAX_ERR_DECIMALS))
+        "Error exceeds maximum allowed value "
+        f"({MAX_ERR_DECIMALS:d} decimal places)"
+    )
     assert_almost_equal(
-        test_data, ref_data, decimal=MAX_ERR_DECIMALS, err_msg=errstr,
-        verbose=True)
+        test_data,
+        ref_data,
+        decimal=MAX_ERR_DECIMALS,
+        err_msg=errstr,
+        verbose=True,
+    )
 
 
-@pytest.mark.parametrize("pdb, options", [
-    pytest.param("1FTJ-Chain-A", [], id="1FTJ-Chain-A: no options"),
-    pytest.param('1HPX', [], id="1HPX: no options"),
-    pytest.param('4DFR', [], id="4DFR: no options"),
-    pytest.param('3SGB', [], id="3SGB: no options"),
-    pytest.param('3SGB-subset', [
-        "--titrate_only",
-        "E:17,E:18,E:19,E:29,E:44,E:45,E:46,E:118,E:119,E:120,E:139"],
-                 id="3SGB: --titrate_only"),
-    pytest.param('1HPX-warn', ['--quiet'], id="1HPX-warn: --quiet")])
+@pytest.mark.parametrize(
+    "pdb, options",
+    [
+        pytest.param("1FTJ-Chain-A", [], id="1FTJ-Chain-A: no options"),
+        pytest.param("1HPX", [], id="1HPX: no options"),
+        pytest.param("4DFR", [], id="4DFR: no options"),
+        pytest.param("3SGB", [], id="3SGB: no options"),
+        pytest.param(
+            "3SGB-subset",
+            [
+                "--titrate_only",
+                "E:17,E:18,E:19,E:29,E:44,E:45,E:46,E:118,E:119,E:120,E:139",
+            ],
+            id="3SGB: --titrate_only",
+        ),
+        pytest.param("1HPX-warn", ["--quiet"], id="1HPX-warn: --quiet"),
+    ],
+)
 def test_regression(pdb, options, tmp_path):
     """Basic regression test of PROPKA functionality."""
     path_dict = get_test_dirs()
-    ref_path = path_dict["results"] / ("{0:s}.dat".format(pdb))
+    ref_path = path_dict["results"] / (f"{pdb}.dat")
     if ref_path.is_file():
         ref_path = ref_path.resolve()
     else:
-        _LOGGER.warning("Missing results file for comparison: {0:s}".format(
-            str(ref_path)))
+        _LOGGER.warning(
+            "Missing results file for comparison: {0:s}".format(str(ref_path))
+        )
         ref_path = None
-    pdb_path = path_dict["pdbs"] / ("{0:s}.pdb".format(pdb))
+    pdb_path = path_dict["pdbs"] / (f"{pdb}.pdb")
     if pdb_path.is_file():
         pdb_path = pdb_path.resolve()
     else:
-        errstr = "Missing PDB file: {0:s}".format(pdb_path)
-        raise FileNotFoundError(errstr)
+        raise FileNotFoundError(f"Missing PDB file: {pdb_path}")
     tmp_path = Path(tmp_path).resolve()
 
     run_propka(options, pdb_path, tmp_path)
