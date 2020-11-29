@@ -3,6 +3,11 @@ Data structures for groups
 ==========================
 
 Routines and classes for storing groups important to PROPKA calculations.
+
+
+.. versionchanged:: 3.4.0
+   Removed :func:`initialize_atom_group` as reading PROPKA inputs is no longer
+   supported.
 """
 import math
 import propka.ligand
@@ -40,7 +45,14 @@ EXPECTED_ATOMS_BASE_INTERACTIONS = {
 
 
 class Group:
-    """Class for storing groups important to pKa calculations."""
+    """Class for storing groups important to pKa calculations.
+
+
+    .. versionchanged:: 3.4.0
+       Removed :meth:`make_covalently_coupled_line` and
+       :meth:`make_non_covalently_coupled_line` as writing PROPKA inputs is no
+       longer supported.
+    """
 
     def __init__(self, atom):
         """Initialize with an atom.
@@ -177,48 +189,6 @@ class Group:
         if not added:
             self.determinants[type_].append(
                 Determinant(new_determinant.group, new_determinant.value))
-
-    def make_covalently_coupled_line(self):
-        """Create line for covalent coupling.
-
-        Returns:
-            string
-        """
-        # first check if there are any coupled groups at all
-        if len(self.covalently_coupled_groups) == 0:
-            return ''
-        line = 'CCOUPL{0:5d}'.format(self.atom.numb)
-        # extract and sort numbers of coupled groups
-        coupled = []
-        for group in self.covalently_coupled_groups:
-            coupled.append(group.atom.numb)
-        coupled.sort()
-        # write 'em out
-        for num in coupled:
-            line += '{0:5d}'.format(num)
-        line += '\n'
-        return line
-
-    def make_non_covalently_coupled_line(self):
-        """Create line for non-covalent coupling.
-
-        Returns:
-            string
-        """
-        # first check if there are any coupled groups at all
-        if len(self.non_covalently_coupled_groups) == 0:
-            return ''
-        line = 'NCOUPL{0:5d}'.format(self.atom.numb)
-        # extract and sort numbers of coupled groups
-        coupled = []
-        for group in self.non_covalently_coupled_groups:
-            coupled.append(group.atom.numb)
-        coupled.sort()
-        # write 'em out
-        for num in coupled:
-            line += '{0:5d}'.format(num)
-        line += '\n'
-        return line
 
     def __eq__(self, other):
         """Needed for creating sets of groups."""
@@ -1425,15 +1395,3 @@ def is_ion_group(parameters, atom):
     if atom.res_name.strip() in parameters.ions.keys():
         return IonGroup(atom)
     return None
-
-def initialize_atom_group(atom):
-    """Initialize an atom group.
-
-    Args:
-        atom:  atom to initialize
-    """
-        # try to initialise the group
-    group_attr = globals()[atom.group_label]
-    atom.group = group_attr(atom)
-    atom.group.model_pka = atom.group_model_pka
-    atom.group.model_pka_set = atom.group_model_pka_set

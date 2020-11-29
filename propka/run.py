@@ -21,7 +21,12 @@ _LOGGER = logging.getLogger("PROPKA")
 
 
 def main(optargs=None):
-    """Read in structure files, calculate pKa values, and print pKa files."""
+    """Read in structure files, calculate pKa values, and print pKa files.
+
+
+    .. versionchanged:: 3.4.0
+       Removed ability to write out PROPKA input files.
+    """
     # loading options, flags and arguments
     optargs = optargs if optargs is not None else []
     options = loadOptions(*optargs)
@@ -32,8 +37,6 @@ def main(optargs=None):
         my_molecule = read_molecule_file(pdbfile, my_molecule)
         my_molecule.calculate_pka()
         my_molecule.write_pka()
-        if options.generate_propka_input:
-            my_molecule.write_propka()
 
 
 def single(filename: str, optargs: tuple = (), stream=None,
@@ -93,6 +96,9 @@ def single(filename: str, optargs: tuple = (), stream=None,
 
         :func:`propka.input.read_molecule_file`
 
+
+    .. versionchanged:: 3.4.0
+       Removed ability to write out PROPKA input files.
     """
     # Deal with input optarg options
     optargs = tuple(optargs)
@@ -113,8 +119,6 @@ def single(filename: str, optargs: tuple = (), stream=None,
     my_molecule.calculate_pka()
 
     # write outputs
-    if options.generate_propka_input:
-        my_molecule.write_propka()
     if write_pka:
         my_molecule.write_pka()
 

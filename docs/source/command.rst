@@ -12,8 +12,7 @@ protein-ligand complexes based in the 3D structure. The
 	   
   propka3 [-h] [-f FILENAMES] [-r REFERENCE] [-c CHAINS] [-i TITRATE_ONLY] [-t THERMOPHILES] [-a ALIGNMENT] [-m MUTATIONS]
          [-v VERSION_LABEL] [-p PARAMETERS] [--log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [-o PH] [-w WINDOW WINDOW WINDOW]
-         [-g GRID GRID GRID] [--mutator MUTATOR] [--mutator-option MUTATOR_OPTIONS] [-d] [-l] [-k] [-q] [--generate-propka-input]
-         [--protonate-all]
+         [-g GRID GRID GRID] [--mutator MUTATOR] [--mutator-option MUTATOR_OPTIONS] [-d] [-l] [-k] [-q] [--protonate-all]
          input_pdb
 
 
@@ -119,10 +118,6 @@ protein-ligand complexes based in the 3D structure. The
 .. option::  -q, --quiet
 	     
              suppress non-warning messages (default: None)
-	     
-.. option::  --generate-propka-input
-	     
-             Generate a PROPKA input file (default: False)
 	     
 .. option::  --protonate-all
 
