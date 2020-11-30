@@ -163,20 +163,20 @@ class LigandPkaValues:
             [self.cxcalc, filename]+options.split(), stdout=subprocess.PIPE,
             stderr=subprocess.PIPE).communicate()
         if len(errors) > 0:
-            _LOGGER.info(
+            _LOGGER.error(
                 '***********************************************************'
                 '*********************************************')
-            _LOGGER.info(
-                '* Warning: Marvin execution failed:                        '
+            _LOGGER.error(
+                '* Error: Marvin execution failed:                          '
                 '                                            *')
-            _LOGGER.info('* {0:<100s} *'.format(errors))
-            _LOGGER.info(
+            _LOGGER.error('* {0:<100s} *'.format(errors))
+            _LOGGER.error(
                 '*                                                          '
                 '                                            *')
-            _LOGGER.info(
+            _LOGGER.error(
                 '* Please edit the ligand mol2 file and re-run PropKa with '
                 'the -l option: {0:>29s} *'.format(filename))
-            _LOGGER.info(
+            _LOGGER.error(
                 '***********************************************************'
                 '*********************************************')
             sys.exit(-1)
