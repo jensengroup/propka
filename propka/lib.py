@@ -192,9 +192,14 @@ def build_parser(parser=None):
                  Otherwise, a new parser will be created.
     Returns:
         ArgumentParser object.
+
+
+    .. versionchanged:: 3.4.0
+       Argument `--generate-propka-input` has been removed as writing PROPKA
+       input files is no longer supported.
     """
     if parser is not None:
-        group = parser.add_argument_group(title="PROPKA invoation options")
+        group = parser.add_argument_group(title="PROPKA invocation options")
     else:
         parser = argparse.ArgumentParser(
             description=("PROPKA predicts the pKa values of ionizable "
@@ -289,9 +294,6 @@ def build_parser(parser=None):
     group.add_argument(
         "-q", "--quiet", action="store_const", const="WARNING",
         dest="log_level", help="suppress non-warning messages")
-    group.add_argument(
-        "--generate-propka-input", action="store_true",
-        help="Generate a PROPKA input file")
     group.add_argument(
         "--protonate-all", dest="protonate_all", action="store_true",
         help="Protonate all atoms (will not influence pKa calculation)",
