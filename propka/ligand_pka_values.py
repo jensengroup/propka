@@ -163,23 +163,21 @@ class LigandPkaValues:
             [self.cxcalc, filename]+options.split(), stdout=subprocess.PIPE,
             stderr=subprocess.PIPE).communicate()
         if len(errors) > 0:
-            _LOGGER.error(
-                '***********************************************************'
-                '*********************************************')
-            _LOGGER.error(
-                '* Error: Marvin execution failed:                          '
-                '                                            *')
-            _LOGGER.error('* {0:<100s} *'.format(errors))
-            _LOGGER.error(
-                '*                                                          '
-                '                                            *')
-            _LOGGER.error(
-                '* Please edit the ligand mol2 file and re-run PropKa with '
-                'the -l option: {0:>29s} *'.format(filename))
-            _LOGGER.error(
-                '***********************************************************'
-                '*********************************************')
-            sys.exit(-1)
+            err = (
+                f'***********************************************************'
+                f'*********************************************'
+                f'* Error: Marvin execution failed:                          '
+                f'                                            *'
+                f'* {errors:<100s} *'
+                f'*                                                          '
+                f'                                            *'
+                f'* Please edit the ligand mol2 file and re-run PropKa with '
+                f'the -l option: {filename:>29s} *'
+                f'***********************************************************'
+                f'*********************************************'
+            )
+            _LOGGER.error(err)
+            raise OSError(err)
         # extract calculated pkas
         indices, pkas, types = self.extract_pkas(output)
         # store calculated pka values
