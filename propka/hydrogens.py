@@ -6,11 +6,13 @@ Calculations related to hydrogen placement.
 
 """
 import math
-from propka.lib import info
+import logging
 from propka.protonate import Protonate
 from propka.bonds import BondMaker
 from propka.atom import Atom
 
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def setup_bonding_and_protonation(molecular_container):
@@ -68,7 +70,7 @@ def protonate_30_style(molecular_container):
         molecular_container:  molecule
     """
     for name in molecular_container.conformation_names:
-        info('Now protonating', name)
+        _LOGGER.info('Now protonating %s', name)
         # split atom into residues
         curres = -1000000
         residue = []
@@ -78,19 +80,19 @@ def protonate_30_style(molecular_container):
             if atom.res_num != curres:
                 curres = atom.res_num
                 if len(residue) > 0:
-                    #backbone
+                    # backbone
                     [o_atom, c_atom] = add_backbone_hydrogen(
                         residue, o_atom, c_atom)
-                    #arginine
+                    # arginine
                     if residue[0].res_name == 'ARG':
                         add_arg_hydrogen(residue)
-                    #histidine
+                    # histidine
                     if residue[0].res_name == 'HIS':
                         add_his_hydrogen(residue)
-                    #tryptophan
+                    # tryptophan
                     if residue[0].res_name == 'TRP':
                         add_trp_hydrogen(residue)
-                    #amides
+                    # amides
                     if residue[0].res_name in ['GLN', 'ASN']:
                         add_amd_hydrogen(residue)
                     residue = []
@@ -116,7 +118,6 @@ def add_arg_hydrogen(residue):
     Returns:
         list of hydrogen atoms
     """
-    #info('Adding arg H',residue)
     for atom in residue:
         if atom.name == "CD":
             cd_atom = atom
@@ -348,5 +349,3 @@ def make_new_h(atom, x, y, z):
     atom.bonded_atoms.append(new_h)
     atom.conformation_container.add_atom(new_h)
     return new_h
-
-

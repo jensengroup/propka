@@ -4,11 +4,15 @@ PDB molecular container
 
 Molecular container for storing all contents of PDB files.
 """
+import logging
 import os
 import propka.version
 from propka.output import write_propka, write_pka, print_header, print_result
 from propka.conformation_container import ConformationContainer
-from propka.lib import info, warning, make_grid
+from propka.lib import make_grid
+
+
+_LOGGER = logging.getLogger(__name__)
 
 
 # TODO - these are constants whose origins are a little murky
@@ -55,13 +59,11 @@ class MolecularContainer:
 
     def find_covalently_coupled_groups(self):
         """Find covalently coupled groups."""
-        info('-' * 103)
         for name in self.conformation_names:
             self.conformations[name].find_covalently_coupled_groups()
 
     def find_non_covalently_coupled_groups(self):
         """Find non-covalently coupled groups."""
-        info('-' * 103)
         verbose = self.options.display_coupled_residues
         for name in self.conformation_names:
             self.conformations[name].find_non_covalently_coupled_groups(
@@ -110,7 +112,7 @@ class MolecularContainer:
                         'Group {0:s} could not be found in '
                         'conformation {1:s}.'.format(
                             group.atom.residue_label, name))
-                    warning(str_)
+                    _LOGGER.warning(str_)
             # ... and store the average value
             avr_group = avr_group / len(self.conformation_names)
             avr_conformation.groups.append(avr_group)

@@ -4,6 +4,7 @@ Molecular data structures
 
 Container data structure for molecular conformations.
 """
+import logging
 import functools
 import propka.ligand
 from propka.output import make_interaction_map
@@ -12,11 +13,14 @@ from propka.coupled_groups import NCCG
 from propka.determinants import set_backbone_determinants, set_ion_determinants
 from propka.determinants import set_determinants
 from propka.group import Group, is_group
-from propka.lib import info
+
+
+_LOGGER = logging.getLogger(__name__)
 
 
 #: A large number that gets multipled with the integer obtained from applying
-#: :func:`ord` to the atom chain ID.  Used in calculating atom keys for sorting.
+#: :func:`ord` to the atom chain ID.  Used in calculating atom keys for
+#: sorting.
 UNICODE_MULTIPLIER = 1e7
 
 #: A number that gets mutiplied with an atom's residue number.  Used in
@@ -54,7 +58,8 @@ class ConformationContainer:
             else:
                 group = atom.group
                 # if the atom has been checked in a another conformation, check
-                # if it has a group that should be used in this conformation as well
+                # if it has a group that should be used in this conformation
+                # as well
             if group:
                 self.setup_and_add_group(group)
 
@@ -66,7 +71,7 @@ class ConformationContainer:
             'Covalent coupling map for {0:s}'.format(str(self)),
             self.get_covalently_coupled_groups(),
             lambda g1, g2: g1 in g2.covalently_coupled_groups)
-        info(map_)
+        _LOGGER.info(map_)
         # check if we should set a common charge centre as well
         if self.parameters.common_charge_centre:
             self.set_common_charge_centres()
@@ -108,7 +113,7 @@ class ConformationContainer:
             'Covalent coupling map for {0:s}'.format(str(self)),
             self.get_covalently_coupled_groups(),
             lambda g1, g2: g1 in g2.covalently_coupled_groups)
-        info(map_)
+        _LOGGER.info("Coupling map:\n%s", map_)
 
     def find_non_covalently_coupled_groups(self, verbose=False):
         """Find non-covalently coupled groups and set common charge centres.
@@ -116,7 +121,8 @@ class ConformationContainer:
         Args:
             verbose:  verbose output
         """
-        # check if non-covalent coupling has already been set up in an input file
+        # check if non-covalent coupling has already been set up in an input
+        # file
         if len(list(filter(lambda g: len(g.non_covalently_coupled_groups) > 0,
                            self.get_titratable_groups()))) > 0:
             self.non_covalently_coupled_groups = True
@@ -193,7 +199,7 @@ class ConformationContainer:
             version:  version object
             options:  option object
         """
-        info('\nCalculating pKas for', self)
+        _LOGGER.info('Calculating pKas for %s', self)
         # calculate desolvation
         for group in self.get_titratable_groups() + self.get_ions():
             version.calculate_desolvation(group)
@@ -215,7 +221,7 @@ class ConformationContainer:
         penalised_labels = self.coupling_effects()
         if (self.parameters.remove_penalised_group
                 and len(penalised_labels) > 0):
-            info('Removing penalised groups!!!')
+            _LOGGER.info('Removing penalised groups!!!')
             for group in self.get_titratable_groups():
                 group.remove_determinants(penalised_labels)
             # re-calculating the total pKa values
@@ -257,7 +263,7 @@ class ConformationContainer:
                         # group with the highest pKa is allowed to titrate...
                         continue
                     group.coupled_titrating_group = first_group
-                    #... and the rest are penalised
+                    # ... and the rest are penalised
                     penalised_labels.append(group.label)
         return penalised_labels
 
@@ -282,7 +288,7 @@ class ConformationContainer:
                         max_dets[det.group] = max(det.value,
                                                   max_dets[det.group],
                                                   key=lambda v: abs(v))
-             # overwrite/add maximum value for each determinant
+            # overwrite/add maximum value for each determinant
             for det_group in max_dets:
                 new_determinant = Determinant(det_group, max_dets[det_group])
                 for group in groups:
@@ -433,9 +439,9 @@ class ConformationContainer:
     def get_groups_for_calculations(self):
         """Get a list of groups that should be included in results report.
 
-        If --titrate_only option is specified, only residues that are titratable
-        and are in that list are included; otherwise all titratable residues
-        and CYS residues are included.
+        If --titrate_only option is specified, only residues that are
+        titratable and are in that list are included; otherwise all titratable
+        residues and CYS residues are included.
 
         Returns:
             list of groups
@@ -525,7 +531,7 @@ class ConformationContainer:
         if not atom.molecular_container:
             atom.molecular_container = self.molecular_container
         # store chain id for bookkeeping
-        if not atom.chain_id in self.chains:
+        if atom.chain_id not in self.chains:
             self.chains.append(atom.chain_id)
 
     def copy_atom(self, atom):
@@ -556,7 +562,7 @@ class ConformationContainer:
         """
         my_residue_labels = {a.residue_label for a in self.atoms}
         for atom in other.atoms:
-            if not atom.residue_label in my_residue_labels:
+            if atom.residue_label not in my_residue_labels:
                 self.copy_atom(atom)
 
     def find_group(self, group):

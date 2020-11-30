@@ -6,7 +6,7 @@ Contains version-specific methods and parameters.
 
 TODO - this module unnecessarily confuses the code.  Can we eliminate it?
 """
-from propka.lib import info
+import logging
 from propka.hydrogens import setup_bonding_and_protonation, setup_bonding
 from propka.hydrogens import setup_bonding_and_protonation_30_style
 from propka.energy import radial_volume_desolvation, calculate_pair_weight
@@ -14,6 +14,9 @@ from propka.energy import hydrogen_bond_energy, hydrogen_bond_interaction
 from propka.energy import electrostatic_interaction, check_coulomb_pair
 from propka.energy import coulomb_energy, check_exceptions
 from propka.energy import backbone_reorganization
+
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class Version:
@@ -140,12 +143,18 @@ class VersionA(Version):
             [v, [c1, c3]]  TODO - figure out what this is
         """
         if backbone_atom.group_type == 'BBC':
-            if atom.group_type in self.parameters.backbone_CO_hydrogen_bond.keys():
+            if (
+                    atom.group_type in
+                    self.parameters.backbone_CO_hydrogen_bond.keys()
+                    ):
                 [v, c1, c2] = self.parameters.backbone_CO_hydrogen_bond[
                     atom.group_type]
                 return [v, [c1, c2]]
         if backbone_atom.group_type == 'BBN':
-            if atom.group_type in self.parameters.backbone_NH_hydrogen_bond.keys():
+            if (
+                    atom.group_type in
+                    self.parameters.backbone_NH_hydrogen_bond.keys()
+                    ):
                 [v, c1, c2] = self.parameters.backbone_NH_hydrogen_bond[
                     atom.group_type]
                 return [v, [c1, c2]]
@@ -159,7 +168,7 @@ class SimpleHB(VersionA):
         """Initialize object with parameters."""
         # set the calculation rutines used in this version
         super().__init__(parameters)
-        info('Using simple hb model')
+        _LOGGER.info('Using simple hb model')
 
     def get_hydrogen_bond_parameters(self, atom1, atom2):
         """Get hydrogen bond parameters for two atoms.
@@ -193,7 +202,7 @@ class ElementBasedLigandInteractions(VersionA):
         """Initialize object with parameters."""
         # set the calculation rutines used in this version
         super().__init__(parameters)
-        info('Using detailed SC model!')
+        _LOGGER.info('Using detailed SC model!')
         return
 
     def get_hydrogen_bond_parameters(self, atom1, atom2):
@@ -259,8 +268,9 @@ class ElementBasedLigandInteractions(VersionA):
             res = self.parameters.hydrogen_bonds.get_value(
                 elements[0], elements[1])
             if not res:
-                info(
-                    'Could not determine backbone interaction parameters for:',
+                _LOGGER.info(
+                    'Could not determine backbone interaction parameters '
+                    'for: %s %s',
                     backbone_atom, atom)
             return None
         return None

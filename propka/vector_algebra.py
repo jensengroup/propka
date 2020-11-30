@@ -4,8 +4,12 @@ Vector calculations
 
 Vector algebra for PROPKA.
 """
+import logging
 import math
-from propka.lib import info, get_sorted_configurations
+from propka.lib import get_sorted_configurations
+
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class Vector:
@@ -63,7 +67,7 @@ class Vector:
         elif type(other) in [int, float]:
             return Vector(self.x * other, self.y * other, self.z * other)
         else:
-            info('{0:s} not supported'.format(type(other)))
+            _LOGGER.info('{0:s} not supported'.format(type(other)))
             raise TypeError
 
     def __rmul__(self, other):

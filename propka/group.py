@@ -4,12 +4,15 @@ Data structures for groups
 
 Routines and classes for storing groups important to PROPKA calculations.
 """
+import logging
 import math
 import propka.ligand
 import propka.protonate
 from propka.ligand_pka_values import LigandPkaValues
 from propka.determinant import Determinant
-from propka.lib import info, warning
+
+
+_LOGGER = logging.getLogger(__name__)
 
 
 # Constants that start with "UNK_" are a mystery to me
@@ -20,7 +23,7 @@ EXPECTED_ATOMS_ACID_INTERACTIONS = {
     'COO': {'O': 2}, 'HIS': {'H': 2, 'N': 2}, 'CYS': {'S': 1}, 'TYR': {'O': 1},
     'LYS': {'N': 1}, 'ARG': {'H': 5, 'N': 3}, 'ROH': {'O': 1},
     'AMD': {'H': 2, 'N': 1}, 'TRP': {'H': 1, 'N': 1}, 'N+': {'N': 1},
-    'C-': {'O': 2}, 'BBN': {'H': 1, 'N': 1,}, 'BBC': {'O': 1},
+    'C-': {'O': 2}, 'BBN': {'H': 1, 'N': 1}, 'BBC': {'O': 1},
     'NAR': {'H': 1, 'N': 1}, 'NAM': {'H': 1, 'N': 1}, 'F': {'F': 1},
     'Cl': {'Cl': 1}, 'OH': {'H': 1, 'O': 1}, 'OP': {'O': 1}, 'O3': {'O': 1},
     'O2': {'O': 1}, 'SH': {'S': 1}, 'CG': {'H': 5, 'N': 3},
@@ -106,9 +109,9 @@ class Group:
             other:  other group for coupling
         """
         # do the coupling
-        if not other in self.covalently_coupled_groups:
+        if other not in self.covalently_coupled_groups:
             self.covalently_coupled_groups.append(other)
-        if not self in other.covalently_coupled_groups:
+        if self not in other.covalently_coupled_groups:
             other.covalently_coupled_groups.append(self)
 
     def couple_non_covalently(self, other):
@@ -118,9 +121,9 @@ class Group:
             other:  other group for coupling
         """
         # do the coupling
-        if not other in self.non_covalently_coupled_groups:
+        if other not in self.non_covalently_coupled_groups:
             self.non_covalently_coupled_groups.append(other)
-        if not self in other.non_covalently_coupled_groups:
+        if self not in other.non_covalently_coupled_groups:
             other.non_covalently_coupled_groups.append(self)
 
     def get_covalently_coupled_groups(self):
@@ -399,26 +402,26 @@ class Group:
             str_ = 'Missing atoms or failed protonation for '
             str_ += '{0:s} ({1:s}) -- please check the structure'.format(
                 self.label, self.type)
-            warning(str_)
-            warning('{0:s}'.format(str(self)))
+            _LOGGER.warning(str_)
+            _LOGGER.warning('{0:s}'.format(str(self)))
             num_acid = sum(
                 [EXPECTED_ATOMS_ACID_INTERACTIONS[self.type][e]
                  for e in EXPECTED_ATOMS_ACID_INTERACTIONS[self.type].keys()])
             num_base = sum(
                 [EXPECTED_ATOMS_BASE_INTERACTIONS[self.type][e]
                  for e in EXPECTED_ATOMS_BASE_INTERACTIONS[self.type].keys()])
-            warning(
+            _LOGGER.warning(
                 'Expected {0:d} interaction atoms for acids, found:'.format(
                     num_acid))
             for i in range(len(self.interaction_atoms_for_acids)):
-                warning(
+                _LOGGER.warning(
                     '             {0:s}'.format(
                         str(self.interaction_atoms_for_acids[i])))
-            warning(
+            _LOGGER.warning(
                 'Expected {0:d} interaction atoms for bases, found:'.format(
                     num_base))
             for i in range(len(self.interaction_atoms_for_bases)):
-                warning(
+                _LOGGER.warning(
                     '             {0:s}'.format(
                         str(self.interaction_atoms_for_bases[i])))
 
@@ -672,7 +675,9 @@ class HISGroup(Group):
         # Find the atoms in the histidine ring
         ring_atoms = propka.ligand.is_ring_member(self.atom)
         if len(ring_atoms) != 5:
-            warning('His group does not seem to contain a ring', self)
+            _LOGGER.warning(
+                'His group does not seem to contain a ring %s', self
+            )
         # protonate ring
         for ring_atom in ring_atoms:
             PROTONATOR.protonate_atom(ring_atom)
@@ -682,7 +687,8 @@ class HISGroup(Group):
         else:
             # Missing side-chain atoms
             self.set_center([self.atom])
-            # TODO - perhaps it would be better to ignore this group completely?
+            # TODO - perhaps it would be better to ignore this group
+            # completely?
         # find the hydrogens on the ring-nitrogens
         hydrogens = []
         nitrogens = [ra for ra in ring_atoms if ra.element == 'N']
@@ -815,7 +821,7 @@ class CtermGroup(Group):
             the_other_oxygen = the_carbons[0].get_bonded_elements('O')
             the_other_oxygen.remove(self.atom)
             # set the center and interaction atoms
-            the_oxygens = [self.atom]+ the_other_oxygen
+            the_oxygens = [self.atom] + the_other_oxygen
             self.set_center(the_oxygens)
             self.set_interaction_atoms(the_oxygens, the_oxygens)
 
@@ -866,7 +872,7 @@ class NARGroup(Group):
         Group.__init__(self, atom)
         self.type = 'NAR'
         self.residue_type = 'NAR'
-        info('Found NAR group:', atom)
+        _LOGGER.info('Found NAR group: %s', atom)
 
     def setup_atoms(self):
         """Set up atoms in group."""
@@ -889,7 +895,7 @@ class NAMGroup(Group):
         Group.__init__(self, atom)
         self.type = 'NAM'
         self.residue_type = 'NAM'
-        info('Found NAM group:', atom)
+        _LOGGER.info('Found NAM group: %s', atom)
 
     def setup_atoms(self):
         """Set up atoms in this group."""
@@ -909,7 +915,7 @@ class FGroup(Group):
         Group.__init__(self, atom)
         self.type = 'F'
         self.residue_type = 'F'
-        info('Found F   group:', atom)
+        _LOGGER.info('Found F   group: %s', atom)
 
 
 class ClGroup(Group):
@@ -919,7 +925,7 @@ class ClGroup(Group):
         Group.__init__(self, atom)
         self.type = 'Cl'
         self.residue_type = 'Cl'
-        info('Found Cl   group:', atom)
+        _LOGGER.info('Found Cl   group: %s', atom)
 
 
 class OHGroup(Group):
@@ -929,7 +935,7 @@ class OHGroup(Group):
         Group.__init__(self, atom)
         self.type = 'OH'
         self.residue_type = 'OH'
-        info('Found OH  group:', atom)
+        _LOGGER.info('Found OH  group: %s', atom)
 
     def setup_atoms(self):
         """Set up atoms in this group."""
@@ -949,7 +955,7 @@ class OPGroup(Group):
         Group.__init__(self, atom)
         self.type = 'OP'
         self.residue_type = 'OP'
-        info('Found OP  group:', atom)
+        _LOGGER.info('Found OP  group: %s', atom)
 
     def setup_atoms(self):
         """Set up atoms in this group."""
@@ -970,7 +976,7 @@ class O3Group(Group):
         Group.__init__(self, atom)
         self.type = 'O3'
         self.residue_type = 'O3'
-        info('Found O3  group:', atom)
+        _LOGGER.info('Found O3  group: %s', atom)
 
 
 class O2Group(Group):
@@ -983,7 +989,7 @@ class O2Group(Group):
         Group.__init__(self, atom)
         self.type = 'O2'
         self.residue_type = 'O2'
-        info('Found O2  group:', atom)
+        _LOGGER.info('Found O2  group: %s', atom)
 
 
 class SHGroup(Group):
@@ -993,7 +999,7 @@ class SHGroup(Group):
         Group.__init__(self, atom)
         self.type = 'SH'
         self.residue_type = 'SH'
-        info('Found SH  group:', atom)
+        _LOGGER.info('Found SH  group: %s', atom)
 
 
 class CGGroup(Group):
@@ -1003,7 +1009,7 @@ class CGGroup(Group):
         Group.__init__(self, atom)
         self.type = 'CG'
         self.residue_type = 'CG'
-        info('Found CG  group:', atom)
+        _LOGGER.info('Found CG  group: %s', atom)
 
     def setup_atoms(self):
         """Set up atoms in this group."""
@@ -1026,7 +1032,7 @@ class C2NGroup(Group):
         Group.__init__(self, atom)
         self.type = 'C2N'
         self.residue_type = 'C2N'
-        info('Found C2N group:', atom)
+        _LOGGER.info('Found C2N group: %s', atom)
 
     def setup_atoms(self):
         """Set up atoms in this group."""
@@ -1050,7 +1056,7 @@ class OCOGroup(Group):
         Group.__init__(self, atom)
         self.type = 'OCO'
         self.residue_type = 'OCO'
-        info('Found OCO group:', atom)
+        _LOGGER.info('Found OCO group: %s', atom)
 
     def setup_atoms(self):
         """Set up atoms in group."""
@@ -1071,7 +1077,7 @@ class N30Group(Group):
         Group.__init__(self, atom)
         self.type = 'N30'
         self.residue_type = 'N30'
-        info('Found N30 group:', atom)
+        _LOGGER.info('Found N30 group: %s', atom)
 
     def setup_atoms(self):
         """Set up atoms in this group."""
@@ -1093,7 +1099,7 @@ class N31Group(Group):
         Group.__init__(self, atom)
         self.type = 'N31'
         self.residue_type = 'N31'
-        info('Found N31 group:', atom)
+        _LOGGER.info('Found N31 group: %s', atom)
 
     def setup_atoms(self):
         """Set up atoms in this group."""
@@ -1115,7 +1121,7 @@ class N32Group(Group):
         Group.__init__(self, atom)
         self.type = 'N32'
         self.residue_type = 'N32'
-        info('Found N32 group:', atom)
+        _LOGGER.info('Found N32 group: %s', atom)
 
     def setup_atoms(self):
         """Set up atoms in this group."""
@@ -1137,7 +1143,7 @@ class N33Group(Group):
         Group.__init__(self, atom)
         self.type = 'N33'
         self.residue_type = 'N33'
-        info('Found N33 group:', atom)
+        _LOGGER.info('Found N33 group: %s', atom)
 
     def setup_atoms(self):
         """Set up atoms in this group."""
@@ -1159,7 +1165,7 @@ class NP1Group(Group):
         Group.__init__(self, atom)
         self.type = 'NP1'
         self.residue_type = 'NP1'
-        info('Found NP1 group:', atom)
+        _LOGGER.info('Found NP1 group: %s', atom)
 
     def setup_atoms(self):
         """Set up atoms in group."""
@@ -1181,7 +1187,7 @@ class N1Group(Group):
         Group.__init__(self, atom)
         self.type = 'N1'
         self.residue_type = 'N1'
-        info('Found N1 group:', atom)
+        _LOGGER.info('Found N1 group: %s', atom)
 
 
 class IonGroup(Group):
@@ -1191,7 +1197,7 @@ class IonGroup(Group):
         Group.__init__(self, atom)
         self.type = 'ION'
         self.residue_type = atom.res_name.strip()
-        info('Found ion group:', atom)
+        _LOGGER.info('Found ion group: %s', atom)
 
 
 class NonTitratableLigandGroup(Group):
@@ -1223,8 +1229,10 @@ class TitratableLigandGroup(Group):
         # this is not true if we are reading an input file
         if atom.marvin_pka:
             self.model_pka = atom.marvin_pka
-            info('Titratable ligand group    ',
-                 atom, self.model_pka, self.charge)
+            _LOGGER.info(
+                'Titratable ligand group     %s %s %s',
+                atom, self.model_pka, self.charge
+            )
         self.model_pka_set = True
 
 
@@ -1273,12 +1281,12 @@ def is_protein_group(parameters, atom):
     """
     if atom.type != 'atom':
         return None
-    ### Check for termial groups
+    # Check for termial groups
     if atom.terminal == 'N+':
         return NtermGroup(atom)
     elif atom.terminal == 'C-':
         return CtermGroup(atom)
-    ### Backbone
+    # Backbone
     if atom.type == 'atom' and atom.name == 'N':
         # ignore proline backbone nitrogens
         if atom.res_name != 'PRO':
@@ -1287,7 +1295,7 @@ def is_protein_group(parameters, atom):
         # ignore C- carboxyl
         if atom.count_bonded_elements('O') == 1:
             return BBCGroup(atom)
-    ### Filters for side chains based on PDB protein atom names
+    # Filters for side chains based on PDB protein atom names
     key = '{0:s}-{1:s}'.format(atom.res_name, atom.name)
     if key in parameters.protein_group_mapping.keys():
         class_str = "{0:s}Group".format(parameters.protein_group_mapping[key])
@@ -1305,7 +1313,7 @@ def is_ligand_group_by_groups(_, atom):
     Returns:
         group for atom or None
     """
-    ### Ligand group filters
+    # Ligand group filters
     if atom.type != 'hetatm':
         return None
     PROTONATOR.protonate_atom(atom)
@@ -1327,7 +1335,8 @@ def is_ligand_group_by_groups(_, atom):
     if atom.sybyl_type == 'N.1':
         return N1Group(atom)
     if atom.sybyl_type == 'N.pl3':
-        # make sure that this atom is not part of a guadinium or amidinium group
+        # make sure that this atom is not part of a guadinium or amidinium
+        # group
         bonded_carbons = atom.get_bonded_elements('C')
         if len(bonded_carbons) == 1:
             bonded_nitrogens = bonded_carbons[0].get_bonded_elements('N')
@@ -1426,13 +1435,14 @@ def is_ion_group(parameters, atom):
         return IonGroup(atom)
     return None
 
+
 def initialize_atom_group(atom):
     """Initialize an atom group.
 
     Args:
         atom:  atom to initialize
     """
-        # try to initialise the group
+    # try to initialise the group
     group_attr = globals()[atom.group_label]
     atom.group = group_attr(atom)
     atom.group.model_pka = atom.group_model_pka

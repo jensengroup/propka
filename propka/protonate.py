@@ -7,11 +7,14 @@ The :class:`Protonate` processes a
 protons.
 
 """
+import logging
 import math
 import propka.bonds
 import propka.atom
 from propka.vector_algebra import rotate_vector_around_an_axis, Vector
-from propka.lib import warning, debug
+
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class Protonate:
@@ -49,7 +52,7 @@ class Protonate:
         Args:
             molecules:  molecular containers
         """
-        debug('----- Protonation started -----')
+        _LOGGER.debug('----- Protonation started -----')
         # Remove all currently present hydrogen atoms
         self.remove_all_hydrogen_atoms(molecules)
         # protonate all atoms
@@ -81,11 +84,11 @@ class Protonate:
         if atom.type == 'atom':
             key = '{0:3s}-{1:s}'.format(atom.res_name, atom.name)
             if atom.terminal:
-                debug(atom.terminal)
+                _LOGGER.debug("%s", atom.terminal)
                 key = atom.terminal
             if key in self.standard_charges:
                 atom.charge = self.standard_charges[key]
-                debug('Charge', atom, atom.charge)
+                _LOGGER.debug('Charge %s %s', atom, atom.charge)
                 atom.charge_set = True
         # atom is a ligand atom
         elif atom.type == 'hetatm':
@@ -130,21 +133,25 @@ class Protonate:
         Args:
             atom:  atom for calculation
         """
-        debug('*'*10)
-        debug('Setting number of protons to add for', atom)
+        _LOGGER.debug('*'*10)
+        _LOGGER.debug('Setting number of protons to add for %s', atom)
         atom.number_of_protons_to_add = 8
-        debug("                     8")
+        _LOGGER.debug("                     8")
         atom.number_of_protons_to_add -= self.valence_electrons[atom.element]
-        debug('Valence electrons: {0:>4d}'.format(
+        _LOGGER.debug('Valence electrons: {0:>4d}'.format(
             -self.valence_electrons[atom.element]))
         atom.number_of_protons_to_add -= len(atom.bonded_atoms)
-        debug('Number of bonds:  {0:>4d}'.format(-len(atom.bonded_atoms)))
+        _LOGGER.debug(
+            'Number of bonds:  {0:>4d}'.format(-len(atom.bonded_atoms))
+        )
         atom.number_of_protons_to_add -= atom.num_pi_elec_2_3_bonds
-        debug('Pi electrons:     {0:>4d}'.format(-atom.num_pi_elec_2_3_bonds))
+        _LOGGER.debug(
+            'Pi electrons:     {0:>4d}'.format(-atom.num_pi_elec_2_3_bonds)
+        )
         atom.number_of_protons_to_add += int(atom.charge)
-        debug('Charge:           {0:>4.1f}'.format(atom.charge))
-        debug('-'*10)
-        debug(atom.number_of_protons_to_add)
+        _LOGGER.debug('Charge:           {0:>4.1f}'.format(atom.charge))
+        _LOGGER.debug('-'*10)
+        _LOGGER.debug(atom.number_of_protons_to_add)
 
     def set_steric_number_and_lone_pairs(self, atom):
         """Set steric number and lone pairs for atom.
@@ -155,39 +162,41 @@ class Protonate:
         # If we already did this, there is no reason to do it again
         if atom.steric_num_lone_pairs_set:
             return
-        debug('='*10)
-        debug('Setting steric number and lone pairs for', atom)
+        _LOGGER.debug('='*10)
+        _LOGGER.debug('Setting steric number and lone pairs for %s', atom)
         atom.steric_number = 0
-        debug('{0:>65s}: {1:>4d}'.format(
+        _LOGGER.debug('{0:>65s}: {1:>4d}'.format(
             'Valence electrons', self.valence_electrons[atom.element]))
         atom.steric_number += self.valence_electrons[atom.element]
-        debug('{0:>65s}: {1:>4d}'.format(
+        _LOGGER.debug('{0:>65s}: {1:>4d}'.format(
             'Number of bonds', len(atom.bonded_atoms)))
         atom.steric_number += len(atom.bonded_atoms)
-        debug('{0:>65s}: {1:>4d}'.format(
+        _LOGGER.debug('{0:>65s}: {1:>4d}'.format(
             'Number of hydrogen atoms to add', atom.number_of_protons_to_add))
         atom.steric_number += atom.number_of_protons_to_add
-        debug('{0:>65s}: {1:>4d}'.format(
+        _LOGGER.debug('{0:>65s}: {1:>4d}'.format(
             'Number of pi-electrons in double and triple bonds(-)',
             atom.num_pi_elec_2_3_bonds))
         atom.steric_number -= atom.num_pi_elec_2_3_bonds
-        debug('{0:>65s}: {1:>4d}'.format(
+        _LOGGER.debug('{0:>65s}: {1:>4d}'.format(
             'Number of pi-electrons in conjugated double and triple bonds(-)',
             atom.num_pi_elec_conj_2_3_bonds))
         atom.steric_number -= atom.num_pi_elec_conj_2_3_bonds
-        debug('{0:>65s}: {1:>4d}'.format(
+        _LOGGER.debug('{0:>65s}: {1:>4d}'.format(
             'Number of donated co-ordinated bonds', 0))
         atom.steric_number += 0
-        debug('{0:>65s}: {1:>4.1f}'.format(
+        _LOGGER.debug('{0:>65s}: {1:>4.1f}'.format(
             'Charge(-)', atom.charge))
         atom.steric_number -= atom.charge
         atom.steric_number = math.floor(atom.steric_number/2.0)
         atom.number_of_lone_pairs = (
-            atom.steric_number-len(atom.bonded_atoms)-atom.number_of_protons_to_add)
-        debug('-'*70)
-        debug('{0:>65s}: {1:>4d}'.format(
+            atom.steric_number - len(atom.bonded_atoms)
+            - atom.number_of_protons_to_add
+        )
+        _LOGGER.debug('-'*70)
+        _LOGGER.debug('{0:>65s}: {1:>4d}'.format(
             'Steric number', atom.steric_number))
-        debug('{0:>65s}: {1:>4d}'.format(
+        _LOGGER.debug('{0:>65s}: {1:>4d}'.format(
             'Number of lone pairs', atom.number_of_lone_pairs))
         atom.steric_num_lone_pairs_set = True
 
@@ -198,12 +207,14 @@ class Protonate:
             atom:  atom for calculation
         """
         # decide which method to use
-        debug('PROTONATING', atom)
+        _LOGGER.debug('PROTONATING %s', atom)
         if atom.steric_number in list(self.protonation_methods.keys()):
             self.protonation_methods[atom.steric_number](atom)
         else:
-            warning('Do not have a method for protonating', atom,
-                    '(steric number: {0:d})'.format(atom.steric_number))
+            _LOGGER.warning(
+                'Do not have a method for protonating %s %s', atom,
+                '(steric number: {0:d})'.format(atom.steric_number)
+            )
 
     def trigonal(self, atom):
         """Add hydrogens in trigonal geometry.
@@ -211,7 +222,9 @@ class Protonate:
         Args:
             atom:  atom to protonate
         """
-        debug('TRIGONAL - {0:d} bonded atoms'.format(len(atom.bonded_atoms)))
+        _LOGGER.debug(
+            'TRIGONAL - {0:d} bonded atoms'.format(len(atom.bonded_atoms))
+        )
         rot_angle = math.radians(120.0)
         cvec = Vector(atom1=atom)
         # 0 bonds
@@ -269,7 +282,7 @@ class Protonate:
         Args:
             atom:  atom to protonate.
         """
-        debug(
+        _LOGGER.debug(
             'TETRAHEDRAL - {0:d} bonded atoms'.format(len(atom.bonded_atoms)))
         # TODO - might be good to move tetrahedral angle to constant
         rot_angle = math.radians(109.5)
@@ -320,8 +333,9 @@ class Protonate:
             res_name=atom.res_name,
             chain_id=atom.chain_id,
             res_num=atom.res_num,
-            x=round(position.x, 3), # round of to three decimal points to
-                                    # avoid round-off differences in input file
+            x=round(position.x, 3),  # round of to three decimal points to
+                                     # avoid round-off differences in input
+                                     # file
             y=round(position.y, 3),
             z=round(position.z, 3),
             occ=None,
@@ -350,7 +364,7 @@ class Protonate:
                 proton.residue_label = "{0:<3s}{1:>4d}{2:>2s}".format(
                     proton.name, proton.res_num, proton.chain_id)
                 i += 1
-        debug('added', new_h, 'to', atom)
+        _LOGGER.debug('added %s %s %s', new_h, 'to', atom)
 
     def set_bond_distance(self, bvec, element):
         """Set bond distance between atom and element.
@@ -368,6 +382,6 @@ class Protonate:
             str_ = (
                 'Bond length for {0:s} not found, using the standard value '
                 'of {1:f}'.format(element, dist))
-            warning(str_)
+            _LOGGER.warning(str_)
         bvec = bvec.rescale(dist)
         return bvec

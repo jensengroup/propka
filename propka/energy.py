@@ -6,8 +6,11 @@ Energy calculations.
 
 """
 import math
-from propka.lib import warning
+import logging
 from propka.calculations import squared_distance, get_smallest_distance
+
+
+_LOGGER = logging.getLogger(__name__)
 
 
 # TODO - I have no idea what these constants mean so I labeled them "UNK_"
@@ -72,7 +75,10 @@ def calculate_scale_factor(parameters, weight):
     Returns:
         scaling factor
     """
-    scale_factor = 1.0 - (1.0 - parameters.desolvationSurfaceScalingFactor)*(1.0 - weight)
+    scale_factor = (
+        1.0 - (1.0 - parameters.desolvationSurfaceScalingFactor)
+        * (1.0 - weight)
+    )
     return scale_factor
 
 
@@ -83,7 +89,8 @@ def calculate_weight(parameters, num_volume):
 
     Args:
         parameters:  parameters for desolvation calculation
-        num_volume:  number of heavy atoms within desolvation calculation volume
+        num_volume:  number of heavy atoms within desolvation calculation
+                     volume
     Returns:
         desolvation weight
     """
@@ -135,12 +142,14 @@ def hydrogen_bond_energy(dist, dpka_max, cutoffs, f_angle=1.0):
 
 
 def angle_distance_factors(atom1=None, atom2=None, atom3=None, center=None):
-    """Calculate distance and angle factors for three atoms for backbone interactions.
+    """Calculate distance and angle factors for three atoms for backbone
+    interactions.
 
-    NOTE - you need to use atom1 to be the e.g. ASP atom if distance is reset at
-    return: [O1 -- H2-N3].
+    NOTE - you need to use atom1 to be the e.g. ASP atom if distance is reset
+           at return: [O1 -- H2-N3].
 
-    Also generalized to be able to be used for residue 'centers' for C=O COO interactions.
+    Also generalized to be able to be used for residue 'centers' for C=O COO
+    interactions.
 
     Args:
         atom1:  first atom for calculation (could be None)
@@ -194,9 +203,11 @@ def hydrogen_bond_interaction(group1, group2, version):
     # find the smallest distance between interacting atoms
     atoms1 = group1.get_interaction_atoms(group2)
     atoms2 = group2.get_interaction_atoms(group1)
-    [closest_atom1, dist, closest_atom2] = get_smallest_distance(atoms1, atoms2)
+    [closest_atom1, dist, closest_atom2] = get_smallest_distance(
+        atoms1, atoms2
+    )
     if None in [closest_atom1, closest_atom2]:
-        warning(
+        _LOGGER.warning(
             'Side chain interaction failed for {0:s} and {1:s}'.format(
                 group1.label, group2.label))
         return None
@@ -210,11 +221,16 @@ def hydrogen_bond_interaction(group1, group2, version):
         return None
     # check that bond distance criteria is met
     min_hbond_dist = version.parameters.min_bond_distance_for_hydrogen_bonds
-    if group1.atom.is_atom_within_bond_distance(group2.atom, min_hbond_dist, 1):
+    if group1.atom.is_atom_within_bond_distance(
+            group2.atom, min_hbond_dist, 1
+            ):
         return None
     # set angle factor
     f_angle = 1.0
-    if group2.type in version.parameters.angular_dependent_sidechain_interactions:
+    if (
+            group2.type in
+            version.parameters.angular_dependent_sidechain_interactions
+            ):
         if closest_atom2.element == 'H':
             heavy_atom = closest_atom2.bonded_atoms[0]
             hydrogen = closest_atom2
@@ -225,7 +241,10 @@ def hydrogen_bond_interaction(group1, group2, version):
             # is closer to the titratable atom than the hydrogen. In either
             # case, we set the angle factor to 0
             f_angle = 0.0
-    elif group1.type in version.parameters.angular_dependent_sidechain_interactions:
+    elif (
+            group1.type in
+            version.parameters.angular_dependent_sidechain_interactions
+            ):
         if closest_atom1.element == 'H':
             heavy_atom = closest_atom1.bonded_atoms[0]
             hydrogen = closest_atom1
@@ -236,7 +255,9 @@ def hydrogen_bond_interaction(group1, group2, version):
             # is closer to the titratable atom than the hydrogen. In either
             # case, we set the angle factor to 0
             f_angle = 0.0
-    weight = version.calculate_pair_weight(group1.num_volume, group2.num_volume)
+    weight = version.calculate_pair_weight(
+        group1.num_volume, group2.num_volume
+    )
     exception, value = version.check_exceptions(group1, group2)
     if exception:
         # Do nothing, value should have been assigned.
@@ -256,12 +277,15 @@ def electrostatic_interaction(group1, group2, dist, version):
         dist:  distance between groups
         version:  version-specific object with parameters and functions
     Returns:
-        electrostatic interaction energy or None (if no interaction is appropriate)
+        electrostatic interaction energy or None (if no interaction is
+        appropriate)
     """
     # check if we should do coulomb interaction at all
     if not version.check_coulomb_pair(group1, group2, dist):
         return None
-    weight = version.calculate_pair_weight(group1.num_volume, group2.num_volume)
+    weight = version.calculate_pair_weight(
+        group1.num_volume, group2.num_volume
+    )
     value = version.calculate_coulomb_energy(dist, weight)
     return value
 
@@ -334,7 +358,9 @@ def backbone_reorganization(_, conformation):
         weight = titratable_group.buried
         dpka = 0.00
         for bbc_group in bbc_groups:
-            center = [titratable_group.x, titratable_group.y, titratable_group.z]
+            center = [
+                titratable_group.x, titratable_group.y, titratable_group.z
+            ]
             atom2 = bbc_group.get_interaction_atoms(titratable_group)[0]
             dist, f_angle, _ = angle_distance_factors(atom2=atom2,
                                                       atom3=bbc_group.atom,
@@ -359,7 +385,8 @@ def check_exceptions(version, group1, group2):
         group2:  second group for check
     Returns:
         1. Boolean indicating atypical behavior,
-        2. value associated with atypical interaction (None if Boolean is False)
+        2. value associated with atypical interaction (None if Boolean is
+           False)
     """
     res_type1 = group1.type
     res_type2 = group2.type
@@ -398,7 +425,8 @@ def check_coo_arg_exception(group_coo, group_arg, version):
         version:  version object
     Returns:
         1. Boolean indicating atypical behavior,
-        2. value associated with atypical interaction (None if Boolean is False)
+        2. value associated with atypical interaction (None if Boolean is
+           False)
     """
     exception = True
     value_tot = 0.00
@@ -409,13 +437,18 @@ def check_coo_arg_exception(group_coo, group_arg, version):
     atoms_arg.extend(group_arg.get_interaction_atoms(group_coo))
     for _ in ["shortest", "runner-up"]:
         # find the closest interaction pair
-        [closest_coo_atom, dist, closest_arg_atom] = get_smallest_distance(atoms_coo,
-                                                                           atoms_arg)
-        [dpka_max, cutoff] = version.get_hydrogen_bond_parameters(closest_coo_atom,
-                                                                  closest_arg_atom)
+        [closest_coo_atom, dist, closest_arg_atom] = get_smallest_distance(
+            atoms_coo, atoms_arg
+        )
+        [dpka_max, cutoff] = version.get_hydrogen_bond_parameters(
+            closest_coo_atom, closest_arg_atom
+        )
         # calculate and sum up interaction energy
         f_angle = 1.00
-        if group_arg.type in version.parameters.angular_dependent_sidechain_interactions:
+        if (
+                group_arg.type in
+                version.parameters.angular_dependent_sidechain_interactions
+                ):
             atom3 = closest_arg_atom.bonded_atoms[0]
             dist, f_angle, _ = angle_distance_factors(closest_coo_atom,
                                                       closest_arg_atom,
@@ -437,18 +470,23 @@ def check_coo_coo_exception(group1, group2, version):
         version:  version object
     Returns:
         1. Boolean indicating atypical behavior,
-        2. value associated with atypical interaction (None if Boolean is False)
+        2. value associated with atypical interaction (None if Boolean is
+           False)
     """
     exception = True
     interact_groups12 = group1.get_interaction_atoms(group2)
     interact_groups21 = group2.get_interaction_atoms(group1)
-    [closest_atom1, dist, closest_atom2] = get_smallest_distance(interact_groups12,
-                                                                 interact_groups21)
-    [dpka_max, cutoff] = version.get_hydrogen_bond_parameters(closest_atom1,
-                                                              closest_atom2)
+    [closest_atom1, dist, closest_atom2] = get_smallest_distance(
+        interact_groups12, interact_groups21
+    )
+    [dpka_max, cutoff] = version.get_hydrogen_bond_parameters(
+        closest_atom1, closest_atom2
+    )
     f_angle = 1.00
     value = hydrogen_bond_energy(dist, dpka_max, cutoff, f_angle)
-    weight = calculate_pair_weight(version.parameters, group1.num_volume, group2.num_volume)
+    weight = calculate_pair_weight(
+        version.parameters, group1.num_volume, group2.num_volume
+    )
     value = value * (1.0 + weight)
     return exception, value
 
@@ -462,7 +500,8 @@ def check_coo_his_exception(group1, group2, version):
         version:  version object
     Returns:
         1. Boolean indicating atypical behavior,
-        2. value associated with atypical interaction (None if Boolean is False)
+        2. value associated with atypical interaction (None if Boolean is
+           False)
     """
     exception = False
     if check_buried(group1.num_volume, group2.num_volume):
@@ -479,7 +518,8 @@ def check_oco_his_exception(group1, group2, version):
         version:  version object
     Returns:
         1. Boolean indicating atypical behavior,
-        2. value associated with atypical interaction (None if Boolean is False)
+        2. value associated with atypical interaction (None if Boolean is
+           False)
     """
     exception = False
     if check_buried(group1.num_volume, group2.num_volume):
@@ -496,7 +536,8 @@ def check_cys_his_exception(group1, group2, version):
         version:  version object
     Returns:
         1. Boolean indicating atypical behavior,
-        2. value associated with atypical interaction (None if Boolean is False)
+        2. value associated with atypical interaction (None if Boolean is
+           False)
     """
     exception = False
     if check_buried(group1.num_volume, group2.num_volume):
@@ -513,7 +554,8 @@ def check_cys_cys_exception(group1, group2, version):
         version:  version object
     Returns:
         1. Boolean indicating atypical behavior,
-        2. value associated with atypical interaction (None if Boolean is False)
+        2. value associated with atypical interaction (None if Boolean is
+           False)
     """
     exception = False
     if check_buried(group1.num_volume, group2.num_volume):
