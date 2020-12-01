@@ -164,17 +164,9 @@ class LigandPkaValues:
             stderr=subprocess.PIPE).communicate()
         if len(errors) > 0:
             err = (
-                f'***********************************************************'
-                f'*********************************************'
-                f'* Error: Marvin execution failed:                          '
-                f'                                            *'
-                f'* {errors:<100s} *'
-                f'*                                                          '
-                f'                                            *'
-                f'* Please edit the ligand mol2 file and re-run PropKa with '
-                f'the -l option: {filename:>29s} *'
-                f'***********************************************************'
-                f'*********************************************'
+                f'Error: Marvin execution failed:  {errors}\n'
+                f'Please edit the ligand mol2 file and re-run PropKa with '
+                f'the -l option: {filename}'
             )
             _LOGGER.error(err)
             raise OSError(err)
