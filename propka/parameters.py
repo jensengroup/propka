@@ -2,13 +2,18 @@
 Configuration file parameters
 =============================
 
-Holds parameters and settings that can be set in :file:`propka.cfg`. The file format consists of lines of  ``keyword value [value ...]``, blank lines, and comment lines (introduced with ``#``).
+Holds parameters and settings that can be set in :file:`propka.cfg`. The file
+format consists of lines of  ``keyword value [value ...]``, blank lines, and
+comment lines (introduced with ``#``).
 
 The module attributes below list the names and types of all key words
 in configuration file.
 
 """
-from propka.lib import info, warning
+import logging
+
+
+_LOGGER = logging.getLogger(__name__)
 
 
 #: matrices
@@ -126,7 +131,7 @@ class Parameters:
         """
         dict_ = getattr(self, words[0])
         key = words[1]
-        if not key in dict_:
+        if key not in dict_:
             dict_[key] = []
         for value in words[2:]:
             if isinstance(value, list):
@@ -204,12 +209,12 @@ class Parameters:
 
     def print_interaction_parameters(self):
         """Print interaction parameters."""
-        info('--------------- Model pKa values ----------------------')
+        _LOGGER.info('--------------- Model pKa values ----------------------')
         for k in self.model_pkas:
-            info('{0:>3s} {1:8.2f}'.format(k, self.model_pkas[k]))
+            _LOGGER.info('{0:>3s} {1:8.2f}'.format(k, self.model_pkas[k]))
 
-        info('')
-        info('--------------- Interactions --------------------------')
+        _LOGGER.info('')
+        _LOGGER.info('--------------- Interactions --------------------------')
         agroups = [
             'COO', 'HIS', 'CYS', 'TYR', 'SER', 'N+', 'LYS', 'AMD', 'ARG',
             'TRP', 'ROH', 'CG', 'C2N', 'N30', 'N31', 'N32', 'N33', 'NAR',
@@ -234,7 +239,9 @@ class Parameters:
                 map_interaction = ''
                 if group2 in map_:
                     for val in map_[group2]:
-                        fmt = "|{grp1:>3s} {grp2:>3s} {mat:1s} {val1:4} {val2:4}"
+                        fmt = (
+                            "|{grp1:>3s} {grp2:>3s} {mat:1s} {val1:4} {val2:4}"
+                        )
                         map_interaction += fmt.format(
                             group1, val, self.interaction_matrix[group1][val],
                             self.sidechain_cutoffs.get_value(group1, val)[0],
@@ -260,18 +267,18 @@ class Parameters:
                                      group1, group2)[1]
                                  != 4)):
                         map_interaction += '?  '
-                info(interaction, map_interaction)
+                _LOGGER.info("%s %s", interaction, map_interaction)
                 if group1 == group2:
                     break
-            info('-')
-        info('--------------- Exceptions ----------------------------')
-        info('COO-HIS', self.COO_HIS_exception)
-        info('OCO-HIS', self.OCO_HIS_exception)
-        info('CYS-HIS', self.CYS_HIS_exception)
-        info('CYS-CYS', self.CYS_CYS_exception)
+            _LOGGER.info('-')
+        _LOGGER.info('--------------- Exceptions ----------------------------')
+        _LOGGER.info('COO-HIS %s', self.COO_HIS_exception)
+        _LOGGER.info('OCO-HIS %s', self.OCO_HIS_exception)
+        _LOGGER.info('CYS-HIS %s', self.CYS_HIS_exception)
+        _LOGGER.info('CYS-CYS %s', self.CYS_CYS_exception)
 
-        info('--------------- Mapping -------------------------------')
-        info("""
+        _LOGGER.info('--------------- Mapping -------------------------------')
+        _LOGGER.info("""
 Titratable:
 CG  ARG
 C2N ARG
@@ -318,14 +325,16 @@ O2
             "\\midrule",
             "\\endfirsthead",
             "",
-            "\\multicolumn{{5}}{{l}}{\\emph{{continued from the previous page}}}\\\\",
+            "\\multicolumn{{5}}{{l}}{\\emph{{continued from the previous "
+            "page}}}\\\\",
             "\\toprule",
             "Group1 & Group2 & Interaction & c1 &c2 \\\\",
             "\\midrule",
             "\\endhead",
             "",
             "\\midrule",
-            "\\multicolumn{{5}}{{r}}{\\emph{{continued on the next page}}}\\\\",
+            "\\multicolumn{{5}}{{r}}{\\emph{{continued on the next "
+            "page}}}\\\\",
             "\\endfoot",
             "",
             "\\bottomrule",
@@ -350,11 +359,12 @@ O2
                 if group1 == group2:
                     break
         str_ += '  \\end{{longtable}}\n'
-        info(str_)
+        _LOGGER.info(str_)
 
     def print_interactions_latex(self):
         """Print interactions in LaTeX."""
-        # TODO - are these the same lists as above? Convert to module constants.
+        # TODO - are these the same lists as above? Convert to module
+        # constants.
         agroups = ['COO', 'HIS', 'CYS', 'TYR', 'SER', 'N+', 'LYS', 'AMD',
                    'ARG', 'TRP', 'ROH', 'CG', 'C2N', 'N30', 'N31', 'N32',
                    'N33', 'NAR', 'OCO', 'NP1', 'OH', 'O3', 'CL', 'F', 'NAM',
@@ -371,14 +381,16 @@ O2
             "\\midrule",
             "\\endfirsthead",
             "",
-            "\\multicolumn{{5}}{{l}}{\\emph{{continued from the previous page}}}\\\\",
+            "\\multicolumn{{5}}{{l}}{\\emph{{continued from the previous "
+            "page}}}\\\\",
             "\\toprule",
             "Group1 & Group2 & Interaction & c1 &c2 \\\\",
             "\\midrule",
             "\\endhead",
             "",
             "\\midrule",
-            "\\multicolumn{{5}}{{r}}{\\emph{{continued on the next page}}}\\\\",
+            "\\multicolumn{{5}}{{r}}{\\emph{{continued on the next "
+            "page}}}\\\\",
             "\\endfoot",
             "",
             "\\bottomrule",
@@ -388,7 +400,10 @@ O2
         str_ = "\n".join(lines)
         for group1 in agroups:
             for group2 in agroups:
-                fmt = '{g1:>3s} & {g2:>3s} & {mat:1s} & {val1:>4s} & {val2:>4s}\\\\ \n'
+                fmt = (
+                    '{g1:>3s} & {g2:>3s} & {mat:1s} & {val1:>4s} & '
+                    '{val2:>4s}\\\\ \n'
+                )
                 str_ += fmt.format(
                     group1, group2, self.interaction_matrix[group1][group2],
                     str(self.sidechain_cutoffs.get_value(group1, group2)[0]),
@@ -396,7 +411,7 @@ O2
                 if group1 == group2:
                     break
         str_ += '  \\end{{longtable}}\n'
-        info(str_)
+        _LOGGER.info(str_)
 
 
 class InteractionMatrix:
@@ -421,7 +436,7 @@ class InteractionMatrix:
         """
         new_group = words[0]
         self.ordered_keys.append(new_group)
-        if not new_group in self.dictionary.keys():
+        if new_group not in self.dictionary.keys():
             self.dictionary[new_group] = {}
         for i, group in enumerate(self.ordered_keys):
             if len(words) > i+1:
@@ -524,8 +539,8 @@ class PairwiseMatrix:
                 str_ = (
                     'Parameter value for {0:s}, {1:s} defined more '
                     'than once'.format(key1, key2))
-                warning(str_)
-        if not key1 in self.dictionary:
+                _LOGGER.warning(str_)
+        if key1 not in self.dictionary:
             self.dictionary[key1] = {}
         self.dictionary[key1][key2] = value
 

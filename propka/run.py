@@ -11,13 +11,14 @@ function. If similar functionality is desired from a Python script
 
 """
 import logging
+import sys
 from propka.lib import loadOptions
 from propka.input import read_parameter_file, read_molecule_file
 from propka.parameters import Parameters
 from propka.molecular_container import MolecularContainer
 
 
-_LOGGER = logging.getLogger("PROPKA")
+_LOGGER = logging.getLogger(__name__)
 
 
 def main(optargs=None):
@@ -28,6 +29,10 @@ def main(optargs=None):
        Removed ability to write out PROPKA input files.
     """
     # loading options, flags and arguments
+    logger = logging.getLogger("")
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setFormatter(logging.Formatter("%(message)s"))
+    logger.addHandler(stdout_handler)
     optargs = optargs if optargs is not None else []
     options = loadOptions(*optargs)
     pdbfiles = options.filenames
@@ -59,7 +64,7 @@ def single(filename: str, optargs: tuple = (), stream=None,
         Given an input file "protein.pdb", run the equivalent of ``propka3
         --mutation=N25R/N181D -v --pH=7.2 protein.pdb`` as::
 
-            propka.run.single("protein.pdb", 
+            propka.run.single("protein.pdb",
                 optargs=["--mutation=N25R/N181D", "-v", "--pH=7.2"])
 
         By default, a pKa file will be written. However in some cases one may

@@ -11,10 +11,7 @@ import argparse
 import pkg_resources
 
 
-_LOGGER = logging.getLogger("propka")
-_STDOUT_HANDLER = logging.StreamHandler(sys.stdout)
-_STDOUT_HANDLER.setFormatter(logging.Formatter("%(message)s"))
-_LOGGER.addHandler(_STDOUT_HANDLER)
+_LOGGER = logging.getLogger(__name__)
 
 
 EXPECTED_ATOM_NUMBERS = {'ALA': 5, 'ARG': 11, 'ASN': 8, 'ASP': 8, 'CYS': 6,
@@ -53,7 +50,7 @@ def protein_precheck(conformations, names):
                             "{res:s} in conformation {conf:s}".format(
                                 num=len(res_atoms), res=residue_label,
                                 conf=name))
-                    warning(str_)
+                    _LOGGER.warning(str_)
                 continue
             # check number of atoms in residue
             if len(res_atoms) != EXPECTED_ATOM_NUMBERS[res_name]:
@@ -61,7 +58,7 @@ def protein_precheck(conformations, names):
                         "{res:s} in conformation {conf:s}".format(
                             num=len(res_atoms), res=residue_label,
                             conf=name))
-                warning(str_)
+                _LOGGER.warning(str_)
 
 
 def resid_from_atom(atom):
@@ -101,7 +98,7 @@ def make_molecule(atom, atoms):
         list of atoms
     """
     bonded_atoms = [a for a in atoms if atom in a.bonded_atoms]
-    res_atoms = [atom,]
+    res_atoms = [atom]
     for bond_atom in bonded_atoms:
         if bond_atom in atoms:
             atoms.remove(bond_atom)
@@ -190,9 +187,9 @@ def build_parser(parser=None):
     """Build an argument parser for PROPKA.
 
     Args:
-        parser:  existing parser. If this is not None, then the PROPKA parser will
-                 be created as a subparser to this existing parser.  Otherwise, a
-                 new parser will be created.
+        parser:  existing parser. If this is not None, then the PROPKA parser
+                 will be created as a subparser to this existing parser.
+                 Otherwise, a new parser will be created.
     Returns:
         ArgumentParser object.
 
@@ -214,7 +211,10 @@ def build_parser(parser=None):
         group.add_argument("input_pdb", help="read data from <filename>")
     group.add_argument(
         "-f", "--file", action="append", dest="filenames", default=[],
-        help="read data from <filename>, i.e. <filename> is added to arguments")
+        help=(
+            "read data from <filename>, i.e. <filename> is added to arguments"
+        )
+    )
     group.add_argument(
         "-r", "--reference", dest="reference", default="neutral",
         help=("setting which reference to use for stability calculations "
@@ -226,8 +226,8 @@ def build_parser(parser=None):
     group.add_argument(
         "-i", "--titrate_only", dest="titrate_only",
         help=('Treat only the specified residues as titratable. Value should '
-              'be a comma-separated list of "chain:resnum" values; for example: '
-              '-i "A:10,A:11"'))
+              'be a comma-separated list of "chain:resnum" values; for '
+              'example: -i "A:10,A:11"'))
     group.add_argument(
         "-t", "--thermophile", action="append", dest="thermophiles",
         help=("defining a thermophile filename; usually used in "
@@ -270,7 +270,11 @@ def build_parser(parser=None):
               "related properties [0.0, 14.0, 0.1]"))
     group.add_argument(
         "--mutator", dest="mutator",
-        help="setting approach for mutating <filename> [alignment/scwrl/jackal]")
+        help=(
+            "setting approach for mutating <filename> "
+            "[alignment/scwrl/jackal]"
+        )
+    )
     group.add_argument(
         "--mutator-option", dest="mutator_options", action="append",
         help="setting property for mutator [e.g. type=\"side-chain\"]")
@@ -342,14 +346,14 @@ def make_tidy_atom_label(name, element):
     Returns:
         string
     """
-    if len(name) > 4: # if longer than 4, just truncate the name
+    if len(name) > 4:  # if longer than 4, just truncate the name
         label = name[0:4]
-    elif len(name) == 4: # if length is 4, otherwise use the name as it is
+    elif len(name) == 4:  # if length is 4, otherwise use the name as it is
         label = name
-    else: # if less than 4 characters long, insert white space as needed
+    else:  # if less than 4 characters long, insert white space as needed
         if len(element) == 1:
             label = ' {0:<3s}'.format(name)
-        else: # The element should occupy the two first chars
+        else:  # The element should occupy the two first chars
             label = '{0:<4s}'.format(name)
     return label
 
@@ -370,47 +374,3 @@ def get_sorted_configurations(configuration_keys):
 def configuration_compare(conf):
     """TODO - figure out what this function does."""
     return 100*int(conf[1:-2]) + ord(conf[-1])
-
-
-def _args_to_str(arg_list):
-    """Summarize list of arguments in string.
-
-    Args:
-        arg_list:  list of arguments
-    Returns:
-        string
-    """
-    return " ".join(map(str, arg_list))
-
-
-def info(*args):
-    """Log a message to info.
-
-    Level defaults to INFO unless overridden.
-
-    Args:
-        args:  argument list
-    """
-    _LOGGER.info(_args_to_str(args))
-
-
-def debug(*args):
-    """Log a message to debug.
-
-    Level defaults to DEBUG unless overridden.
-
-    Args:
-        args:  argument list
-    """
-    _LOGGER.debug(_args_to_str(args))
-
-
-def warning(*args):
-    """Log a message to warning.
-
-    Level defaults to WARNING unless overridden.
-
-    Args:
-        args:  argument list
-    """
-    _LOGGER.warning(_args_to_str(args))

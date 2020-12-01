@@ -9,11 +9,15 @@ programs are required).
 .. _Marvin: https://chemaxon.com/products/marvin
 
 """
+import logging
 import os
 import subprocess
 import sys
 from propka.output import write_mol2_for_atoms
-from propka.lib import info, warning, split_atoms_into_molecules
+from propka.lib import split_atoms_into_molecules
+
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class LigandPkaValues:
@@ -29,9 +33,9 @@ class LigandPkaValues:
         # attempt to find Marvin executables in the path
         self.molconvert = self.find_in_path('molconvert')
         self.cxcalc = self.find_in_path('cxcalc')
-        info('Found Marvin executables:')
-        info(self.cxcalc)
-        info(self.molconvert)
+        _LOGGER.info('Found Marvin executables:')
+        _LOGGER.info(self.cxcalc)
+        _LOGGER.info(self.molconvert)
 
     @staticmethod
     def find_in_path(program):
@@ -50,7 +54,7 @@ class LigandPkaValues:
         if len(locs) == 0:
             str_ = "'Error: Could not find {0:s}.".format(program)
             str_ += ' Please make sure that it is found in the path.'
-            info(str_)
+            _LOGGER.info(str_)
             sys.exit(-1)
         return locs[0]
 
@@ -146,7 +150,7 @@ class LigandPkaValues:
                 "Didn't find a user-modified file '{0:s}' "
                 "- generating one".format(
                     filename))
-            warning(errstr)
+            _LOGGER.warning(errstr)
             write_mol2_for_atoms(atoms, filename)
         # Marvin calculate pKa values
         fmt = (
@@ -159,25 +163,22 @@ class LigandPkaValues:
             [self.cxcalc, filename]+options.split(), stdout=subprocess.PIPE,
             stderr=subprocess.PIPE).communicate()
         if len(errors) > 0:
-            info('***********************************************************'
-                 '*********************************************')
-            info('* Warning: Marvin execution failed:                        '
-                 '                                            *')
-            info('* {0:<100s} *'.format(errors))
-            info('*                                                          '
-                 '                                            *')
-            info('* Please edit the ligand mol2 file and re-run PropKa with '
-                 'the -l option: {0:>29s} *'.format(filename))
-            info('***********************************************************'
-                 '*********************************************')
-            sys.exit(-1)
+            err = (
+                f'Error: Marvin execution failed:  {errors}\n'
+                f'Please edit the ligand mol2 file and re-run PropKa with '
+                f'the -l option: {filename}'
+            )
+            _LOGGER.error(err)
+            raise OSError(err)
         # extract calculated pkas
         indices, pkas, types = self.extract_pkas(output)
         # store calculated pka values
         for i, index in enumerate(indices):
             atoms[index].marvin_pka = pkas[i]
             atoms[index].charge = {'a': -1, 'b': 1}[types[i]]
-            info('{0:s} model pKa: {1:<.2f}'.format(atoms[index], pkas[i]))
+            _LOGGER.info(
+                '{0:s} model pKa: {1:<.2f}'.format(atoms[index], pkas[i])
+            )
 
     @staticmethod
     def extract_pkas(output):

@@ -4,12 +4,14 @@ Coupling between groups
 
 Describe and analyze energetic coupling between groups.
 """
-
+import logging
 import itertools
 import propka.lib
 from propka.group import Group
 from propka.output import make_interaction_map
-from propka.lib import info
+
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class NonCovalentlyCoupledGroups:
@@ -37,7 +39,7 @@ class NonCovalentlyCoupledGroups:
         if (interaction_energy <= self.parameters.min_interaction_energy
                 and return_on_fail):
             return {'coupling_factor': -1.0}
-         # calculate intrinsic pKa's, if not already done
+        # calculate intrinsic pKa's, if not already done
         for group in [group1, group2]:
             if group.intrinsic_pka is None:
                 group.calculate_intrinsic_pka()
@@ -80,7 +82,8 @@ class NonCovalentlyCoupledGroups:
         if (abs(group1.intrinsic_pka - group2.intrinsic_pka)
                 > self.parameters.max_intrinsic_pka_diff and return_on_fail):
             return {'coupling_factor': -1.0}
-        # if everything is OK, calculate the coupling factor and return all info
+        # if everything is OK, calculate the coupling factor and return all
+        # info
         factor = (
             self.get_free_energy_diff_factor(default_energy, swapped_energy)
             * self.get_pka_diff_factor(group1.intrinsic_pka,
@@ -107,7 +110,7 @@ class NonCovalentlyCoupledGroups:
         if intrinsic_pka_diff <= self.parameters.max_intrinsic_pka_diff:
             res = (
                 1-(intrinsic_pka_diff
-                   /self.parameters.max_intrinsic_pka_diff)**2)
+                   / self.parameters.max_intrinsic_pka_diff)**2)
         return res
 
     def get_free_energy_diff_factor(self, energy1, energy2):
@@ -139,7 +142,7 @@ class NonCovalentlyCoupledGroups:
             res = (
                 (interaction_energy-self.parameters.min_interaction_energy)
                 / (1.0+interaction_energy
-                   -self.parameters.min_interaction_energy))
+                   - self.parameters.min_interaction_energy))
         return res
 
     def identify_non_covalently_coupled_groups(self, conformation,
@@ -162,17 +165,25 @@ class NonCovalentlyCoupledGroups:
                 '\n'
                 ' Detecting non-covalently coupled residues\n'
                 '{sep}\n'
-                '   Maximum pKa difference:     {c.max_intrinsic_pka_diff:>4.2f} pKa units\n'
-                '   Minimum interaction energy: {c.min_interaction_energy:>4.2f} pKa units\n'
-                '   Maximum free energy diff.:  {c.max_free_energy_diff:>4.2f} pKa units\n'
-                '   Minimum swap pKa shift:     {c.min_swap_pka_shift:>4.2f} pKa units\n'
-                '   pH:                         {c.pH:>6} \n'
-                '   Reference:                  {c.reference}\n'
-                '   Min pKa:                    {c.min_pka:>4.2f}\n'
-                '   Max pKa:                    {c.max_pka:>4.2f}\n'
+                '   Maximum pKa difference:     '
+                '{c.max_intrinsic_pka_diff:>4.2f} pKa units\n'
+                '   Minimum interaction energy: '
+                '{c.min_interaction_energy:>4.2f} pKa units\n'
+                '   Maximum free energy diff.:  '
+                '{c.max_free_energy_diff:>4.2f} pKa units\n'
+                '   Minimum swap pKa shift:     '
+                '{c.min_swap_pka_shift:>4.2f} pKa units\n'
+                '   pH:                         '
+                '{c.pH:>6} \n'
+                '   Reference:                  '
+                '{c.reference}\n'
+                '   Min pKa:                    '
+                '{c.min_pka:>4.2f}\n'
+                '   Max pKa:                    '
+                '{c.max_pka:>4.2f}\n'
                 '\n')
             sep = "-" * 103
-            info(info_fmt.format(sep=sep, c=self))
+            _LOGGER.info(info_fmt.format(sep=sep, c=self))
         # find coupled residues
         titratable_groups = conformation.get_titratable_groups()
         if not conformation.non_covalently_coupled_groups:
@@ -202,7 +213,7 @@ class NonCovalentlyCoupledGroups:
             'Non-covalent coupling map for {0:s}'.format(str(conformation)),
             conformation.get_non_covalently_coupled_groups(),
             lambda g1, g2: g1 in g2.non_covalently_coupled_groups)
-        info(map_)
+        _LOGGER.info(map_)
         for system in conformation.get_coupled_systems(
                 conformation.get_non_covalently_coupled_groups(),
                 Group.get_non_covalently_coupled_groups):
@@ -215,7 +226,7 @@ class NonCovalentlyCoupledGroups:
             conformation:  conformation to print
             system:  system to print
         """
-        info(
+        _LOGGER.info(
             'System containing {0:d} groups:'.format(len(system)))
         # make list of interactions within this system
         interactions = list(itertools.combinations(system, 2))
@@ -230,7 +241,7 @@ class NonCovalentlyCoupledGroups:
             coup_info += (
                 self.make_data_to_string(data, interaction[0], interaction[1])
                 + '\n\n')
-        info(coup_info)
+        _LOGGER.info(coup_info)
         # make list of possible combinations of swap to try out
         combinations = propka.lib.generate_combinations(interactions)
         # Make possible swap combinations
@@ -246,7 +257,7 @@ class NonCovalentlyCoupledGroups:
             for interaction in combination:
                 self.swap_interactions([interaction[0]], [interaction[1]])
             swap_info += self.print_determinants_section(system, 'Swapped')
-        info(swap_info)
+        _LOGGER.info(swap_info)
 
     @staticmethod
     def get_interaction(group1, group2, include_side_chain_hbs=True):

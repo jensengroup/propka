@@ -6,8 +6,11 @@ Iterative functions for pKa calculations. These appear to mostly
 involve :class:`propka.determinant.Determinant` instances.
 
 """
+import logging
 from propka.determinant import Determinant
-from propka.lib import info, debug
+
+
+_LOGGER = logging.getLogger(__name__)
 
 
 # TODO - these are undocumented constants
@@ -215,9 +218,12 @@ def add_determinants(iterative_interactions, version, _=None):
                 iteratives.append(new_iterative)
                 done_group.append(group)
     # Initialize iterative scheme
-    debug(
-        "\n   --- pKa iterations ({0:d} groups, {1:d} interactions) ---".format(
-            len(iteratives), len(iterative_interactions)))
+    _LOGGER.debug(
+        "\n   --- pKa iterations ({0:d} groups, {1:d} interactions) "
+        "---".format(
+            len(iteratives), len(iterative_interactions)
+            )
+    )
     converged = False
     iteration = 0
     # set non-iterative pka values as first step
@@ -237,7 +243,7 @@ def add_determinants(iterative_interactions, version, _=None):
             object1, object2 = find_iterative(pair, iteratives)
             q1 = object1.q
             q2 = object2.q
-            if   q1 < 0.0 and q2 < 0.0:
+            if q1 < 0.0 and q2 < 0.0:
                 # both are acids
                 add_iterative_acid_pair(object1, object2, interaction)
             elif q1 > 0.0 and q2 > 0.0:
@@ -267,26 +273,27 @@ def add_determinants(iterative_interactions, version, _=None):
             itres.pka_iter.append(itres.pka_new)
 
         if iteration == 10:
-            info("did not converge in {0:d} iterations".format(iteration))
+            _LOGGER.info(
+                "did not converge in {0:d} iterations".format(iteration)
+            )
             break
     # printing pKa iterations
     # formerly was conditioned on if options.verbosity >= 2 - now unnecessary
     str_ = '            '
     for index in range(iteration+1):
         str_ += "{0:>8d}".format(index)
-    debug(str_)
+    _LOGGER.debug(str_)
     for itres in iteratives:
         str_ = "{0:s}   ".format(itres.label)
         for pka in itres.pka_iter:
             str_ += "{0:>8.2f}".format(pka)
         if not itres.converged:
             str_ += " *"
-        debug(str_)
+        _LOGGER.debug(str_)
     # creating real determinants and adding them to group object
     for itres in iteratives:
         for type_ in ['sidechain', 'backbone', 'coulomb']:
             for interaction in itres.determinants[type_]:
-                #info('done',itres.group.label,interaction[0],interaction[1])
                 value = interaction[1]
                 if value > UNK_MIN_VALUE or value < -UNK_MIN_VALUE:
                     group = interaction[0]

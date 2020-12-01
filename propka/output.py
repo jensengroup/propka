@@ -9,9 +9,12 @@ Output routines.
    Removed :func:`write_proka` as writing PROPKA input files is no longer
    supported.
 """
+import logging
 from datetime import date
-from propka.lib import info
 from . import __version__
+
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def open_file_for_writing(input_file):
@@ -54,7 +57,7 @@ def print_header():
     str_ = "{0:s}\n".format(get_propka_header())
     str_ += "{0:s}\n".format(get_references_header())
     str_ += "{0:s}\n".format(get_warning_header())
-    info(str_)
+    _LOGGER.info("\n%s", str_)
 
 
 def write_pdb_for_protein(
@@ -74,7 +77,7 @@ def write_pdb_for_protein(
             filename = "{0:s}.pdb".format(protein.name)
         # TODO - this would be better as a context manager
         pdbfile = open(filename, 'w')
-        info("writing pdbfile {0:s}".format(filename))
+        _LOGGER.info("writing pdbfile {0:s}".format(filename))
         close_file = True
     else:
         # don't close the file, it was opened in a different place
@@ -127,7 +130,7 @@ def write_pka(protein, parameters, filename=None, conformation='1A',
     # TODO - this would be much better with a context manager
     file_ = open(filename, 'w')
     if verbose:
-        info("Writing {0:s}".format(filename))
+        _LOGGER.info("Writing {0:s}".format(filename))
     # writing propka header
     str_ = "{0:s}\n".format(get_propka_header())
     str_ += "{0:s}\n".format(get_references_header())
@@ -177,7 +180,7 @@ def print_tm_profile(protein, reference="neutral", window=[0., 14., 1.],
                     and (ph % window[2] < 0.01
                          or ph % window[2] > 0.99*window[2])):
                 str_ += "{0:>6.2f}{1:>10.2f}\n".format(ph, tm_)
-        info(str_)
+        _LOGGER.info(str_)
 
 
 def print_result(protein, conformation, parameters):
@@ -201,9 +204,9 @@ def print_pka_section(protein, conformation, parameters):
     """
     # geting the determinants section
     str_ = get_determinant_section(protein, conformation, parameters)
-    info(str_)
+    _LOGGER.info("pKa determinants:\n%s", str_)
     str_ = get_summary_section(protein, conformation, parameters)
-    info(str_)
+    _LOGGER.info("pKa summary:\n%s", str_)
 
 
 def get_determinant_section(protein, conformation, parameters):
@@ -296,8 +299,9 @@ def get_folding_profile_section(
     else:
         str_ += "The pH of optimum stability is {0:>4.1f}".format(ph_opt)
         str_ += (
-            " for which the free energy is {0:>6.1f} kcal/mol at 298K\n".format(
-                dg_opt))
+            " for which the free energy is {0:>6.1f} kcal/mol at "
+            "298K\n".format(dg_opt)
+        )
     if dg_min is None or dg_max is None:
         str_ += "Could not determine pH values where the free energy"
         str_ += " is within 80 % of minimum\n"
@@ -337,7 +341,10 @@ def get_charge_profile_section(protein, conformation='AVR', _=None):
     if pi_pro is None or pi_mod is None:
         str_ += "Could not determine the pI\n\n"
     else:
-        str_ += f"The pI is {pi_pro:>5.2f} (folded) and {pi_mod:>5.2f} (unfolded)\n"
+        str_ += (
+            f"The pI is {pi_pro:>5.2f} (folded) and {pi_mod:>5.2f} "
+            f"(unfolded)\n"
+        )
     return str_
 
 

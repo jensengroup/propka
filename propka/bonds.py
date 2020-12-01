@@ -5,12 +5,14 @@ Bonds
 PROPKA representation of bonds.
 
 """
+import logging
 import math
 import json
 import pkg_resources
 import propka.calculations
-# TODO - replace the info/warning imports with logging functionality
-from propka.lib import info
+
+
+_LOGGER = logging.getLogger(__name__)
 
 
 # TODO - should these constants be defined higher up in the module?
@@ -30,8 +32,8 @@ class BondMaker:
     """
     def __init__(self):
         # predefined bonding distances
-        self.distances = {'S-S' : DISULFIDE_DISTANCE,
-                          'F-F' : FLUORIDE_DISTANCE}
+        self.distances = {'S-S': DISULFIDE_DISTANCE,
+                          'F-F': FLUORIDE_DISTANCE}
         self.distances_squared = {}
         for key in self.distances:
             self.distances_squared[key] = (
@@ -53,22 +55,22 @@ class BondMaker:
                                              'C': ['CA', 'O'], 'O': ['C']}
         self.num_pi_elec_bonds_backbone = {'C': 1, 'O': 1}
         self.num_pi_elec_conj_bonds_backbone = {'N': 1}
-        self.num_pi_elec_bonds_sidechains = {'ARG-CZ' : 1, 'ARG-NH1': 1,
-                                             'ASN-OD1': 1, 'ASN-CG' : 1,
-                                             'ASP-OD1': 1, 'ASP-CG' : 1,
-                                             'GLU-OE1': 1, 'GLU-CD' : 1,
-                                             'GLN-OE1': 1, 'GLN-CD' : 1,
-                                             'HIS-CG' : 1, 'HIS-CD2': 1,
+        self.num_pi_elec_bonds_sidechains = {'ARG-CZ': 1, 'ARG-NH1': 1,
+                                             'ASN-OD1': 1, 'ASN-CG': 1,
+                                             'ASP-OD1': 1, 'ASP-CG': 1,
+                                             'GLU-OE1': 1, 'GLU-CD': 1,
+                                             'GLN-OE1': 1, 'GLN-CD': 1,
+                                             'HIS-CG': 1, 'HIS-CD2': 1,
                                              'HIS-ND1': 1, 'HIS-CE1': 1,
-                                             'PHE-CG' : 1, 'PHE-CD1': 1,
-                                             'PHE-CE1': 1, 'PHE-CZ' : 1,
+                                             'PHE-CG': 1, 'PHE-CD1': 1,
+                                             'PHE-CE1': 1, 'PHE-CZ': 1,
                                              'PHE-CE2': 1, 'PHE-CD2': 1,
-                                             'TRP-CG' : 1, 'TRP-CD1': 1,
+                                             'TRP-CG': 1, 'TRP-CD1': 1,
                                              'TRP-CE2': 1, 'TRP-CD2': 1,
                                              'TRP-CE3': 1, 'TRP-CZ3': 1,
                                              'TRP-CH2': 1, 'TRP-CZ2': 1,
-                                             'TYR-CG' : 1, 'TYR-CD1': 1,
-                                             'TYR-CE1': 1, 'TYR-CZ' : 1,
+                                             'TYR-CG': 1, 'TYR-CD1': 1,
+                                             'TYR-CE1': 1, 'TYR-CZ': 1,
                                              'TYR-CE2': 1, 'TYR-CD2': 1}
         self.num_pi_elec_conj_bonds_sidechains = {'ARG-NE': 1, 'ARG-NH2': 1,
                                                   'ASN-ND2': 1, 'GLN-NE2': 1,
@@ -90,13 +92,13 @@ class BondMaker:
         Args:
             protein:  the protein to search for bonds
         """
-        info('++++ Side chains ++++')
+        _LOGGER.info('++++ Side chains ++++')
         # side chains
         for chain in protein.chains:
             for residue in chain.residues:
                 if residue.res_name.replace(' ', '') not in ['N+', 'C-']:
                     self.find_bonds_for_side_chain(residue.atoms)
-        info('++++ Backbones ++++')
+        _LOGGER.info('++++ Backbones ++++')
         # backbone
         last_residues = []
         for chain in protein.chains:
@@ -108,11 +110,11 @@ class BondMaker:
                         self.connect_backbone(chain.residues[i-1],
                                               chain.residues[i])
                         last_residues.append(chain.residues[i])
-        info('++++ terminal oxygen ++++')
+        _LOGGER.info('++++ terminal oxygen ++++')
         # terminal OXT
         for last_residue in last_residues:
             self.find_bonds_for_terminal_oxygen(last_residue)
-        info('++++ cysteines ++++')
+        _LOGGER.info('++++ cysteines ++++')
         # Cysteines
         for chain in protein.chains:
             for i in range(0, len(chain.residues)):
@@ -180,7 +182,7 @@ class BondMaker:
                     self.num_pi_elec_bonds_backbone[atom1.name])
             if atom1.name in (
                     list(self.num_pi_elec_conj_bonds_backbone.keys())
-                    and len(atom1.bonded_atoms) > 1): # avoid N-term
+                    and len(atom1.bonded_atoms) > 1):  # avoid N-term
                 atom1.num_pi_elec_conj_2_3_bonds = (
                     self.num_pi_elec_conj_bonds_backbone[atom1.name])
 
@@ -204,8 +206,8 @@ class BondMaker:
             if key in list(self.num_pi_elec_conj_bonds_sidechains.keys()):
                 atom1.num_pi_elec_conj_2_3_bonds = (
                     self.num_pi_elec_conj_bonds_sidechains[key])
-            if not atom1.name in self.backbone_atoms:
-                if not atom1.name in self.terminal_oxygen_names:
+            if atom1.name not in self.backbone_atoms:
+                if atom1.name not in self.terminal_oxygen_names:
                     for atom2 in atoms:
                         if atom2.name in (
                                 self
@@ -266,7 +268,6 @@ class BondMaker:
         Returns:
             list of atoms
         """
-        #self.find_bonds_for_protein(molecule)
         atoms = []
         for chain in molecule.chains:
             for residue in chain.residues:
@@ -424,9 +425,9 @@ class BondMaker:
         """
         if atom1 == atom2:
             return
-        if not atom1 in atom2.bonded_atoms:
+        if atom1 not in atom2.bonded_atoms:
             atom2.bonded_atoms.append(atom1)
-        if not atom2 in atom1.bonded_atoms:
+        if atom2 not in atom1.bonded_atoms:
             atom1.bonded_atoms.append(atom2)
 
     def generate_protein_bond_dictionary(self, atoms):
@@ -441,21 +442,21 @@ class BondMaker:
                 name_i = atom.name
                 resi_j = bonded_atom.res_name
                 name_j = bonded_atom.name
-                if not name_i in (
+                if name_i not in (
                         self.backbone_atoms
-                        or not name_j in self.backbone_atoms):
-                    if not name_i in (
+                        or name_j not in self.backbone_atoms):
+                    if name_i not in (
                             self.terminal_oxygen_names
-                            and not name_j in self.terminal_oxygen_names):
-                        if not resi_i in list(self.protein_bonds.keys()):
+                            and name_j not in self.terminal_oxygen_names):
+                        if resi_i not in list(self.protein_bonds.keys()):
                             self.protein_bonds[resi_i] = {}
-                        if not name_i in self.protein_bonds[resi_i]:
+                        if name_i not in self.protein_bonds[resi_i]:
                             self.protein_bonds[resi_i][name_i] = []
-                        if not name_j in self.protein_bonds[resi_i][name_i]:
+                        if name_j not in self.protein_bonds[resi_i][name_i]:
                             self.protein_bonds[resi_i][name_i].append(name_j)
-                        if not resi_j in list(self.protein_bonds.keys()):
+                        if resi_j not in list(self.protein_bonds.keys()):
                             self.protein_bonds[resi_j] = {}
-                        if not name_j in self.protein_bonds[resi_j]:
+                        if name_j not in self.protein_bonds[resi_j]:
                             self.protein_bonds[resi_j][name_j] = []
-                        if not name_i in self.protein_bonds[resi_j][name_j]:
+                        if name_i not in self.protein_bonds[resi_j][name_j]:
                             self.protein_bonds[resi_j][name_j].append(name_i)
