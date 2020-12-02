@@ -392,14 +392,27 @@ class BondMaker:
             z:  box z-coordinates
             atom:  the atom to place in a box
         """
-        for box_x in [x, x+1]:
-            for box_y in [y, y+1]:
-                for box_z in [z, z+1]:
-                    key = (box_x, box_y, box_z)
-                    try:
-                        self.boxes[key].append(atom)
-                    except KeyError:
-                        pass
+        for (dx, dy, dz) in [
+            (-1, -1, -1),
+            (-1, -1, 0),
+            (-1, -1, 1),
+            (-1, 0, -1),
+            (-1, 0, 0),
+            (-1, 0, 1),
+            (-1, 1, -1),
+            (-1, 1, 0),
+            (-1, 1, 1),
+            (0, -1, -1),
+            (0, -1, 0),
+            (0, -1, 1),
+            (0, 0, -1),
+            (0, 0, 0),
+        ]:
+            key = (x + dx, y + dy, z + dz)
+            try:
+                self.boxes[key].append(atom)
+            except KeyError:
+                pass
 
     @staticmethod
     def has_bond(atom1, atom2):
