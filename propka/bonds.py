@@ -81,10 +81,6 @@ class BondMaker:
         self.num_pi_elec_conj_bonds_ligands = {'N.am': 1, 'N.pl3': 1}
         self.backbone_atoms = list(self.intra_residue_backbone_bonds.keys())
         self.terminal_oxygen_names = ['OXT', 'O\'\'']
-        self.boxes = {}
-        self.num_box_x = None
-        self.num_box_y = None
-        self.num_box_z = None
 
     def find_bonds_for_protein(self, protein):
         """Bonds proteins based on the way atoms normally bond.
@@ -286,14 +282,29 @@ class BondMaker:
         no_atoms = len(atoms)
         for i in range(no_atoms):
             for j in range(i+1, no_atoms):
-                if atoms[i] in atoms[j].bonded_atoms:
-                    continue
-                if self.check_distance(atoms[i], atoms[j]):
-                    self.make_bond(atoms[i], atoms[j])
-                    # di-sulphide bonds
-                    if atoms[i].element == 'S' and atoms[j].element == 'S':
-                        atoms[i].cysteine_bridge = True
-                        atoms[j].cysteine_bridge = True
+                self._find_bonds_for_atoms(atoms[i], atoms[j])
+
+    def find_bonds_for_atoms_disjoint(self, atoms1, atoms2):
+        """Finds all bonds between two disjoint sets of atoms.
+
+        Args:
+            atoms1:  list of atoms
+            atoms2:  list of atoms
+        """
+        for atom1 in atoms1:
+            for atom2 in atoms2:
+                self._find_bonds_for_atoms(atom1, atom2)
+
+    def _find_bonds_for_atoms(self, atom1, atom2):
+        assert atom1 is not atom2
+        if atom1 in atom2.bonded_atoms:
+            return
+        if self.check_distance(atom1, atom2):
+            self.make_bond(atom1, atom2)
+            # di-sulphide bonds
+            if atom1.element == 'S' and atom2.element == 'S':
+                atom1.cysteine_bridge = True
+                atom2.cysteine_bridge = True
 
     def check_distance(self, atom1, atom2):
         """Check distance between two atoms
@@ -344,75 +355,38 @@ class BondMaker:
         Args:
             atoms:  list of atoms for finding bonds
         """
-        box_size = BOX_SIZE
-        xmin = POS_MAX
-        xmax = -1.0 * POS_MAX
-        ymin = POS_MAX
-        ymax = -1.0 * POS_MAX
-        zmin = POS_MAX
-        zmax = -1.0 * POS_MAX
+        box_size = max(BOX_SIZE, self.max_sq_distance**0.5 + 0.01)
+        boxes = {}
+
         for atom in atoms:
-            if atom.x > xmax:
-                xmax = atom.x
-            if atom.y > ymax:
-                ymax = atom.y
-            if atom.z > zmax:
-                zmax = atom.z
-            if atom.x < xmin:
-                xmin = atom.x
-            if atom.y < ymin:
-                ymin = atom.y
-            if atom.z < zmin:
-                zmin = atom.z
-        xlen = xmax - xmin
-        ylen = ymax - ymin
-        zlen = zmax - zmin
-        self.num_box_x = max(1, int(math.ceil(xlen/box_size)))
-        self.num_box_y = max(1, int(math.ceil(ylen/box_size)))
-        self.num_box_z = max(1, int(math.ceil(zlen/box_size)))
-        self.boxes = {}
-        for x in range(self.num_box_x):
-            for y in range(self.num_box_y):
-                for z in range(self.num_box_z):
-                    self.boxes[(x, y, z)] = []
-        for atom in atoms:
-            x = math.floor((atom.x - xmin)/box_size)
-            y = math.floor((atom.y - ymin)/box_size)
-            z = math.floor((atom.z - zmin)/box_size)
-            self.put_atom_in_box(x, y, z, atom)
-        for value in self.boxes.values():
+            x = math.floor(atom.x / box_size)
+            y = math.floor(atom.y / box_size)
+            z = math.floor(atom.z / box_size)
+            boxes.setdefault((x, y, z), []).append(atom)
+
+        for (x, y, z), value in boxes.items():
             self.find_bonds_for_atoms(value)
 
-    def put_atom_in_box(self, x, y, z, atom):
-        """Put an atom in a box.
-
-        Args:
-            x:  box x-coordinates
-            y:  box y-coordinates
-            z:  box z-coordinates
-            atom:  the atom to place in a box
-        """
-        for (dx, dy, dz) in [
-            (-1, -1, -1),
-            (-1, -1, 0),
-            (-1, -1, 1),
-            (-1, 0, -1),
-            (-1, 0, 0),
-            (-1, 0, 1),
-            (-1, 1, -1),
-            (-1, 1, 0),
-            (-1, 1, 1),
-            (0, -1, -1),
-            (0, -1, 0),
-            (0, -1, 1),
-            (0, 0, -1),
-            (0, 0, 0),
-        ]:
-            key = (x + dx, y + dy, z + dz)
-            try:
-                self.boxes[key].append(atom)
-            except KeyError:
-                pass
+            for (dx, dy, dz) in [
+                (-1, -1, -1),
+                (-1, -1, 0),
+                (-1, -1, 1),
+                (-1, 0, -1),
+                (-1, 0, 0),
+                (-1, 0, 1),
+                (-1, 1, -1),
+                (-1, 1, 0),
+                (-1, 1, 1),
+                (0, -1, -1),
+                (0, -1, 0),
+                (0, -1, 1),
+                (0, 0, -1),
+            ]:
+                try:
+                    value2 = boxes[x + dx, y + dy, z + dz]
+                except KeyError:
+                    continue
+                self.find_bonds_for_atoms_disjoint(value, value2)
 
     @staticmethod
     def has_bond(atom1, atom2):
