@@ -198,6 +198,8 @@ def build_parser(parser=None):
        Argument `--generate-propka-input` has been removed as writing PROPKA
        input files is no longer supported.
     """
+    import propka
+
     if parser is not None:
         group = parser.add_argument_group(title="PROPKA invocation options")
     else:
@@ -241,8 +243,7 @@ def build_parser(parser=None):
         help=("specifying mutation labels which is used to modify "
               "<filename> according to, e.g. N25R/N181D"))
     group.add_argument(
-        "-v", "--version", dest="version_label", default="Jan15",
-        help="specifying the sub-version of propka [Jan15/Dec19]")
+        "--version", action="version", version=f"%(prog)s {propka.__version__}")
     group.add_argument(
         "-p", "--parameters", dest="parameters",
         default=pkg_resources.resource_filename(__name__, "propka.cfg"),

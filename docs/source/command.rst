@@ -62,10 +62,9 @@ protein-ligand complexes based in the 3D structure. The
               specifying mutation labels which is used to modify
 	      <filename> according to, e.g. N25R/N181D (default: None)
 			
-.. option::  -v VERSION_LABEL, --version VERSION_LABEL
+.. option::  --version
 	     
-             specifying the sub-version of propka [Jan15/Dec19]
-	     (default: Jan15)
+	      show program's version number and exit
 	     
 .. option::  -p PARAMETERS, --parameters PARAMETERS
 	     
