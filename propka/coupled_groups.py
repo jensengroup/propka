@@ -183,7 +183,7 @@ class NonCovalentlyCoupledGroups:
                 '{c.max_pka:>4.2f}\n'
                 '\n')
             sep = "-" * 103
-            _LOGGER.info(info_fmt.format(sep=sep, c=self))
+            _LOGGER.info(info_fmt.format(sep=sep, c=self.parameters))
         # find coupled residues
         titratable_groups = conformation.get_titratable_groups()
         if not conformation.non_covalently_coupled_groups:
