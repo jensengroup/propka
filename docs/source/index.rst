@@ -86,6 +86,7 @@ Indices and tables
    quickstart
    command
    api
+   changelog
    references
 
   
