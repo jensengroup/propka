@@ -740,6 +740,10 @@ class AMDGroup(Group):
         # Identify the oxygen and nitrogen amide atoms
         the_oxygen = self.atom.get_bonded_elements('O')
         the_nitrogen = self.atom.get_bonded_elements('N')
+        if not (the_oxygen and the_nitrogen):
+            _LOGGER.warning(f"Missing N or O atom: {self}")
+            self.set_center([self.atom])
+            return
         # add protons to the nitrogen
         PROTONATOR.protonate_atom(the_nitrogen[0])
         the_hydrogens = the_nitrogen[0].get_bonded_elements('H')
