@@ -24,7 +24,7 @@ def add_to_determinant_list(group1, group2, distance, iterative_interactions,
     [[R1, R2], [side-chain, coulomb], [A1, A2]], ...
 
     NOTE - sign is determined when the interaction is added to the iterative
-           object!
+      object!
     NOTE - distance < coulomb_cutoff here
 
     Args:
@@ -33,6 +33,7 @@ def add_to_determinant_list(group1, group2, distance, iterative_interactions,
         distance:  distance between groups
         iterative_interactions:  interaction list to modify
         version:  version object
+    
     """
     hbond_value = version.hydrogen_bond_interaction(group1, group2)
     coulomb_value = version.electrostatic_interaction(group1, group2, distance)
