@@ -8,7 +8,7 @@ v3.4.0
 Changes
 -------
 
-* Removed PROPKA input support.
+* Removed PROPKA input support and argument ``--generate-propka-input``
   (`#99 <https://github.com/jensengroup/propka/issues/99>`_)
 
 * Add Python 3.9 support to continuous integration.
@@ -40,7 +40,7 @@ Fixes
 * Fixed bug and sped up algorithm for identifying bonds via bounding boxes.
   (`#97 <https://github.com/jensengroup/propka/issues/97>`_, `#110 <https://github.com/jensengroup/propka/pull/110>`_)
 
-* Fixed bug in ```propka --display-coupled-residues`` that crashed the program.
+* Fixed bug in ``propka --display-coupled-residues`` that crashed the program.
   (`#105 <https://github.com/jensengroup/propka/issues/105>`_)
 
 
