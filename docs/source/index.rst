@@ -79,7 +79,6 @@ Indices and tables
    
 .. toctree::
    :maxdepth: 3
-   :numbered:
    :hidden:      
 
    installation
