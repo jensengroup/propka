@@ -11,6 +11,7 @@ Output routines.
 """
 import logging
 from datetime import date
+from decimal import Decimal
 from . import __version__
 
 
@@ -143,7 +144,7 @@ def write_pka(protein, parameters, filename=None, conformation='1A',
     # printing Folding Profile
     str_ += get_folding_profile_section(
         protein, conformation=conformation, reference=reference,
-        window=[0., 14., 1.0])
+        window=protein.options.window)
     # printing Protein Charge Profile
     str_ += get_charge_profile_section(protein, conformation=conformation)
     # now, writing the pka text to file
@@ -285,13 +286,16 @@ def get_folding_profile_section(
     profile, [ph_opt, dg_opt], [dg_min, dg_max], [ph_min, ph_max] = (
         protein.get_folding_profile(
             conformation=conformation, reference=reference,
-            grid=[0., 14., 0.1]))
+            grid=protein.options.grid))
+
     if profile is None:
         str_ += "Could not determine folding profile\n"
     else:
+        delta = Decimal(str(round(window[2],2)))
         for (ph, dg) in profile:
+            ph = Decimal(str(round(ph, 3)))
             if ph >= window[0] and ph <= window[1]:
-                if ph % window[2] < 0.05 or ph % window[2] > 0.95:
+                if ph % delta < 0.05 or ph % delta > 0.95:
                     str_ += "{0:>6.2f}{1:>10.2f}\n".format(ph, dg)
         str_ += "\n"
     if ph_opt is None or dg_opt is None:
@@ -329,7 +333,7 @@ def get_charge_profile_section(protein, conformation='AVR', _=None):
     """
     str_ = "Protein charge of folded and unfolded state as a function of pH\n"
     profile = protein.get_charge_profile(conformation=conformation,
-                                         grid=[0., 14., 1.])
+                                         grid=protein.options.grid)
     if profile is None:
         str_ += "Could not determine charge profile\n"
     else:
