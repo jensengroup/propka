@@ -291,9 +291,9 @@ def get_folding_profile_section(
     if profile is None:
         str_ += "Could not determine folding profile\n"
     else:
-        delta = Decimal(str(round(window[2],2)))
+        delta = round(Decimal(window[2]),2)
         for (ph, dg) in profile:
-            ph = Decimal(str(round(ph, 3)))
+            ph = round(Decimal(ph), 3)
             if ph >= window[0] and ph <= window[1]:
                 if ph % delta < 0.05 or ph % delta > 0.95:
                     str_ += "{0:>6.2f}{1:>10.2f}\n".format(ph, dg)
