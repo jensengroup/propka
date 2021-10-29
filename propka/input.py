@@ -27,7 +27,7 @@ def open_file_for_reading(input_file):
     """
     try:
         input_file.seek(0)
-        return input_file
+        return input_file, True
     except AttributeError:
         pass
 
@@ -35,7 +35,7 @@ def open_file_for_reading(input_file):
         file_ = open(input_file, 'rt')
     except:
         raise IOError('Cannot find file {0:s}'.format(input_file))
-    return file_
+    return file_, False
 
 
 def read_molecule_file(filename: str, mol_container, stream=None):
@@ -135,11 +135,13 @@ def read_parameter_file(input_file, parameters):
     # try to locate the parameter file
     try:
         ifile = resource_filename(__name__, input_file)
-        input_ = open_file_for_reading(ifile)
+        input_, stream = open_file_for_reading(ifile)
     except (IOError, FileNotFoundError, ValueError, KeyError):
-        input_ = open_file_for_reading(input_file)
+        input_, stream = open_file_for_reading(input_file)
     for line in input_:
         parameters.parse_line(line)
+    if not stream:
+        input_.close()
     return parameters
 
 
@@ -161,7 +163,10 @@ def get_atom_lines_from_pdb(pdb_file, ignore_residues=[], keep_protons=False,
         tags:  tags of lines that include atoms
         chains:  list of chains
     """
-    lines = open_file_for_reading(pdb_file).readlines()
+    fp, stream = open_file_for_reading(pdb_file)
+    lines = fp.readlines()
+    if not stream:
+        fp.close()
     nterm_residue = 'next_residue'
     old_residue = None
     terminal = None
