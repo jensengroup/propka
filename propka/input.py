@@ -9,6 +9,8 @@ Input routines.
    Methods to read PROPKA input files (:func:`read_propka` and
    :func:`get_atom_lines_from_input`) have been removed.
 """
+import typing
+import contextlib
 from pathlib import Path
 from pkg_resources import resource_filename
 from propka.lib import protein_precheck
@@ -16,10 +18,10 @@ from propka.atom import Atom
 from propka.conformation_container import ConformationContainer
 
 
-def open_file_for_reading(input_file):
+def open_file_for_reading(
+    input_file: typing.Union[str, Path, typing.TextIO]
+) -> typing.ContextManager[typing.TextIO]:
     """Open file or file-like stream for reading.
-
-    TODO - convert this to a context manager
 
     Args:
         input_file: path to file or file-like object. If file-like object,
@@ -27,15 +29,13 @@ def open_file_for_reading(input_file):
     """
     try:
         input_file.seek(0)
-        return input_file
     except AttributeError:
         pass
+    else:
+        # TODO use contextlib.nullcontext when dropping Python 3.6 support
+        return contextlib.contextmanager(lambda: (yield input_file))()
 
-    try:
-        file_ = open(input_file, 'rt')
-    except:
-        raise IOError('Cannot find file {0:s}'.format(input_file))
-    return file_
+    return contextlib.closing(open(input_file, 'rt'))
 
 
 def read_molecule_file(filename: str, mol_container, stream=None):
@@ -138,8 +138,9 @@ def read_parameter_file(input_file, parameters):
         input_ = open_file_for_reading(ifile)
     except (IOError, FileNotFoundError, ValueError, KeyError):
         input_ = open_file_for_reading(input_file)
-    for line in input_:
-        parameters.parse_line(line)
+    with input_ as handle:
+        for line in handle:
+            parameters.parse_line(line)
     return parameters
 
 
@@ -161,7 +162,8 @@ def get_atom_lines_from_pdb(pdb_file, ignore_residues=[], keep_protons=False,
         tags:  tags of lines that include atoms
         chains:  list of chains
     """
-    lines = open_file_for_reading(pdb_file).readlines()
+    with open_file_for_reading(pdb_file) as handle:
+        lines = handle.readlines()
     nterm_residue = 'next_residue'
     old_residue = None
     terminal = None
