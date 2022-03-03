@@ -31,7 +31,7 @@ class Protonate:
             'H': 1, 'He': 2, 'Li': 1, 'Be': 2, 'B': 3, 'C': 4, 'N': 5,
             'O': 6, 'F': 7, 'Ne': 8, 'Na': 1, 'Mg': 2, 'Al': 3, 'Si': 4,
             'P': 5, 'S': 6, 'Cl': 7, 'Ar': 8, 'K': 1, 'Ca': 2, 'Sc': 2,
-            'Ti': 2, 'Va': 2, 'Cr': 1, 'Mn': 2, 'Fe': 2, 'Co': 2, 'Ni': 2,
+            'Ti': 2, 'V': 2, 'Cr': 1, 'Mn': 2, 'Fe': 2, 'Co': 2, 'Ni': 2,
             'Cu': 1, 'Zn': 2, 'Ga': 3, 'Ge': 4, 'As': 5, 'Se': 6, 'Br': 7,
             'Kr': 8, 'I': 7}
         # TODO - consider putting charges in a configuration file
