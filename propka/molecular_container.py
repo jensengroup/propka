@@ -15,12 +15,6 @@ from propka.lib import make_grid
 _LOGGER = logging.getLogger(__name__)
 
 
-# TODO - these are constants whose origins are a little murky
-UNK_PI_CUTOFF = 0.01
-# Maximum number of iterations for finding PI
-MAX_ITERATION = 4
-
-
 class MolecularContainer:
     """Container for storing molecular contents of PDB files.
 
@@ -207,37 +201,38 @@ class MolecularContainer:
             charge_profile.append([ph, q_unfolded, q_folded])
         return charge_profile
 
-    def get_pi(self, conformation='AVR', grid=[0., 14., 1], iteration=0):
+    def get_pi(self, conformation='AVR', grid=[0., 14., 1], *,
+            precision: float = 1e-4):
         """Get the isoelectric points for folded and unfolded states.
 
         Args:
             conformation:  conformation to test
             grid:  grid of pH values [min, max, step]
-            iteration:  iteration number of process
+            precision:  Compute pI up to this precision
         Returns:
             1. Folded state PI
             2. Unfolded state PI
         """
-        charge_profile = self.get_charge_profile(
-            conformation=conformation, grid=grid)
-        pi_folded = pi_unfolded = [None, 1e6, 1e6]
-        for point in charge_profile:
-            pi_folded = min(pi_folded, point, key=lambda v: abs(v[2]))
-            pi_unfolded = min(pi_unfolded, point, key=lambda v: abs(v[1]))
-        # If results are not good enough, do it again with a higher sampling
-        # resolution
-        pi_folded_value = pi_folded[0]
-        pi_unfolded_value = pi_unfolded[0]
-        step = grid[2]
-        # TODO - need to warn if maximum number of iterations is exceeded
-        if ((pi_folded[2] > UNK_PI_CUTOFF
-             or pi_unfolded[1] > UNK_PI_CUTOFF) and iteration < MAX_ITERATION):
-            pi_folded_value, _ = self.get_pi(
-                conformation=conformation,
-                grid=[pi_folded[0]-step, pi_folded[0]+step, step/10.0],
-                iteration=iteration+1)
-            _, pi_unfolded_value = self.get_pi(
-                conformation=conformation,
-                grid=[pi_unfolded[0]-step, pi_unfolded[0]+step, step/10.0],
-                iteration=iteration+1)
-        return pi_folded_value, pi_unfolded_value
+        conf = self.conformations[conformation]
+
+        WHICH_UNFOLDED = 0
+        WHICH_FOLDED = 1
+
+        def pi(which, pH, min_, max_):
+            charge = conf.calculate_charge(
+                self.version.parameters, ph=pH)[which]
+            if max_ - min_ > precision:
+                if charge > 0.0:
+                    min_ = pH
+                else:
+                    max_ = pH
+                next_pH = (min_ + max_) / 2
+                return pi(which, next_pH, min_, max_)
+            return pH
+
+        start = (grid[0] + grid[1]) / 2, grid[0], grid[1]
+
+        return (
+            pi(WHICH_FOLDED, *start),
+            pi(WHICH_UNFOLDED, *start),
+        )
