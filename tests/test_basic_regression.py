@@ -2,9 +2,10 @@
 import logging
 import os
 import re
+import json
 from pathlib import Path
 import pytest
-from numpy.testing import assert_almost_equal
+from pytest import approx
 from propka.parameters import Parameters
 from propka.molecular_container import MolecularContainer
 from propka.input import read_parameter_file, read_molecule_file
@@ -18,6 +19,7 @@ _LOGGER = logging.getLogger(__name__)
 # decimal places in pKa output as well as need to make unmodified code work
 # on WSL Ubuntu 18.04
 MAX_ERR_DECIMALS = 2
+MAX_ERR_ABS = 10**-MAX_ERR_DECIMALS
 
 
 # This directory
@@ -82,6 +84,34 @@ def run_propka(options, pdb_path, tmp_path):
         os.chdir(cwd)
 
 
+def parse_pka(pka_path: Path) -> dict:
+    """Parse testable data from a .pka file into a dictionary.
+    """
+    pka_list = []
+    data = {"pKa": pka_list}
+
+    with open(pka_path, "rt") as pka_file:
+        at_pka = False
+        for line in pka_file:
+            if at_pka:
+                if line.startswith("---"):
+                    at_pka = False
+                else:
+                    m = re.search(r'\d+\.\d+', line[13:])
+                    pka_list.append(float(m.group()))
+            elif "model-pKa" in line:
+                at_pka = True
+            else:
+                m = re.match(
+                    r"The pI is *(\d+\.\d+) .folded. and *(\d+\.\d+) .unfolded.",
+                    line)
+                if m is not None:
+                    data["pI_folded"] = float(m.group(1))
+                    data["pI_unfolded"] = float(m.group(2))
+
+    return data
+
+
 def compare_output(pdb, tmp_path, ref_path):
     """Compare results of test with reference.
 
@@ -92,31 +122,16 @@ def compare_output(pdb, tmp_path, ref_path):
     Raises:
         ValueError if results disagree.
     """
-    ref_data = []
     with open(ref_path, "rt") as ref_file:
-        for line in ref_file:
-            ref_data.append(float(line))
+        if ref_path.name.endswith(".json"):
+            ref_data = json.load(ref_file)
+        else:
+            ref_data = {"pKa": [float(line) for line in ref_file]}
 
-    test_data = []
-    pka_path = Path(tmp_path) / ("{0:s}.pka".format(pdb))
-    with open(pka_path, "rt") as pka_file:
-        at_pka = False
-        for line in pka_file:
-            if not at_pka:
-                if "model-pKa" in line:
-                    at_pka = True
-            elif line.startswith("---"):
-                at_pka = False
-            else:
-                match = re.search(r'([0-9]+\.[0-9]+)', line)
-                value = float(match.group(0))
-                test_data.append(value)
-    errstr = (
-        "Error exceeds maximum allowed value ({0:d} decimal places)".format(
-            MAX_ERR_DECIMALS))
-    assert_almost_equal(
-        test_data, ref_data, decimal=MAX_ERR_DECIMALS, err_msg=errstr,
-        verbose=True)
+    test_data = parse_pka(tmp_path / f"{pdb}.pka")
+
+    for key in ref_data:
+        assert test_data[key] == approx(ref_data[key], abs=MAX_ERR_ABS), key
 
 
 @pytest.mark.parametrize("pdb, options", [
@@ -132,9 +147,12 @@ def compare_output(pdb, tmp_path, ref_path):
 def test_regression(pdb, options, tmp_path):
     """Basic regression test of PROPKA functionality."""
     path_dict = get_test_dirs()
-    ref_path = path_dict["results"] / ("{0:s}.dat".format(pdb))
-    if ref_path.is_file():
-        ref_path = ref_path.resolve()
+
+    for ext in ["json", "dat"]:
+        ref_path = path_dict["results"] / f"{pdb}.{ext}"
+        if ref_path.is_file():
+            ref_path = ref_path.resolve()
+            break
     else:
         _LOGGER.warning("Missing results file for comparison: {0:s}".format(
             str(ref_path)))
