@@ -9,8 +9,8 @@ on:
   pull_request:
     branches: '**'
   schedule:
-    # 3 am Tuesdays and Fridays
-    - cron: "0 3 * * 2,5"
+    # 0 am UTC on Sundays
+    - cron: "0 0 * * 0"
 
 jobs:
   build:
