@@ -59,7 +59,7 @@ See http://propka.org/ for the PROPKA web server.
     package_data={'propka': ['*.dat', '*.cfg', '*.json']},
     entry_points={'console_scripts': ['propka3 = propka.run:main', ]},
     zip_safe=True,
-    python_requires='>=3.6',
+    python_requires='>=3.8',
     tests_require=["numpy", "pytest"],
     test_suite="tests",
     )
