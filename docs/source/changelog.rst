@@ -2,6 +2,14 @@
 Changelog
 *********
 
+Current version
+===============
+
+Changes
+-------
+
+* Remove support for Python 3.6 and 3.7; add support for up to Python 3.11.
+
 v3.4.0
 ======
 
