@@ -8,10 +8,31 @@ Current version
 Changes
 -------
 
-* Remove support for Python 3.6 and 3.7; add support for up to Python 3.11.
+* Remove support for Python 3.6 and 3.7; add support for up to Python 3.11
+  (`#154 <https://github.com/jensengroup/propka/issues/154>`_ and
+  `#150 <https://github.com/jensengroup/propka/pull/150>`_)
 
-v3.4.0
-======
+* Add context manager for ``open_file_for_reading``
+  (`#133 <https://github.com/jensengroup/propka/pull/133>`_)
+
+Fixes
+-----
+
+* Refactor and fix ``MolecularContainer.get_pi()``
+  (`#148 <https://github.com/jensengroup/propka/pull/148>`_)
+
+* Rename vanadium from ``Va`` to ``V``
+  (`#141 <https://github.com/jensengroup/propka/pull/141>`_)
+
+* Fix rounding issues
+  (`#124 <https://github.com/jensengroup/propka/pull/124>`_)
+
+* Fix malfunctioning ``-g -w`` command line options
+  (`#124 <https://github.com/jensengroup/propka/pull/124>`_)
+
+
+v3.4.0 (2020-12-19)
+===================
 
 Changes
 -------
@@ -52,8 +73,8 @@ Fixes
   (`#105 <https://github.com/jensengroup/propka/issues/105>`_)
 
 
-v3.3.0
-======
+v3.3.0 (2020-07-18)
+===================
 
 Additions
 ---------
@@ -89,8 +110,8 @@ Fixes
   (`#82 <https://github.com/jensengroup/propka/issues/82>`_)
 
 
-v3.2.0
-======
+v3.2.0 (2020-06-19)
+===================
 
 Additions
 ---------
