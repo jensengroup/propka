@@ -24,7 +24,7 @@ Fixes
 * Rename vanadium from ``Va`` to ``V``
   (`#141 <https://github.com/jensengroup/propka/pull/141>`_)
 
-* Fix rounding issues
+* Fix rounding issues in folding profile reporting
   (`#124 <https://github.com/jensengroup/propka/pull/124>`_)
 
 * Fix malfunctioning ``-g -w`` command line options
