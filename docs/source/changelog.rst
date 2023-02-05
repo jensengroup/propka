@@ -18,7 +18,7 @@ Changes
 Fixes
 -----
 
-* Refactor and fix ``MolecularContainer.get_pi()``
+* Fix precision of ``MolecularContainer.get_pi()``
   (`#148 <https://github.com/jensengroup/propka/pull/148>`_)
 
 * Rename vanadium from ``Va`` to ``V``
