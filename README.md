@@ -20,7 +20,7 @@ in publications:
 
 ## PROPKA versions
 
-The code in this repository is named _PROPKA 3_ and it is based on the original PROPKA 3.1 release (described in the papers above). It has undergone various changes, which is reflected in the version numbering. For instance, version 3.2 contains a number of API changes and code refactoring that introduce incompatibilities between the original 3.1 release and the more recent versions. In the future, we will increase the minor version number to indicate further changes to the code base (e.g., release 3.3 or 3.4). The major release number is not expected to change unless major changes to the underlying algorithms are implemented.
+The code in this repository is named _PROPKA 3_ and it is based on the original PROPKA 3.1 release (described in the papers above). It has undergone various changes, which is reflected in the version numbering. For instance, version 3.2 contains a number of API changes and code refactoring that introduce incompatibilities between the original 3.1 release and the more recent versions. In the future, we will increase the minor version number to indicate further changes to the code base (e.g., release 3.4 or 3.5). The major release number is not expected to change unless major changes to the underlying algorithms are implemented.
 
 ## Requirements
 
