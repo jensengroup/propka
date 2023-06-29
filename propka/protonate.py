@@ -149,6 +149,8 @@ class Protonate:
         _LOGGER.debug('Setting number of protons to add for %s', atom)
         atom.number_of_protons_to_add = 8
         _LOGGER.debug("                     8")
+        if atom.element not in self.valence_electrons:
+            self.valence_electrons[atom.element] = 4
         atom.number_of_protons_to_add -= self.valence_electrons[atom.element]
         _LOGGER.debug('Valence electrons: {0:>4d}'.format(
             -self.valence_electrons[atom.element]))
@@ -177,6 +179,8 @@ class Protonate:
         _LOGGER.debug('='*10)
         _LOGGER.debug('Setting steric number and lone pairs for %s', atom)
         atom.steric_number = 0
+        if atom.element not in self.valence_electrons:
+            self.valence_electrons[atom.element] = 4
         _LOGGER.debug('{0:>65s}: {1:>4d}'.format(
             'Valence electrons', self.valence_electrons[atom.element]))
         atom.steric_number += self.valence_electrons[atom.element]
