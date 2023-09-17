@@ -13,6 +13,7 @@ from propka.coupled_groups import NCCG
 from propka.determinants import set_backbone_determinants, set_ion_determinants
 from propka.determinants import set_determinants
 from propka.group import Group, is_group
+from typing import Iterable
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -553,9 +554,22 @@ class ConformationContainer:
         Args:
             other:  conformation container with atoms to add
         """
+        self.top_up_from_atoms(other.atoms)
+
+    def top_up_from_atoms(self, other_atoms: Iterable["propka.atom.Atom"]):
+        """Adds atoms which are missing from this container.
+
+        Args:
+            other_atoms: Reference atoms
+        """
         my_residue_labels = {a.residue_label for a in self.atoms}
-        for atom in other.atoms:
+        res_names = {(a.chain_id, a.res_num): a.res_name for a in self.atoms}
+        for atom in other_atoms:
             if atom.residue_label not in my_residue_labels:
+                if res_names.setdefault((atom.chain_id, atom.res_num),
+                                        atom.res_name) != atom.res_name:
+                    # don't merge different residue types, e.g. alt-loc mutant
+                    continue
                 self.copy_atom(atom)
 
     def find_group(self, group):
