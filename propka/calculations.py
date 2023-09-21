@@ -6,13 +6,17 @@ Mathematical helper functions.
 """
 
 import math
+from typing import Iterable, Optional, Tuple, TypeVar
+from .vector_algebra import _XYZ
 
+_BoundXYZ_1 = TypeVar("_BoundXYZ_1", bound=_XYZ)
+_BoundXYZ_2 = TypeVar("_BoundXYZ_2", bound=_XYZ)
 
 #: Maximum distance used to bound calculations of smallest distance
 MAX_DISTANCE = 1e6
 
 
-def squared_distance(atom1, atom2):
+def squared_distance(atom1: _XYZ, atom2: _XYZ) -> float:
     """Calculate the squared distance between two atoms.
 
     Args:
@@ -28,7 +32,7 @@ def squared_distance(atom1, atom2):
     return res
 
 
-def distance(atom1, atom2):
+def distance(atom1: _XYZ, atom2: _XYZ) -> float:
     """Calculate the distance between two atoms.
 
     Args:
@@ -40,7 +44,10 @@ def distance(atom1, atom2):
     return math.sqrt(squared_distance(atom1, atom2))
 
 
-def get_smallest_distance(atoms1, atoms2):
+def get_smallest_distance(
+    atoms1: Iterable[_BoundXYZ_1],
+    atoms2: Iterable[_BoundXYZ_2],
+) -> Tuple[Optional[_BoundXYZ_1], float, Optional[_BoundXYZ_2]]:
     """Calculate the smallest distance between two groups of atoms.
 
     Args:
@@ -59,4 +66,4 @@ def get_smallest_distance(atoms1, atoms2):
                 res_dist = dist
                 res_atom1 = atom1
                 res_atom2 = atom2
-    return [res_atom1, math.sqrt(res_dist), res_atom2]
+    return (res_atom1, math.sqrt(res_dist), res_atom2)

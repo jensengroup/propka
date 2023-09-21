@@ -6,6 +6,12 @@ Container data structure for molecular conformations.
 """
 import logging
 import functools
+from typing import Iterable, List, NoReturn, Optional, TYPE_CHECKING, Set
+
+if TYPE_CHECKING:
+    from propka.atom import Atom
+    from propka.molecular_container import MolecularContainer
+
 import propka.ligand
 from propka.output import make_interaction_map
 from propka.determinant import Determinant
@@ -13,7 +19,6 @@ from propka.coupled_groups import NCCG
 from propka.determinants import set_backbone_determinants, set_ion_determinants
 from propka.determinants import set_determinants
 from propka.group import Group, is_group
-from typing import Iterable
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -38,7 +43,10 @@ class ConformationContainer:
        PROPKA inputs is no longer supported.
     """
 
-    def __init__(self, name='', parameters=None, molecular_container=None):
+    def __init__(self,
+                 name: str = '',
+                 parameters=None,
+                 molecular_container: Optional["MolecularContainer"] = None):
         """Initialize conformation container.
 
         Args:
@@ -49,9 +57,9 @@ class ConformationContainer:
         self.molecular_container = molecular_container
         self.name = name
         self.parameters = parameters
-        self.atoms = []
-        self.groups = []
-        self.chains = []
+        self.atoms: List["Atom"] = []
+        self.groups: List[Group] = []
+        self.chains: List[str] = []
         self.current_iter_item = 0
         self.marvin_pkas_calculated = False
         self.non_covalently_coupled_groups = False
@@ -126,7 +134,8 @@ class ConformationContainer:
                            self.get_titratable_groups()))) > 0:
             self.non_covalently_coupled_groups = True
 
-    def find_bonded_titratable_groups(self, atom, num_bonds, original_atom):
+    def find_bonded_titratable_groups(self, atom: "Atom", num_bonds: int,
+                                      original_atom: "Atom"):
         """Find bonded titrable groups.
 
         Args:
@@ -136,7 +145,7 @@ class ConformationContainer:
         Returns:
             a set of bonded atom groups
         """
-        res = set()
+        res: Set[Group] = set()
         for bond_atom in atom.bonded_atoms:
             # skip the original atom
             if bond_atom == original_atom:
@@ -152,7 +161,7 @@ class ConformationContainer:
                     bond_atom, num_bonds+1, original_atom)
         return res
 
-    def setup_and_add_group(self, group):
+    def setup_and_add_group(self, group: Optional[Group]):
         """Check if we want to include this group in the calculations.
 
         Args:
@@ -166,7 +175,7 @@ class ConformationContainer:
         self.init_group(group)
         self.groups.append(group)
 
-    def init_group(self, group):
+    def init_group(self, group: Group):
         """Initialize the given Group object.
 
         Args:
@@ -178,10 +187,11 @@ class ConformationContainer:
 
         # If --titrate_only option is set, make non-specified residues
         # un-titratable:
+        assert self.molecular_container is not None
         titrate_only = self.molecular_container.options.titrate_only
         if titrate_only is not None:
             atom = group.atom
-            if not (atom.chain_id, atom.res_num, atom.icode) in titrate_only:
+            if (atom.chain_id, atom.res_num, atom.icode) not in titrate_only:
                 group.titratable = False
                 if group.residue_type == 'CYS':
                     group.exclude_cys_from_results = True
@@ -475,7 +485,7 @@ class ConformationContainer:
             group for group in self.groups
             if group.residue_type in self.parameters.ions.keys()]
 
-    def get_group_names(self, group_list):
+    def get_group_names(self, group_list: NoReturn) -> NoReturn:  # FIXME unused?
         """Get names of groups in list.
 
         Args:
@@ -483,9 +493,11 @@ class ConformationContainer:
         Returns:
             list of groups
         """
+        if TYPE_CHECKING:
+            assert False
         return [group for group in self.groups if group.type in group_list]
 
-    def get_ligand_atoms(self):
+    def get_ligand_atoms(self) -> List["Atom"]:
         """Get atoms associated with ligands.
 
         Returns:
@@ -493,7 +505,7 @@ class ConformationContainer:
         """
         return [atom for atom in self.atoms if atom.type == 'hetatm']
 
-    def get_heavy_ligand_atoms(self):
+    def get_heavy_ligand_atoms(self) -> List["Atom"]:
         """Get heavy atoms associated with ligands.
 
         Returns:
@@ -503,7 +515,7 @@ class ConformationContainer:
             atom for atom in self.atoms
             if atom.type == 'hetatm' and atom.element != 'H']
 
-    def get_chain(self, chain):
+    def get_chain(self, chain: str) -> List["Atom"]:
         """Get atoms associated with a specific chain.
 
         Args:
@@ -513,7 +525,7 @@ class ConformationContainer:
         """
         return [atom for atom in self.atoms if atom.chain_id != chain]
 
-    def add_atom(self, atom):
+    def add_atom(self, atom: "Atom"):
         """Add atom to container.
 
         Args:
@@ -556,7 +568,7 @@ class ConformationContainer:
         """
         self.top_up_from_atoms(other.atoms)
 
-    def top_up_from_atoms(self, other_atoms: Iterable["propka.atom.Atom"]):
+    def top_up_from_atoms(self, other_atoms: Iterable["Atom"]):
         """Adds atoms which are missing from this container.
 
         Args:
@@ -613,7 +625,7 @@ class ConformationContainer:
             self.atoms[i].numb = i+1
 
     @staticmethod
-    def sort_atoms_key(atom):
+    def sort_atoms_key(atom: "Atom") -> float:
         """Generate key for atom sorting.
 
         Args:

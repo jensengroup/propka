@@ -10,6 +10,10 @@ import math
 import json
 import pkg_resources
 import propka.calculations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from propka.molecular_container import MolecularContainer
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -329,7 +333,7 @@ class BondMaker:
                 return True
         return False
 
-    def find_bonds_for_molecules_using_boxes(self, molecules):
+    def find_bonds_for_molecules_using_boxes(self, molecules: "MolecularContainer"):
         """ Finds all bonds for a molecular container.
 
         Args:

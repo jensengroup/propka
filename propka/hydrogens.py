@@ -7,15 +7,19 @@ Calculations related to hydrogen placement.
 """
 import math
 import logging
+from typing import List, Optional, Tuple, TYPE_CHECKING
+
 from propka.protonate import Protonate
 from propka.bonds import BondMaker
 from propka.atom import Atom
 
+if TYPE_CHECKING:
+    from propka.molecular_container import MolecularContainer
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def setup_bonding_and_protonation(molecular_container):
+def setup_bonding_and_protonation(molecular_container: "MolecularContainer") -> None:
     """Set up bonding and protonation for a molecule.
 
     Args:
@@ -34,7 +38,7 @@ def setup_bonding_and_protonation(molecular_container):
         protonator.protonate(molecular_container)
 
 
-def setup_bonding(molecular_container):
+def setup_bonding(molecular_container: "MolecularContainer") -> BondMaker:
     """Set up bonding for a molecular container.
 
     Args:
@@ -47,7 +51,7 @@ def setup_bonding(molecular_container):
     return my_bond_maker
 
 
-def setup_bonding_and_protonation_30_style(molecular_container):
+def setup_bonding_and_protonation_30_style(molecular_container: "MolecularContainer") -> BondMaker:
     """Set up bonding for a molecular container.
 
     Args:
@@ -63,7 +67,7 @@ def setup_bonding_and_protonation_30_style(molecular_container):
     return bond_maker
 
 
-def protonate_30_style(molecular_container):
+def protonate_30_style(molecular_container: "MolecularContainer") -> None:
     """Protonate the molecule.
 
     Args:
@@ -73,9 +77,9 @@ def protonate_30_style(molecular_container):
         _LOGGER.info('Now protonating %s', name)
         # split atom into residues
         curres = -1000000
-        residue = []
-        o_atom = None
-        c_atom = None
+        residue: List[Atom] = []
+        o_atom: Optional[Atom] = None
+        c_atom: Optional[Atom] = None
         for atom in molecular_container.conformations[name].atoms:
             if atom.res_num != curres:
                 curres = atom.res_num
@@ -100,7 +104,7 @@ def protonate_30_style(molecular_container):
                 residue.append(atom)
 
 
-def set_ligand_atom_names(molecular_container):
+def set_ligand_atom_names(molecular_container: "MolecularContainer") -> None:
     """Set names for ligands in molecular container.
 
     Args:
@@ -110,7 +114,7 @@ def set_ligand_atom_names(molecular_container):
         molecular_container.conformations[name].set_ligand_atom_names()
 
 
-def add_arg_hydrogen(residue):
+def add_arg_hydrogen(residue: List[Atom]) -> List[Atom]:
     """Adds Arg hydrogen atoms to residues according to the 'old way'.
 
     Args:
@@ -142,7 +146,7 @@ def add_arg_hydrogen(residue):
     return [h1_atom, h2_atom, h3_atom, h4_atom, h5_atom]
 
 
-def add_his_hydrogen(residue):
+def add_his_hydrogen(residue: List[Atom]) -> None:
     """Adds His hydrogen atoms to residues according to the 'old way'.
 
     Args:
@@ -165,7 +169,7 @@ def add_his_hydrogen(residue):
     he_atom.name = "HNE"
 
 
-def add_trp_hydrogen(residue):
+def add_trp_hydrogen(residue: List[Atom]) -> None:
     """Adds Trp hydrogen atoms to residues according to the 'old way'.
 
     Args:
@@ -188,7 +192,7 @@ def add_trp_hydrogen(residue):
     he_atom.name = "HNE"
 
 
-def add_amd_hydrogen(residue):
+def add_amd_hydrogen(residue: List[Atom]) -> None:
     """Adds Gln & Asn hydrogen atoms to residues according to the 'old way'.
 
     Args:
@@ -217,7 +221,9 @@ def add_amd_hydrogen(residue):
     h2_atom.name = "HN2"
 
 
-def add_backbone_hydrogen(residue, o_atom, c_atom):
+def add_backbone_hydrogen(residue: List[Atom],
+                          o_atom: Optional[Atom],
+                          c_atom: Optional[Atom]) -> Tuple[Optional[Atom], Optional[Atom]]:
     """Adds hydrogen backbone atoms to residues according to the old way.
 
     dR is wrong for the N-terminus (i.e. first residue) but it doesn't affect
@@ -240,18 +246,18 @@ def add_backbone_hydrogen(residue, o_atom, c_atom):
             new_c_atom = atom
         if atom.name == "O":
             new_o_atom = atom
-    if None in [c_atom, o_atom, n_atom]:
-        return [new_o_atom, new_c_atom]
+    if c_atom is None or o_atom is None or n_atom is None:
+        return (new_o_atom, new_c_atom)
     if n_atom.res_name == "PRO":
         # PRO doesn't have an H-atom; do nothing
         pass
     else:
         h_atom = protonate_direction(n_atom, o_atom, c_atom)
         h_atom.name = "H"
-    return [new_o_atom, new_c_atom]
+    return (new_o_atom, new_c_atom)
 
 
-def protonate_direction(x1_atom, x2_atom, x3_atom):
+def protonate_direction(x1_atom: Atom, x2_atom: Atom, x3_atom: Atom) -> Atom:
     """Protonates an atom, x1_atom, given a direction.
 
     New direction for x1_atom proton is (x2_atom -> x3_atom).
@@ -275,7 +281,7 @@ def protonate_direction(x1_atom, x2_atom, x3_atom):
     return h_atom
 
 
-def protonate_average_direction(x1_atom, x2_atom, x3_atom):
+def protonate_average_direction(x1_atom: Atom, x2_atom: Atom, x3_atom: Atom) -> Atom:
     """Protonates an atom, x1_atom, given a direction.
 
     New direction for x1_atom is (x1_atom/x2_atom -> x3_atom).
@@ -301,7 +307,7 @@ def protonate_average_direction(x1_atom, x2_atom, x3_atom):
     return h_atom
 
 
-def protonate_sp2(x1_atom, x2_atom, x3_atom):
+def protonate_sp2(x1_atom: Atom, x2_atom: Atom, x3_atom: Atom) -> Atom:
     """Protonates a SP2 atom, given a list of atoms
 
     Args:
@@ -323,7 +329,7 @@ def protonate_sp2(x1_atom, x2_atom, x3_atom):
     return h_atom
 
 
-def make_new_h(atom, x, y, z):
+def make_new_h(atom: Atom, x: float, y: float, z: float) -> Atom:
     """Add a new hydrogen to an atom at the specified position.
 
     Args:
@@ -347,5 +353,6 @@ def make_new_h(atom, x, y, z):
     new_h.number_of_protons_to_add = 0
     new_h.num_pi_elec_2_3_bonds = 0
     atom.bonded_atoms.append(new_h)
+    assert atom.conformation_container is not None
     atom.conformation_container.add_atom(new_h)
     return new_h

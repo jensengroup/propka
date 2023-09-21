@@ -7,6 +7,12 @@ Energy calculations.
 """
 import math
 import logging
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from propka.conformation_container import ConformationContainer
+    from propka.group import Group
+
 from propka.calculations import squared_distance, get_smallest_distance
 
 
@@ -27,13 +33,14 @@ COMBINED_NUM_BURIED_MAX = 900
 SEPARATE_NUM_BURIED_MAX = 400
 
 
-def radial_volume_desolvation(parameters, group):
+def radial_volume_desolvation(parameters, group: "Group") -> None:
     """Calculate desolvation terms for group.
 
     Args:
         parameters:  parameters for desolvation calculation
         group:  group of atoms for calculation
     """
+    assert group.atom.conformation_container is not None
     all_atoms = group.atom.conformation_container.get_non_hydrogen_atoms()
     volume = 0.0
     group.num_volume = 0
@@ -66,7 +73,7 @@ def radial_volume_desolvation(parameters, group):
         * volume_after_allowance * scale_factor)
 
 
-def calculate_scale_factor(parameters, weight):
+def calculate_scale_factor(parameters, weight: float) -> float:
     """Calculate desolvation scaling factor.
 
     Args:
@@ -82,7 +89,7 @@ def calculate_scale_factor(parameters, weight):
     return scale_factor
 
 
-def calculate_weight(parameters, num_volume):
+def calculate_weight(parameters, num_volume: int) -> float:
     """Calculate the atom-based desolvation weight.
 
     TODO - figure out why a similar function exists in version.py
@@ -102,7 +109,7 @@ def calculate_weight(parameters, num_volume):
     return weight
 
 
-def calculate_pair_weight(parameters, num_volume1, num_volume2):
+def calculate_pair_weight(parameters, num_volume1: int, num_volume2: int) -> float:
     """Calculate the atom-pair based desolvation weight.
 
     Args:
@@ -120,7 +127,7 @@ def calculate_pair_weight(parameters, num_volume1, num_volume2):
     return weight
 
 
-def hydrogen_bond_energy(dist, dpka_max, cutoffs, f_angle=1.0):
+def hydrogen_bond_energy(dist, dpka_max: float, cutoffs, f_angle=1.0) -> float:
     """Calculate hydrogen-bond interaction pKa shift.
 
     Args:
@@ -319,7 +326,7 @@ def check_coulomb_pair(parameters, group1, group2, dist):
     return do_coulomb
 
 
-def coulomb_energy(dist, weight, parameters):
+def coulomb_energy(dist: float, weight: float, parameters) -> float:
     """Calculates the Coulomb interaction pKa shift based on Coulomb's law.
 
     Args:
@@ -340,7 +347,7 @@ def coulomb_energy(dist, weight, parameters):
     return abs(dpka)
 
 
-def backbone_reorganization(_, conformation):
+def backbone_reorganization(_, conformation: "ConformationContainer") -> None:
     """Perform calculations related to backbone reorganizations.
 
     NOTE - this was described in the code as "adding test stuff"
