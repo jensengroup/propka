@@ -150,6 +150,7 @@ class Protonate:
         atom.number_of_protons_to_add = 8
         _LOGGER.debug("                     8")
         if atom.element not in self.valence_electrons:
+            _LOGGER.warning(f'Unknown valence electron count for element {atom.element}')
             self.valence_electrons[atom.element] = 4
         atom.number_of_protons_to_add -= self.valence_electrons[atom.element]
         _LOGGER.debug('Valence electrons: {0:>4d}'.format(

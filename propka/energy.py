@@ -440,7 +440,11 @@ def check_coo_arg_exception(group_coo, group_arg, version):
         [closest_coo_atom, dist, closest_arg_atom] = get_smallest_distance(
             atoms_coo, atoms_arg
         )
-        if closest_coo_atom is None or closest_arg_atom is None:
+        if closest_coo_atom is None:
+            _LOGGER.warning(f"COO interaction atoms missing for {group_coo}")
+            continue
+        if closest_arg_atom is None:
+            _LOGGER.warning(f"ARG interaction atoms missing for {group_arg}")
             continue
         [dpka_max, cutoff] = version.get_hydrogen_bond_parameters(
             closest_coo_atom, closest_arg_atom
