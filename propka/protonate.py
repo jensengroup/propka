@@ -29,7 +29,7 @@ class Protonate:
         self.verbose = verbose
         self.valence_electrons = {
             "H": 1, "He": 2, "Li": 1, "Be": 2, "B": 3, "C": 4, "N": 5,
-            "O": 6, "F": 7, "Ne": 8, "Na": 1, "Mg": 2,"Al": 3, "Si": 4,
+            "O": 6, "F": 7, "Ne": 8, "Na": 1, "Mg": 2, "Al": 3, "Si": 4,
             "P": 5, "S": 6, "Cl": 7, "Ar": 8, "K": 1, "Ca": 2, "Sc": 2,
             "Ti": 2, "V": 2, "Cr": 1, "Mn": 2, "Fe": 2, "Co": 2, "Ni": 2,
             "Cu": 1, "Zn": 2, "Ga": 3, "Ge": 4, "As": 5, "Se": 6, "Br": 7,
@@ -150,7 +150,8 @@ class Protonate:
         atom.number_of_protons_to_add = 8
         _LOGGER.debug("                     8")
         if atom.element not in self.valence_electrons:
-            _LOGGER.warning(f'Unknown valence electron count for element {atom.element}')
+            _LOGGER.warning(f'Unknown valence electron \
+                            for element {atom.element}')
             self.valence_electrons[atom.element] = 4
         atom.number_of_protons_to_add -= self.valence_electrons[atom.element]
         _LOGGER.debug('Valence electrons: {0:>4d}'.format(
@@ -182,7 +183,8 @@ class Protonate:
         atom.steric_number = 0
         if atom.element not in self.valence_electrons:
             self.valence_electrons[atom.element] = 4
-            _LOGGER.warning(f"Not found valence for element {atom.element}, use 4}")
+            _LOGGER.warning(f"Not found valence for \
+                             element {atom.element}, use 4")
         _LOGGER.debug('{0:>65s}: {1:>4d}'.format(
             'Valence electrons', self.valence_electrons[atom.element]))
         atom.steric_number += self.valence_electrons[atom.element]
