@@ -150,8 +150,8 @@ class Protonate:
         atom.number_of_protons_to_add = 8
         _LOGGER.debug("                     8")
         if atom.element not in self.valence_electrons:
-            _LOGGER.warning(f'Unknown valence electron \
-                            for element {atom.element}')
+            _LOGGER.warning(
+                    f'Unknown valence electron for element {atom.element}')
             self.valence_electrons[atom.element] = 4
         atom.number_of_protons_to_add -= self.valence_electrons[atom.element]
         _LOGGER.debug('Valence electrons: {0:>4d}'.format(
@@ -183,8 +183,8 @@ class Protonate:
         atom.steric_number = 0
         if atom.element not in self.valence_electrons:
             self.valence_electrons[atom.element] = 4
-            _LOGGER.warning(f"Not found valence for \
-                             element {atom.element}, use 4")
+            _LOGGER.warning(
+                    f"Not found valence for element {atom.element}, use 4")
         _LOGGER.debug('{0:>65s}: {1:>4d}'.format(
             'Valence electrons', self.valence_electrons[atom.element]))
         atom.steric_number += self.valence_electrons[atom.element]
