@@ -135,6 +135,7 @@ def compare_output(pdb, tmp_path, ref_path):
 
 
 @pytest.mark.parametrize("pdb, options", [
+    pytest.param('sample-issue-140', [], id="sample-issue-140: no options"),
     pytest.param("1FTJ-Chain-A", [], id="1FTJ-Chain-A: no options"),
     pytest.param('1HPX', [], id="1HPX: no options"),
     pytest.param('4DFR', [], id="4DFR: no options"),
