@@ -13,3 +13,5 @@
 docs/build
 docs/source/api/*.rst
 build/
+dist/
+.coverage

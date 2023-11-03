@@ -10,6 +10,7 @@ from propka.parameters import Parameters
 from propka.molecular_container import MolecularContainer
 from propka.input import read_parameter_file, read_molecule_file
 from propka.lib import loadOptions
+from typing import List
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -32,8 +33,6 @@ RESULTS_DIR = Path("tests/results")
 if not RESULTS_DIR.is_dir():
     _LOGGER.warning("Switching to sub-directory")
     RESULTS_DIR = Path("results")
-# Arguments to add to all tests
-DEFAULT_ARGS = []
 
 
 def get_test_dirs():
@@ -87,8 +86,8 @@ def run_propka(options, pdb_path, tmp_path):
 def parse_pka(pka_path: Path) -> dict:
     """Parse testable data from a .pka file into a dictionary.
     """
-    pka_list = []
-    data = {"pKa": pka_list}
+    pka_list: List[float] = []
+    data: dict = {"pKa": pka_list}
 
     with open(pka_path, "rt") as pka_file:
         at_pka = False
@@ -98,6 +97,7 @@ def parse_pka(pka_path: Path) -> dict:
                     at_pka = False
                 else:
                     m = re.search(r'\d+\.\d+', line[13:])
+                    assert m is not None
                     pka_list.append(float(m.group()))
             elif "model-pKa" in line:
                 at_pka = True

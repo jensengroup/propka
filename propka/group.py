@@ -11,8 +11,11 @@ Routines and classes for storing groups important to PROPKA calculations.
 """
 import logging
 import math
+from typing import cast, Dict, Iterable, List, NoReturn, Optional
+
 import propka.ligand
 import propka.protonate
+from propka.atom import Atom
 from propka.ligand_pka_values import LigandPkaValues
 from propka.determinant import Determinant
 
@@ -57,7 +60,7 @@ class Group:
        longer supported.
     """
 
-    def __init__(self, atom):
+    def __init__(self, atom: Atom):
         """Initialize with an atom.
 
         Args:
@@ -67,7 +70,11 @@ class Group:
         self.type = ''
         atom.group = self
         # set up data structures
-        self.determinants = {'sidechain': [], 'backbone': [], 'coulomb': []}
+        self.determinants: Dict[str, List[Determinant]] = {
+            'sidechain': [],
+            'backbone': [],
+            'coulomb': [],
+        }
         self.pka_value = 0.0
         self.model_pka = 0.0
         # Energy associated with volume interactions
@@ -84,16 +91,16 @@ class Group:
         self.z = 0.0
         self.charge = 0
         self.parameters = None
-        self.exclude_cys_from_results = None
-        self.interaction_atoms_for_acids = []
-        self.interaction_atoms_for_bases = []
+        self.exclude_cys_from_results = False
+        self.interaction_atoms_for_acids: List[Atom] = []
+        self.interaction_atoms_for_bases: List[Atom] = []
         self.model_pka_set = False
         self.intrinsic_pka = None
-        self.titratable = None
+        self.titratable = False
         # information on covalent and non-covalent coupling
-        self.non_covalently_coupled_groups = []
-        self.covalently_coupled_groups = []
-        self.coupled_titrating_group = None
+        self.non_covalently_coupled_groups: List["Group"] = []
+        self.covalently_coupled_groups: List["Group"] = []
+        self.coupled_titrating_group: Optional["Group"] = None
         self.common_charge_centre = False
         self.residue_type = self.atom.res_name
         if self.atom.terminal:
@@ -112,9 +119,9 @@ class Group:
             self.label = fmt.format(
                 type=self.residue_type, name=atom.name, chain=atom.chain_id)
         # container for squared distances
-        self.squared_distances = {}
+        self.squared_distances: NoReturn = cast(NoReturn, {})  # FIXME unused?
 
-    def couple_covalently(self, other):
+    def couple_covalently(self, other: "Group") -> None:
         """Couple this group with another group.
 
         Args:
@@ -126,7 +133,7 @@ class Group:
         if self not in other.covalently_coupled_groups:
             other.covalently_coupled_groups.append(self)
 
-    def couple_non_covalently(self, other):
+    def couple_non_covalently(self, other: "Group") -> None:
         """Non-covalenthly couple this group with another group.
 
         Args:
@@ -154,7 +161,7 @@ class Group:
         """
         return self.non_covalently_coupled_groups
 
-    def share_determinants(self, others):
+    def share_determinants(self, others: Iterable["Group"]) -> None:
         """Share determinants between this group and others.
 
         Args:
@@ -172,7 +179,7 @@ class Group:
         self.calculate_total_pka()
         the_other.calculate_total_pka()
 
-    def share_determinant(self, new_determinant, type_):
+    def share_determinant(self, new_determinant: Determinant, type_: str) -> None:
         """Add determinant to this group's list of determinants.
 
         Args:
@@ -230,7 +237,7 @@ class Group:
                 self.add_determinant(determinant, type_)
         return self
 
-    def add_determinant(self, new_determinant, type_):
+    def add_determinant(self, new_determinant: Determinant, type_: str) -> None:
         """Add to current and creates non-present determinants.
 
         Args:
@@ -247,7 +254,7 @@ class Group:
         self.determinants[type_].append(Determinant(new_determinant.group,
                                                     new_determinant.value))
 
-    def set_determinant(self, new_determinant, type_):
+    def set_determinant(self, new_determinant: Determinant, type_: str) -> None:
         """Overwrite current and create non-present determinants.
 
         Args:
@@ -345,8 +352,8 @@ class Group:
         # set the main atom as interaction atom
         self.set_interaction_atoms([self.atom], [self.atom])
 
-    def set_interaction_atoms(self, interaction_atoms_for_acids,
-                              interaction_atoms_for_bases):
+    def set_interaction_atoms(self, interaction_atoms_for_acids: List[Atom],
+                              interaction_atoms_for_bases: List[Atom]):
         """Set interacting atoms and group types.
 
         Args:
@@ -359,10 +366,10 @@ class Group:
         self.interaction_atoms_for_bases = interaction_atoms_for_bases
         # check if all atoms have been identified
         ok = True
-        for [expect, found, _] in [[EXPECTED_ATOMS_ACID_INTERACTIONS,
-                                    self.interaction_atoms_for_acids, 'acid'],
-                                   [EXPECTED_ATOMS_BASE_INTERACTIONS,
-                                    self.interaction_atoms_for_bases, 'base']]:
+        for (expect, found) in [
+            (EXPECTED_ATOMS_ACID_INTERACTIONS, self.interaction_atoms_for_acids),
+            (EXPECTED_ATOMS_BASE_INTERACTIONS, self.interaction_atoms_for_bases),
+        ]:
             if self.type in expect.keys():
                 for elem in expect[self.type].keys():
                     if (len([a for a in found if a.element == elem])
@@ -395,7 +402,7 @@ class Group:
                     '             {0:s}'.format(
                         str(self.interaction_atoms_for_bases[i])))
 
-    def get_interaction_atoms(self, interacting_group):
+    def get_interaction_atoms(self, interacting_group) -> List[Atom]:
         """Get atoms involved in interaction with other group.
 
         Args:
@@ -403,6 +410,7 @@ class Group:
         Returns:
             list of atoms
         """
+        assert self.parameters is not None
         if interacting_group.residue_type in self.parameters.base_list:
             return self.interaction_atoms_for_bases
         else:
@@ -518,7 +526,7 @@ class Group:
             self.model_pka + self.energy_volume + self.energy_local
             + back_bone + side_chain)
 
-    def get_summary_string(self, remove_penalised_group=False):
+    def get_summary_string(self, remove_penalised_group: bool = False) -> str:
         """Create summary string for this group.
 
         Args:
@@ -1210,7 +1218,7 @@ class TitratableLigandGroup(Group):
         self.model_pka_set = True
 
 
-def is_group(parameters, atom):
+def is_group(parameters, atom: Atom) -> Optional[Group]:
     """Identify whether the atom belongs to a group.
 
     Args:
@@ -1244,7 +1252,7 @@ def is_group(parameters, atom):
     return None
 
 
-def is_protein_group(parameters, atom):
+def is_protein_group(parameters, atom: Atom) -> Optional[Group]:
     """Identify whether the atom belongs to a protein group.
 
     Args:
@@ -1278,7 +1286,7 @@ def is_protein_group(parameters, atom):
     return None
 
 
-def is_ligand_group_by_groups(_, atom):
+def is_ligand_group_by_groups(_, atom: Atom) -> Optional[Group]:
     """Identify whether the atom belongs to a ligand group by checking groups.
 
     Args:
@@ -1360,7 +1368,7 @@ def is_ligand_group_by_groups(_, atom):
     return None
 
 
-def is_ligand_group_by_marvin_pkas(parameters, atom):
+def is_ligand_group_by_marvin_pkas(parameters, atom: Atom) -> Optional[Group]:
     """Identify whether the atom belongs to a ligand group by calculating
     'Marvin pKas'.
 
@@ -1375,6 +1383,7 @@ def is_ligand_group_by_marvin_pkas(parameters, atom):
     # calculate Marvin ligand pkas for this conformation container
     # if not already done
     # TODO - double-check testing coverage of these functions.
+    assert atom.conformation_container is not None
     if not atom.conformation_container.marvin_pkas_calculated:
         lpka = LigandPkaValues(parameters)
         lpka.get_marvin_pkas_for_molecular_container(
@@ -1396,7 +1405,7 @@ def is_ligand_group_by_marvin_pkas(parameters, atom):
     return None
 
 
-def is_ion_group(parameters, atom):
+def is_ion_group(parameters, atom: Atom) -> Optional[Group]:
     """Identify whether the atom belongs to an ion group.
 
     Args:

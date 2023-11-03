@@ -10,12 +10,15 @@ Input routines.
    :func:`get_atom_lines_from_input`) have been removed.
 """
 import typing
+from typing import Iterator, Tuple
 import contextlib
 from pathlib import Path
 from pkg_resources import resource_filename
 from propka.lib import protein_precheck
 from propka.atom import Atom
 from propka.conformation_container import ConformationContainer
+from propka.molecular_container import MolecularContainer
+from propka.parameters import Parameters
 
 
 def open_file_for_reading(
@@ -27,18 +30,14 @@ def open_file_for_reading(
         input_file: path to file or file-like object. If file-like object,
         then will attempt seek(0).
     """
-    try:
+    if not isinstance(input_file, (str, Path)):
         input_file.seek(0)
-    except AttributeError:
-        pass
-    else:
-        # TODO use contextlib.nullcontext when dropping Python 3.6 support
-        return contextlib.contextmanager(lambda: (yield input_file))()
+        return contextlib.nullcontext(input_file)
 
     return contextlib.closing(open(input_file, 'rt'))
 
 
-def read_molecule_file(filename: str, mol_container, stream=None):
+def read_molecule_file(filename: str, mol_container: MolecularContainer, stream=None) -> MolecularContainer:
     """Read input file or stream (PDB or PROPKA) for a molecular container
 
     Args:
@@ -123,7 +122,7 @@ def read_molecule_file(filename: str, mol_container, stream=None):
     return mol_container
 
 
-def read_parameter_file(input_file, parameters):
+def read_parameter_file(input_file, parameters: Parameters) -> Parameters:
     """Read a parameter file.
 
     Args:
@@ -144,7 +143,7 @@ def read_parameter_file(input_file, parameters):
     return parameters
 
 
-def conformation_sorter(conf):
+def conformation_sorter(conf: str) -> int:
     """TODO - figure out what this function does."""
     model = int(conf[:-1])
     altloc = conf[-1:]
@@ -152,7 +151,7 @@ def conformation_sorter(conf):
 
 
 def get_atom_lines_from_pdb(pdb_file, ignore_residues=[], keep_protons=False,
-                            tags=['ATOM  ', 'HETATM'], chains=None):
+                            tags=['ATOM  ', 'HETATM'], chains=None) -> Iterator[Tuple[str, Atom]]:
     """Get atom lines from PDB file.
 
     Args:
@@ -237,7 +236,7 @@ def read_pdb(pdb_file, parameters, molecule):
         keep_protons=molecule.options.keep_protons,
         chains=molecule.options.chains)
     for (name, atom) in lines:
-        if not name in conformations.keys():
+        if name not in conformations.keys():
             conformations[name] = ConformationContainer(
                 name=name, parameters=parameters, molecular_container=molecule)
         conformations[name].add_atom(atom)

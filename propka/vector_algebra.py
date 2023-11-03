@@ -6,16 +6,35 @@ Vector algebra for PROPKA.
 """
 import logging
 import math
+from typing import Optional, Protocol, Union
 from propka.lib import get_sorted_configurations
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
+class _XYZ(Protocol):
+    """
+    Protocol for types which have x/y/z attributes, like Vector or Atom.
+    """
+    x: float
+    y: float
+    z: float
+
+
 class Vector:
     """Vector"""
 
-    def __init__(self, xi=0.0, yi=0.0, zi=0.0, atom1=None, atom2=None):
+    x: float
+    y: float
+    z: float
+
+    def __init__(self,
+                 xi: float = 0.0,
+                 yi: float = 0.0,
+                 zi: float = 0.0,
+                 atom1: Optional[_XYZ] = None,
+                 atom2: Optional[_XYZ] = None):
         """Initialize vector.
 
         Args:
@@ -41,17 +60,17 @@ class Vector:
                 self.y = atom2.y - self.y
                 self.z = atom2.z - self.z
 
-    def __add__(self, other):
+    def __add__(self, other: _XYZ):
         return Vector(self.x + other.x,
                       self.y + other.y,
                       self.z + other.z)
 
-    def __sub__(self, other):
+    def __sub__(self, other: _XYZ):
         return Vector(self.x - other.x,
                       self.y - other.y,
                       self.z - other.z)
 
-    def __mul__(self, other):
+    def __mul__(self, other: Union["Vector", "Matrix4x4", float]):
         """Dot product, scalar and matrix multiplication."""
         if isinstance(other, Vector):
             return self.x * other.x + self.y * other.y + self.z * other.z
@@ -66,14 +85,12 @@ class Vector:
                 )
         elif type(other) in [int, float]:
             return Vector(self.x * other, self.y * other, self.z * other)
-        else:
-            _LOGGER.info('{0:s} not supported'.format(type(other)))
-            raise TypeError
+        raise TypeError(f'{type(other)} not supported')
 
     def __rmul__(self, other):
         return self.__mul__(other)
 
-    def __pow__(self, other):
+    def __pow__(self, other: _XYZ):
         """Cross product."""
         return Vector(self.y * other.z - self.z * other.y,
                       self.z * other.x - self.x * other.z,
@@ -89,7 +106,7 @@ class Vector:
         """Return vector squared-length"""
         return self.x * self.x + self.y * self.y + self.z * self.z
 
-    def length(self):
+    def length(self) -> float:
         """Return vector length."""
         return math.sqrt(self.sq_length())
 
@@ -107,7 +124,7 @@ class Vector:
             res = Vector(self.z, 0, -self.x)
         return res
 
-    def rescale(self, new_length):
+    def rescale(self, new_length: float):
         """ Rescale vector to new length while preserving direction """
         frac = new_length/(self.length())
         res = Vector(xi=self.x*frac, yi=self.y*frac, zi=self.z*frac)
@@ -145,7 +162,7 @@ class Matrix4x4:
         self.a44 = a44i
 
 
-def angle(avec, bvec):
+def angle(avec: Vector, bvec: Vector) -> float:
     """Get the angle between two vectors.
 
     Args:
@@ -158,7 +175,7 @@ def angle(avec, bvec):
     return math.acos(dot / (avec.length() * bvec.length()))
 
 
-def angle_degrees(avec, bvec):
+def angle_degrees(avec: Vector, bvec: Vector) -> float:
     """Get the angle between two vectors in degrees.
 
     Args:
@@ -170,7 +187,7 @@ def angle_degrees(avec, bvec):
     return math.degrees(angle(avec, bvec))
 
 
-def signed_angle_around_axis(avec, bvec, axis):
+def signed_angle_around_axis(avec: Vector, bvec: Vector, axis: Vector) -> float:
     """Get signed angle of two vectors around axis in radians.
 
     Args:
@@ -189,7 +206,7 @@ def signed_angle_around_axis(avec, bvec, axis):
     return ang
 
 
-def rotate_vector_around_an_axis(theta, axis, vec):
+def rotate_vector_around_an_axis(theta: float, axis: Vector, vec: Vector) -> Vector:
     """Rotate vector around an axis.
 
     Args:
@@ -225,7 +242,7 @@ def rotate_vector_around_an_axis(theta, axis, vec):
     return vec
 
 
-def rotate_atoms_around_z_axis(theta):
+def rotate_atoms_around_z_axis(theta: float) -> Matrix4x4:
     """Get rotation matrix for z-axis.
 
     Args:
@@ -253,7 +270,7 @@ def rotate_atoms_around_z_axis(theta):
         )
 
 
-def rotate_atoms_around_y_axis(theta):
+def rotate_atoms_around_y_axis(theta: float) -> Matrix4x4:
     """Get rotation matrix for y-axis.
 
     Args:

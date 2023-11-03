@@ -7,9 +7,15 @@ The :class:`Atom` class contains all atom information found in the PDB file.
 """
 
 import string
+from typing import cast, List, NoReturn, Optional, TYPE_CHECKING
+
 from propka.lib import make_tidy_atom_label
 from . import hybrid36
 
+if TYPE_CHECKING:
+    from propka.group import Group
+    from propka.molecular_container import MolecularContainer
+    from propka.conformation_container import ConformationContainer
 
 # Format strings that get used in multiple places (or are very complex)
 PDB_LINE_FMT1 = (
@@ -37,37 +43,24 @@ class Atom:
        removed as reading/writing PROPKA input is no longer supported.
     """
 
-    def __init__(self, line=None):
+    def __init__(self, line: Optional[str] = None):
         """Initialize Atom object.
 
         Args:
             line:  Line from a PDB file to set properties of atom.
         """
-        self.occ = None
-        self.numb = None
-        self.res_name = None
-        self.type = None
-        self.chain_id = None
-        self.beta = None
-        self.icode = None
-        self.res_num = None
-        self.name = None
-        self.element = None
-        self.x = None
-        self.y = None
-        self.z = None
-        self.group = None
-        self.group_type = None
-        self.number_of_bonded_elements = {}
-        self.cysteine_bridge = False
-        self.bonded_atoms = []
+        self.number_of_bonded_elements: NoReturn = cast(NoReturn, {})  # FIXME unused?
+        self.group: Optional[Group] = None
+        self.group_type: Optional[str] = None
+        self.cysteine_bridge: bool = False
+        self.bonded_atoms: List[Atom] = []
         self.residue = None
-        self.conformation_container = None
-        self.molecular_container = None
+        self.conformation_container: Optional[ConformationContainer] = None
+        self.molecular_container: Optional[MolecularContainer] = None
         self.is_protonated = False
         self.steric_num_lone_pairs_set = False
-        self.terminal = None
-        self.charge = 0
+        self.terminal: Optional[str] = None
+        self.charge = 0.0
         self.charge_set = False
         self.steric_number = 0
         self.number_of_lone_pairs = 0
@@ -84,7 +77,7 @@ class Atom:
         self.sybyl_assigned = False
         self.marvin_pka = False
 
-    def set_properties(self, line):
+    def set_properties(self, line: Optional[str]):
         """Line from PDB file to set properties of atom.
 
         Args:
@@ -112,10 +105,8 @@ class Atom:
             self.z = float(line[46:54].strip())
             self.res_num = int(line[22:26].strip())
             self.res_name = "{0:<3s}".format(line[17:20].strip())
-            self.chain_id = line[21]
             # Set chain id to "_" if it is just white space.
-            if not self.chain_id.strip():
-                self.chain_id = '_'
+            self.chain_id = line[21].strip() or '_'
             self.type = line[:6].strip().lower()
 
             # TODO - define nucleic acid residue names elsewhere
@@ -134,7 +125,7 @@ class Atom:
                 self.element = '{0:1s}{1:1s}'.format(
                     self.element[0], self.element[1].lower())
 
-    def set_group_type(self, type_):
+    def set_group_type(self, type_: str):
         """Set group type of atom.
 
         Args:

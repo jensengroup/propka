@@ -6,6 +6,8 @@ Molecular container for storing all contents of PDB files.
 """
 import logging
 import os
+from typing import Dict, List, Optional, Tuple
+
 import propka.version
 from propka.output import write_pka, print_header, print_result
 from propka.conformation_container import ConformationContainer
@@ -28,7 +30,12 @@ class MolecularContainer:
        PROPKA input files is no longer supported.
     """
 
-    def __init__(self, parameters, options=None):
+    conformation_names: List[str]
+    conformations: Dict[str, ConformationContainer]
+    name: Optional[str]
+    version: propka.version.Version
+
+    def __init__(self, parameters, options=None) -> None:
         """Initialize molecular container.
 
         Args:
@@ -50,7 +57,7 @@ class MolecularContainer:
                 parameters.version)
             raise Exception(errstr)
 
-    def top_up_conformations(self):
+    def top_up_conformations(self) -> None:
         """Makes sure that all atoms are present in all conformations."""
         ref_atoms = {
             atom.residue_label: atom
@@ -60,24 +67,24 @@ class MolecularContainer:
         for conf in self.conformations.values():
             conf.top_up_from_atoms(ref_atoms.values())
 
-    def find_covalently_coupled_groups(self):
+    def find_covalently_coupled_groups(self) -> None:
         """Find covalently coupled groups."""
         for name in self.conformation_names:
             self.conformations[name].find_covalently_coupled_groups()
 
-    def find_non_covalently_coupled_groups(self):
+    def find_non_covalently_coupled_groups(self) -> None:
         """Find non-covalently coupled groups."""
         verbose = self.options.display_coupled_residues
         for name in self.conformation_names:
             self.conformations[name].find_non_covalently_coupled_groups(
                 verbose=verbose)
 
-    def extract_groups(self):
+    def extract_groups(self) -> None:
         """Identify the groups needed for pKa calculation."""
         for name in self.conformation_names:
             self.conformations[name].extract_groups()
 
-    def calculate_pka(self):
+    def calculate_pka(self) -> None:
         """Calculate pKa values."""
         # calculate for each conformation
         for name in self.conformation_names:
@@ -90,7 +97,7 @@ class MolecularContainer:
         # print out the conformation-average results
         print_result(self, 'AVR', self.version.parameters)
 
-    def average_of_conformations(self):
+    def average_of_conformations(self) -> None:
         """Generate an average of conformations."""
         parameters = self.conformations[self.conformation_names[0]].parameters
         # make a new configuration to hold the average values
@@ -124,7 +131,7 @@ class MolecularContainer:
         self.conformations['AVR'] = avr_conformation
 
     def write_pka(self, filename=None, reference="neutral",
-                  direction="folding", options=None):
+                  direction="folding", options=None) -> None:
         """Write pKa information to a file.
 
         Args:
@@ -187,7 +194,7 @@ class MolecularContainer:
             stability_range = [min(stable_values), max(stable_values)]
         return profile, opt, range_80pct, stability_range
 
-    def get_charge_profile(self, conformation='AVR', grid=[0., 14., .1]):
+    def get_charge_profile(self, conformation: str = 'AVR', grid=[0., 14., .1]):
         """Get charge profile for conformation as function of pH.
 
         Args:
@@ -196,7 +203,7 @@ class MolecularContainer:
         Returns:
             list of charge state values
         """
-        charge_profile = []
+        charge_profile: List[List[float]] = []
         for ph in make_grid(*grid):
             conf = self.conformations[conformation]
             q_unfolded, q_folded = conf.calculate_charge(
@@ -204,8 +211,8 @@ class MolecularContainer:
             charge_profile.append([ph, q_unfolded, q_folded])
         return charge_profile
 
-    def get_pi(self, conformation='AVR', grid=[0., 14., 1], *,
-            precision: float = 1e-4):
+    def get_pi(self, conformation: str = 'AVR', grid=[0., 14., 1], *,
+               precision: float = 1e-4) -> Tuple[float, float]:
         """Get the isoelectric points for folded and unfolded states.
 
         Args:
