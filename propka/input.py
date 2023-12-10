@@ -10,10 +10,11 @@ Input routines.
    :func:`get_atom_lines_from_input`) have been removed.
 """
 import typing
-from typing import Iterator, Tuple
+from typing import Iterator, Tuple, Union
 import contextlib
+import io
+import zipfile
 from pathlib import Path
-from pkg_resources import resource_filename
 from propka.lib import protein_precheck
 from propka.atom import Atom
 from propka.conformation_container import ConformationContainer
@@ -33,6 +34,16 @@ def open_file_for_reading(
     if not isinstance(input_file, (str, Path)):
         input_file.seek(0)
         return contextlib.nullcontext(input_file)
+
+    input_file = Path(input_file)
+
+    if not input_file.is_file():
+        for p in input_file.parents:
+            if not zipfile.is_zipfile(p):
+                continue
+            zf = zipfile.ZipFile(p)
+            stream = zf.open(str(input_file.relative_to(p)))
+            return io.TextIOWrapper(stream)
 
     return contextlib.closing(open(input_file, 'rt'))
 
@@ -122,7 +133,7 @@ def read_molecule_file(filename: str, mol_container: MolecularContainer, stream=
     return mol_container
 
 
-def read_parameter_file(input_file, parameters: Parameters) -> Parameters:
+def read_parameter_file(input_file: Union[Path, str], parameters: Parameters) -> Parameters:
     """Read a parameter file.
 
     Args:
@@ -133,7 +144,7 @@ def read_parameter_file(input_file, parameters: Parameters) -> Parameters:
     """
     # try to locate the parameter file
     try:
-        ifile = resource_filename(__name__, input_file)
+        ifile = Path(__file__).parent / input_file
         input_ = open_file_for_reading(ifile)
     except (IOError, FileNotFoundError, ValueError, KeyError):
         input_ = open_file_for_reading(input_file)

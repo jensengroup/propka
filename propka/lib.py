@@ -8,7 +8,7 @@ Implements many of the main functions used to call PROPKA.
 import sys
 import logging
 import argparse
-import pkg_resources
+from pathlib import Path
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -246,7 +246,7 @@ def build_parser(parser=None):
         "--version", action="version", version=f"%(prog)s {propka.__version__}")
     group.add_argument(
         "-p", "--parameters", dest="parameters",
-        default=pkg_resources.resource_filename(__name__, "propka.cfg"),
+        default=str(Path(__file__).parent / "propka.cfg"),
         help="set the parameter file [{default:s}]")
     try:
         group.add_argument(
