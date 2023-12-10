@@ -8,7 +8,7 @@ PROPKA representation of bonds.
 import logging
 import math
 import json
-import pkg_resources
+from pathlib import Path
 import propka.calculations
 from typing import TYPE_CHECKING
 
@@ -35,6 +35,8 @@ class BondMaker:
     TODO - the documentation for this class needs to be improved.
     """
     def __init__(self):
+        from propka.input import open_file_for_reading
+
         # predefined bonding distances
         self.distances = {'S-S': DISULFIDE_DISTANCE,
                           'F-F': FLUORIDE_DISTANCE}
@@ -51,9 +53,8 @@ class BondMaker:
             + [self.default_dist_squared])
         self.max_sq_distance = max(distances)
         # protein bonding data
-        self.data_file_name = (
-            pkg_resources.resource_filename(__name__, 'protein_bonds.json'))
-        with open(self.data_file_name, 'rt') as json_file:
+        self.data_file_name = Path(__file__).parent / 'protein_bonds.json'
+        with open_file_for_reading(self.data_file_name) as json_file:
             self.protein_bonds = json.load(json_file)
         self.intra_residue_backbone_bonds = {'N': ['CA'], 'CA': ['N', 'C'],
                                              'C': ['CA', 'O'], 'O': ['C']}
