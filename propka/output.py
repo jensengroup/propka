@@ -72,6 +72,7 @@ def write_pdb_for_protein(
         include_hydrogens:  Boolean indicating whether to include hydrogens
         options:  options object
     """
+    raise NotImplementedError("unused")
     if pdbfile is None:
         # opening file if not given
         if filename is None:
@@ -169,6 +170,7 @@ def print_tm_profile(protein, reference="neutral", window=[0., 14., 1.],
         _:  Boolean for verbosity
         options:  options object
     """
+    raise NotImplementedError("unused")
     profile = protein.getTmProfile(
         reference=reference, grid=[0., 14., 0.1], tms=tms, ref=ref,
         options=options)
@@ -358,6 +360,7 @@ def write_jackal_scap_file(mutation_data=None, filename="1xxx_scap.list",
 
     TODO - figure out what this is
     """
+    raise NotImplementedError("unused")
     with open(filename, 'w') as file_:
         for chain_id, _, res_num, code2 in mutation_data:
             str_ = "{chain:s}, {num:d}, {code:s}\n".format(

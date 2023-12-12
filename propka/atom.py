@@ -8,6 +8,7 @@ The :class:`Atom` class contains all atom information found in the PDB file.
 
 import string
 from typing import cast, List, NoReturn, Optional, TYPE_CHECKING
+import warnings
 
 from propka.lib import make_tidy_atom_label
 from . import hybrid36
@@ -303,6 +304,7 @@ class Atom:
         Returns:
             String with PDB line.
         """
+        warnings.warn("only used by unused function")
         if numb is None:
             numb = self.numb
         if name is None:
@@ -349,5 +351,6 @@ class Atom:
         Args:
             residue:  the parent residue
         """
+        raise NotImplementedError("unused")
         if self.residue is None:
             self.residue = residue

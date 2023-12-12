@@ -13,6 +13,7 @@ import logging
 import os
 import subprocess
 import sys
+import warnings
 from propka.output import write_mol2_for_atoms
 from propka.lib import split_atoms_into_molecules
 
@@ -69,6 +70,7 @@ class LigandPkaValues:
             min_ph:  minimum pH value
             max_ph:  maximum pH value
         """
+        warnings.warn("unused and untested by propka")
         self.get_marvin_pkas_for_molecular_container(
             molecule, num_pkas=num_pkas, min_ph=min_ph, max_ph=max_ph)
 

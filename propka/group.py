@@ -167,6 +167,7 @@ class Group:
         Args:
             others:  list of other groups
         """
+        raise NotImplementedError("unused")
         # for each determinant type
         for other in others:
             if other == self:
@@ -1400,6 +1401,7 @@ def is_ligand_group_by_marvin_pkas(parameters, atom: Atom) -> Optional[Group]:
             if not o == atom][0]
         atom.marvin_pka = other_oxygen.marvin_pka
         return TitratableLigandGroup(atom)
+    raise NotImplementedError("hydrogen_bonds")
     if atom.element in parameters.hydrogen_bonds.elements:
         return NonTitratableLigandGroup(atom)
     return None
