@@ -7,6 +7,8 @@ Container data structure for molecular conformations.
 import logging
 import functools
 from typing import Iterable, List, NoReturn, Optional, TYPE_CHECKING, Set
+from propka.lib import Options
+from propka.version import Version
 
 if TYPE_CHECKING:
     from propka.atom import Atom
@@ -19,6 +21,7 @@ from propka.coupled_groups import NCCG
 from propka.determinants import set_backbone_determinants, set_ion_determinants
 from propka.determinants import set_determinants
 from propka.group import Group, is_group
+from propka.parameters import Parameters
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -44,9 +47,9 @@ class ConformationContainer:
     """
 
     def __init__(self,
-                 name: str = '',
-                 parameters=None,
-                 molecular_container: Optional["MolecularContainer"] = None):
+                 name: str,
+                 parameters: Parameters,
+                 molecular_container: "MolecularContainer"):
         """Initialize conformation container.
 
         Args:
@@ -145,6 +148,7 @@ class ConformationContainer:
         Returns:
             a set of bonded atom groups
         """
+        assert self.parameters is not None
         res: Set[Group] = set()
         for bond_atom in atom.bonded_atoms:
             # skip the original atom
@@ -187,7 +191,7 @@ class ConformationContainer:
 
         # If --titrate_only option is set, make non-specified residues
         # un-titratable:
-        assert self.molecular_container is not None
+        assert self.molecular_container.options is not None
         titrate_only = self.molecular_container.options.titrate_only
         if titrate_only is not None:
             atom = group.atom
@@ -196,7 +200,7 @@ class ConformationContainer:
                 if group.residue_type == 'CYS':
                     group.exclude_cys_from_results = True
 
-    def calculate_pka(self, version, options):
+    def calculate_pka(self, version: Version, options: Options):
         """Calculate pKas for conformation container.
 
         Args:
@@ -349,7 +353,7 @@ class ConformationContainer:
                                                   reference=reference)
         return ddg
 
-    def calculate_charge(self, parameters, ph=None):
+    def calculate_charge(self, parameters, ph: float):
         """Calculate charge for folded and unfolded states.
 
         Args:

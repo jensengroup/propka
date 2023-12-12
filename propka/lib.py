@@ -9,6 +9,10 @@ import sys
 import logging
 import argparse
 from pathlib import Path
+from typing import List, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from propka.atom import Atom
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -18,6 +22,8 @@ EXPECTED_ATOM_NUMBERS = {'ALA': 5, 'ARG': 11, 'ASN': 8, 'ASP': 8, 'CYS': 6,
                          'GLY': 4, 'GLN': 9, 'GLU': 9, 'HIS': 10, 'ILE': 8,
                          'LEU': 8, 'LYS': 9, 'MET': 8, 'PHE': 11, 'PRO': 7,
                          'SER': 6, 'THR': 7, 'TRP': 14, 'TYR': 12, 'VAL': 7}
+
+Options = argparse.Namespace
 
 
 def protein_precheck(conformations, names):
@@ -73,7 +79,7 @@ def resid_from_atom(atom):
         atom.res_num, atom.chain_id, atom.icode)
 
 
-def split_atoms_into_molecules(atoms):
+def split_atoms_into_molecules(atoms: List["Atom"]):
     """Maps atoms into molecules.
 
     Args:
@@ -81,14 +87,14 @@ def split_atoms_into_molecules(atoms):
     Returns:
         list of molecules
     """
-    molecules = []
+    molecules: List[List["Atom"]] = []
     while len(atoms) > 0:
         initial_atom = atoms.pop()
         molecules.append(make_molecule(initial_atom, atoms))
     return molecules
 
 
-def make_molecule(atom, atoms):
+def make_molecule(atom: "Atom", atoms: List["Atom"]):
     """Make a molecule from atoms.
 
     Args:
@@ -302,7 +308,7 @@ def build_parser(parser=None):
     return parser
 
 
-def loadOptions(args=None):
+def loadOptions(args=None) -> Options:
     """
     Load the arguments parser with options. Note that verbosity is set as soon
     as this function is invoked.
@@ -315,7 +321,7 @@ def loadOptions(args=None):
     # loading the parser
     parser = build_parser()
     # parsing and returning options and arguments
-    options = parser.parse_args(args)
+    options = parser.parse_args(args, namespace=Options())
 
     # adding specified filenames to arguments
     options.filenames.append(options.input_pdb)

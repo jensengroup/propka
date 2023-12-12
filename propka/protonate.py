@@ -9,9 +9,15 @@ protons.
 """
 import logging
 import math
+from typing import Iterable, TYPE_CHECKING
+
 import propka.bonds
 import propka.atom
+from propka.atom import Atom
 from propka.vector_algebra import rotate_vector_around_an_axis, Vector
+
+if TYPE_CHECKING:
+    from propka.molecular_container import MolecularContainer
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -58,7 +64,7 @@ class Protonate:
             'Br': 1.41, 'I': 1.61, 'S': 1.35}
         self.protonation_methods = {4: self.tetrahedral, 3: self.trigonal}
 
-    def protonate(self, molecules):
+    def protonate(self, molecules: "MolecularContainer"):
         """Protonate all atoms in the molecular container.
 
         Args:
@@ -75,7 +81,7 @@ class Protonate:
                 self.protonate_atom(atom)
 
     @staticmethod
-    def remove_all_hydrogen_atoms(molecular_container):
+    def remove_all_hydrogen_atoms(molecular_container: "MolecularContainer"):
         """Remove all hydrogen atoms from molecule.
 
         Args:
@@ -86,7 +92,7 @@ class Protonate:
                 molecular_container.conformations[name]
                 .get_non_hydrogen_atoms())
 
-    def set_charge(self, atom):
+    def set_charge(self, atom: Atom):
         """Set charge for atom.
 
         Args:
@@ -109,7 +115,7 @@ class Protonate:
                 atom.sybyl_type = atom.sybyl_type.replace('-', '')
                 atom.charge_set = True
 
-    def protonate_atom(self, atom):
+    def protonate_atom(self, atom: Atom):
         """Protonate an atom.
 
         Args:
@@ -126,7 +132,7 @@ class Protonate:
         atom.is_protonated = True
 
     @staticmethod
-    def set_proton_names(heavy_atoms):
+    def set_proton_names(heavy_atoms: Iterable[Atom]):
         """Set names for protons.
 
         Args:
@@ -139,7 +145,7 @@ class Protonate:
                     bonded.name += str(i)
                     i += 1
 
-    def set_number_of_protons_to_add(self, atom):
+    def set_number_of_protons_to_add(self, atom: Atom):
         """Set the number of protons to add to this atom.
 
         Args:
@@ -169,7 +175,7 @@ class Protonate:
         _LOGGER.debug('-'*10)
         _LOGGER.debug(atom.number_of_protons_to_add)
 
-    def set_steric_number_and_lone_pairs(self, atom):
+    def set_steric_number_and_lone_pairs(self, atom: Atom):
         """Set steric number and lone pairs for atom.
 
         Args:
@@ -207,8 +213,7 @@ class Protonate:
         atom.steric_number += 0
         _LOGGER.debug('{0:>65s}: {1:>4.1f}'.format(
             'Charge(-)', atom.charge))
-        atom.steric_number -= atom.charge
-        atom.steric_number = math.floor(atom.steric_number/2.0)
+        atom.steric_number = math.floor((atom.steric_number - atom.charge) / 2)
         atom.number_of_lone_pairs = (
             atom.steric_number - len(atom.bonded_atoms)
             - atom.number_of_protons_to_add
@@ -220,7 +225,7 @@ class Protonate:
             'Number of lone pairs', atom.number_of_lone_pairs))
         atom.steric_num_lone_pairs_set = True
 
-    def add_protons(self, atom):
+    def add_protons(self, atom: Atom):
         """Add protons to atom.
 
         Args:
@@ -236,7 +241,7 @@ class Protonate:
                 '(steric number: {0:d})'.format(atom.steric_number)
             )
 
-    def trigonal(self, atom):
+    def trigonal(self, atom: Atom):
         """Add hydrogens in trigonal geometry.
 
         Args:
@@ -296,7 +301,7 @@ class Protonate:
             new_a = self.set_bond_distance(new_a, atom.element)
             self.add_proton(atom, cvec+new_a)
 
-    def tetrahedral(self, atom):
+    def tetrahedral(self, atom: Atom):
         """Protonate atom in tetrahedral geometry.
 
         Args:
@@ -338,13 +343,14 @@ class Protonate:
             self.add_proton(atom, cvec+new_a)
 
     @staticmethod
-    def add_proton(atom, position):
+    def add_proton(atom: Atom, position: Vector):
         """Add a proton to an atom at a specific position.
 
         Args:
             atom:  atom to protonate
             position:  position for proton
         """
+        assert atom.conformation_container is not None
         # Create the new proton
         new_h = propka.atom.Atom()
         new_h.set_property(
@@ -368,7 +374,6 @@ class Protonate:
         new_h.number_of_lone_pairs = 0
         new_h.number_of_protons_to_add = 0
         new_h.num_pi_elec_2_3_bonds = 0
-        new_h.is_protonates = True
         atom.bonded_atoms.append(new_h)
         atom.number_of_protons_to_add -= 1
         atom.conformation_container.add_atom(new_h)
@@ -386,7 +391,7 @@ class Protonate:
                 i += 1
         _LOGGER.debug('added %s %s %s', new_h, 'to', atom)
 
-    def set_bond_distance(self, bvec, element):
+    def set_bond_distance(self, bvec: Vector, element: str) -> Vector:
         """Set bond distance between atom and element.
 
         Args:

@@ -68,11 +68,11 @@ def run_propka(options, pdb_path, tmp_path):
     """
     options += [str(pdb_path)]
     args = loadOptions(options)
+    cwd = Path.cwd()
     try:
         _LOGGER.warning(
             "Working in tmpdir {0:s} because of PROPKA file output; "
             "need to fix this.".format(str(tmp_path)))
-        cwd = Path.cwd()
         os.chdir(tmp_path)
         parameters = read_parameter_file(args.parameters, Parameters())
         molecule = MolecularContainer(parameters, args)
@@ -148,6 +148,7 @@ def compare_output(pdb, tmp_path, ref_path):
 def test_regression(pdb, options, tmp_path):
     """Basic regression test of PROPKA functionality."""
     path_dict = get_test_dirs()
+    ref_path = None
 
     for ext in ["json", "dat"]:
         ref_path = path_dict["results"] / f"{pdb}.{ext}"

@@ -365,7 +365,7 @@ def write_jackal_scap_file(mutation_data=None, filename="1xxx_scap.list",
         for chain_id, _, res_num, code2 in mutation_data:
             str_ = "{chain:s}, {num:d}, {code:s}\n".format(
                 chain=chain_id, num=res_num, code=code2)
-        file_.write(str_)
+            file_.write(str_)
 
 
 def write_scwrl_sequence_file(sequence, filename="x-ray.seq", _=None):

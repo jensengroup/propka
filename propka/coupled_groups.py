@@ -33,6 +33,7 @@ class NonCovalentlyCoupledGroups:
         Returns:
             dictionary describing coupling
         """
+        assert self.parameters is not None
         # check if the interaction energy is high enough
         interaction_energy = max(self.get_interaction(group1, group2),
                                  self.get_interaction(group2, group1))
@@ -105,6 +106,7 @@ class NonCovalentlyCoupledGroups:
         Returns:
             float value of scaling factor
         """
+        assert self.parameters is not None
         intrinsic_pka_diff = abs(pka1-pka2)
         res = 0.0
         if intrinsic_pka_diff <= self.parameters.max_intrinsic_pka_diff:
@@ -122,6 +124,7 @@ class NonCovalentlyCoupledGroups:
         Returns:
             float value of scaling factor
         """
+        assert self.parameters is not None
         free_energy_diff = abs(energy1-energy2)
         res = 0.0
         if free_energy_diff <= self.parameters.max_free_energy_diff:
@@ -136,6 +139,7 @@ class NonCovalentlyCoupledGroups:
         Returns:
             float value of scaling factor
         """
+        assert self.parameters is not None
         res = 0.0
         interaction_energy = abs(interaction_energy)
         if interaction_energy >= self.parameters.min_interaction_energy:

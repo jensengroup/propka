@@ -7,11 +7,12 @@ Molecular container for storing all contents of PDB files.
 import logging
 import os
 from typing import Dict, List, Optional, Tuple
+from propka.parameters import Parameters
 
 import propka.version
 from propka.output import write_pka, print_header, print_result
 from propka.conformation_container import ConformationContainer
-from propka.lib import make_grid
+from propka.lib import make_grid, Options
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,7 +36,7 @@ class MolecularContainer:
     name: Optional[str]
     version: propka.version.Version
 
-    def __init__(self, parameters, options=None) -> None:
+    def __init__(self, parameters: Parameters, options: Options) -> None:
         """Initialize molecular container.
 
         Args:
