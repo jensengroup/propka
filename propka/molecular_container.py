@@ -157,7 +157,7 @@ class MolecularContainer:
             conformation='AVR', reference=reference)
 
     def get_folding_profile(self, conformation='AVR', reference="neutral",
-                            grid=[0., 14., 0.1]):
+                            grid: Tuple[float, float, float] = (0., 14., 0.1)):
         """Get a folding profile.
 
         Args:
@@ -174,25 +174,25 @@ class MolecularContainer:
             4. stability_range
         """
         # calculate stability profile
-        profile = []
+        profile: List[Tuple[float, float]] = []
         for ph in make_grid(*grid):
             conf = self.conformations[conformation]
             ddg = conf.calculate_folding_energy(ph=ph, reference=reference)
-            profile.append([ph, ddg])
+            profile.append((ph, ddg))
         # find optimum
-        opt = [None, 1e6]
+        opt: Tuple[Optional[float], float] = (None, 1e6)
         for point in profile:
             opt = min(opt, point, key=lambda v: v[1])
         # find values within 80 % of optimum
-        range_80pct = [None, None]
+        range_80pct: Tuple[Optional[float], Optional[float]] = (None, None)
         values_within_80pct = [p[0] for p in profile if p[1] < 0.8*opt[1]]
         if len(values_within_80pct) > 0:
-            range_80pct = [min(values_within_80pct), max(values_within_80pct)]
+            range_80pct = (min(values_within_80pct), max(values_within_80pct))
         # find stability range
-        stability_range = [None, None]
+        stability_range: Tuple[Optional[float], Optional[float]] = (None, None)
         stable_values = [p[0] for p in profile if p[1] < 0.0]
         if len(stable_values) > 0:
-            stability_range = [min(stable_values), max(stable_values)]
+            stability_range = (min(stable_values), max(stable_values))
         return profile, opt, range_80pct, stability_range
 
     def get_charge_profile(self, conformation: str = 'AVR', grid=[0., 14., .1]):

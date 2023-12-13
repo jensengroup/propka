@@ -304,7 +304,7 @@ def add_determinants(iterative_interactions: List[Interaction], version: Version
     for itres in iteratives:
         for type_ in ['sidechain', 'backbone', 'coulomb']:
             for interaction in itres.determinants[type_]:
-                value = interaction[1]
+                value: float = interaction[1]
                 if value > UNK_MIN_VALUE or value < -UNK_MIN_VALUE:
                     group = interaction[0]
                     new_det = Determinant(group, value)

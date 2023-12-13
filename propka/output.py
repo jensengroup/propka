@@ -12,13 +12,29 @@ Output routines.
 import logging
 from datetime import date
 from decimal import Decimal
+from os import PathLike
+from pathlib import Path
+from typing import IO, AnyStr, List, NoReturn, Optional, Union, TYPE_CHECKING
+import warnings
+
+from .parameters import Parameters
 from . import __version__
 
+if TYPE_CHECKING:
+    from .atom import Atom
+    from .conformation_container import ConformationContainer
+    from .molecular_container import MolecularContainer
+
+# https://docs.python.org/3/glossary.html#term-path-like-object
+_PathLikeTypes = (PathLike, str)
+_PathArg = Union[PathLike, str]
+_IOSource = Union[IO[AnyStr], PathLike, str]
+_TextIOSource = _IOSource[str]
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def open_file_for_writing(input_file):
+def open_file_for_writing(input_file: _TextIOSource) -> IO[str]:
     """Open file or file-like stream for writing.
 
     TODO - convert this to a context manager.
@@ -27,17 +43,13 @@ def open_file_for_writing(input_file):
         input_file: path to file or file-like object. If file-like object,
         then will attempt to get file mode.
     """
-    try:
-        if not input_file.writable():
-            raise IOError("File/stream not open for writing")
-        return input_file
-    except AttributeError:
-        pass
-    try:
-        file_ = open(input_file, 'wt')
-    except FileNotFoundError:
-        raise Exception('Could not open {0:s}'.format(input_file))
-    return file_
+    if isinstance(input_file, _PathLikeTypes):
+        return open(input_file, 'wt')
+
+    if not input_file.writable():
+        raise IOError("File/stream not open for writing")
+
+    return input_file
 
 
 def write_file(filename, lines):
@@ -47,6 +59,7 @@ def write_file(filename, lines):
         filename:  name of file
         lines:  lines to write to file
     """
+    warnings.warn("unused and untested by propka")
     file_ = open_file_for_writing(filename)
     for line in lines:
         file_.write("{0:s}\n".format(line))
@@ -101,17 +114,22 @@ def write_pdb_for_protein(
         pdbfile.close()
 
 
-def write_pdb_for_conformation(conformation, filename):
+def write_pdb_for_conformation(conformation: "ConformationContainer",
+                               filename: _PathArg):
     """Write PDB conformation to a file.
 
     Args:
         conformation:  conformation container
         filename:  filename for output
     """
+    warnings.warn("unused and untested by propka")
     write_pdb_for_atoms(conformation.atoms, filename)
 
 
-def write_pka(protein, parameters, filename=None, conformation='1A',
+def write_pka(protein: "MolecularContainer",
+              parameters: Parameters,
+              filename: Optional[_PathArg] = None,
+              conformation='1A',
               reference="neutral", _="folding", verbose=False,
               __=None):
     """Write the pKa-file based on the given protein.
@@ -129,8 +147,6 @@ def write_pka(protein, parameters, filename=None, conformation='1A',
     verbose = True
     if filename is None:
         filename = "{0:s}.pka".format(protein.name)
-    # TODO - this would be much better with a context manager
-    file_ = open(filename, 'w')
     if verbose:
         _LOGGER.info("Writing {0:s}".format(filename))
     # writing propka header
@@ -149,11 +165,10 @@ def write_pka(protein, parameters, filename=None, conformation='1A',
     # printing Protein Charge Profile
     str_ += get_charge_profile_section(protein, conformation=conformation)
     # now, writing the pka text to file
-    file_.write(str_)
-    file_.close()
+    Path(filename).write_text(str_, encoding="utf-8")
 
 
-def print_tm_profile(protein, reference="neutral", window=[0., 14., 1.],
+def print_tm_profile(protein: NoReturn, reference="neutral", window=[0., 14., 1.],
                      __=[0., 0.], tms=None, ref=None, _=False,
                      options=None):
     """Print Tm profile.
@@ -186,7 +201,7 @@ def print_tm_profile(protein, reference="neutral", window=[0., 14., 1.],
         _LOGGER.info(str_)
 
 
-def print_result(protein, conformation, parameters):
+def print_result(protein: "MolecularContainer", conformation: str, parameters: Parameters):
     """Prints all resulting output from determinants and down.
 
     Args:
@@ -197,7 +212,7 @@ def print_result(protein, conformation, parameters):
     print_pka_section(protein, conformation, parameters)
 
 
-def print_pka_section(protein, conformation, parameters):
+def print_pka_section(protein: "MolecularContainer", conformation: str, parameters: Parameters):
     """Prints out pKa section of results.
 
     Args:
@@ -212,7 +227,7 @@ def print_pka_section(protein, conformation, parameters):
     _LOGGER.info("pKa summary:\n%s", str_)
 
 
-def get_determinant_section(protein, conformation, parameters):
+def get_determinant_section(protein: "MolecularContainer", conformation: str, parameters: Parameters):
     """Returns string with determinant section of results.
 
     Args:
@@ -244,7 +259,8 @@ def get_determinant_section(protein, conformation, parameters):
     return str_
 
 
-def get_summary_section(protein, conformation, parameters):
+def get_summary_section(protein: "MolecularContainer", conformation: str,
+                        parameters: Parameters):
     """Returns string with summary section of the results.
 
     Args:
@@ -266,7 +282,8 @@ def get_summary_section(protein, conformation, parameters):
 
 
 def get_folding_profile_section(
-        protein, conformation='AVR', direction="folding", reference="neutral",
+        protein: "MolecularContainer",
+        conformation='AVR', direction="folding", reference="neutral",
         window=[0., 14., 1.0], _=False, __=None):
     """Returns string with the folding profile section of the results.
 
@@ -373,6 +390,7 @@ def write_scwrl_sequence_file(sequence, filename="x-ray.seq", _=None):
 
     TODO - figure out what this is
     """
+    warnings.warn("unused and untested by propka")
     with open(filename, 'w') as file_:
         start = 0
         while len(sequence[start:]) > 60:
@@ -536,7 +554,7 @@ def make_interaction_map(name, list_, interaction):
     return res
 
 
-def write_pdb_for_atoms(atoms, filename, make_conect_section=False):
+def write_pdb_for_atoms(atoms: List["Atom"], filename: _PathArg, make_conect_section=False):
     """Write out PDB file for atoms.
 
     Args:

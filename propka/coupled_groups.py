@@ -6,9 +6,11 @@ Describe and analyze energetic coupling between groups.
 """
 import logging
 import itertools
+from typing import Optional
 import propka.lib
 from propka.group import Group
 from propka.output import make_interaction_map
+from propka.parameters import Parameters
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -16,9 +18,8 @@ _LOGGER = logging.getLogger(__name__)
 
 class NonCovalentlyCoupledGroups:
     """Groups that are coupled without covalent bonding."""
-    def __init__(self):
-        self.parameters = None
-        self.do_prot_stat = True
+    parameters: Optional[Parameters] = None
+    do_prot_stat = True
 
     def is_coupled_protonation_state_probability(self, group1, group2,
                                                  energy_method,
@@ -264,7 +265,7 @@ class NonCovalentlyCoupledGroups:
         _LOGGER.info(swap_info)
 
     @staticmethod
-    def get_interaction(group1, group2, include_side_chain_hbs=True):
+    def get_interaction(group1: Group, group2: Group, include_side_chain_hbs=True):
         """Get interaction energy between two groups.
 
         Args:
