@@ -1230,7 +1230,7 @@ def is_group(parameters: Parameters, atom: Atom) -> Optional[Group]:
     Returns:
         group for atom or None
     """
-    atom.groups_extracted = 1
+    atom.groups_extracted = True
     # check if this atom belongs to a protein group
     protein_group = is_protein_group(parameters, atom)
     if protein_group:
@@ -1386,6 +1386,7 @@ def is_ligand_group_by_marvin_pkas(parameters: Parameters, atom: Atom) -> Option
     # calculate Marvin ligand pkas for this conformation container
     # if not already done
     # TODO - double-check testing coverage of these functions.
+    assert atom.molecular_container is not None
     assert atom.conformation_container is not None
     if not atom.conformation_container.marvin_pkas_calculated:
         lpka = LigandPkaValues(parameters)

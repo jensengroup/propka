@@ -15,10 +15,14 @@ import shutil
 import subprocess
 import sys
 import warnings
+from typing import TYPE_CHECKING, NoReturn
+
 from propka.output import write_mol2_for_atoms
 from propka.lib import split_atoms_into_molecules
 from propka.parameters import Parameters
 
+if TYPE_CHECKING:
+    from propka.molecular_container import MolecularContainer
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -58,7 +62,8 @@ class LigandPkaValues:
         return loc
 
     def get_marvin_pkas_for_pdb_file(
-            self, molecule, parameters, num_pkas=10, min_ph=-10.0, max_ph=20.0):
+            self, molecule: "MolecularContainer", parameters: NoReturn,
+            num_pkas=10, min_ph=-10.0, max_ph=20.0):
         """Use Marvin executables to get pKas for a PDB file.
 
         Args:
@@ -72,7 +77,7 @@ class LigandPkaValues:
         self.get_marvin_pkas_for_molecular_container(
             molecule, num_pkas=num_pkas, min_ph=min_ph, max_ph=max_ph)
 
-    def get_marvin_pkas_for_molecular_container(self, molecule, num_pkas=10,
+    def get_marvin_pkas_for_molecular_container(self, molecule: "MolecularContainer", num_pkas=10,
                                                 min_ph=-10.0, max_ph=20.0):
         """Use Marvin executables to calculate pKas for a molecular container.
 
