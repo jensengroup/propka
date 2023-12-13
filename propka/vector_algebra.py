@@ -7,6 +7,7 @@ Vector algebra for PROPKA.
 import logging
 import math
 from typing import Optional, Protocol, overload
+import warnings
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -87,10 +88,11 @@ class Vector:
     def __mul__(self, other):
         """Dot product, scalar and matrix multiplication."""
         if isinstance(other, Vector):
-            # TODO deprecate in favor of self.dot()
+            warnings.warn("Use Vector.dot() instead of operator.mul()", DeprecationWarning, stacklevel=2)
             return self.dot(other)
         if isinstance(other, Matrix4x4):
-            # TODO deprecate in favor of matmul operator
+            warnings.warn("Use M @ v (operator.matmul()) instead of M * v (operator.mul())",
+                          DeprecationWarning, stacklevel=2)
             return other @ self
         if isinstance(other, (int, float)):
             return Vector(self.x * other, self.y * other, self.z * other)
@@ -100,7 +102,7 @@ class Vector:
         return self.__mul__(other)
 
     def __pow__(self, other: _XYZ):
-        # TODO deprecate in favor of self.cross()
+        warnings.warn("Use Vector.cross() instead of operator.pow()", DeprecationWarning, stacklevel=2)
         return self.cross(other)
 
     def cross(self, other: _XYZ):
@@ -195,7 +197,7 @@ def angle(avec: Vector, bvec: Vector) -> float:
     Returns:
         angle in radians
     """
-    dot = avec * bvec
+    dot = avec.dot(bvec)
     return math.acos(dot / (avec.length() * bvec.length()))
 
 
@@ -221,10 +223,10 @@ def signed_angle_around_axis(avec: Vector, bvec: Vector, axis: Vector) -> float:
     Returns:
         angle in radians
     """
-    norma = avec**axis
-    normb = bvec**axis
+    norma = avec.cross(axis)
+    normb = bvec.cross(axis)
     ang = angle(norma, normb)
-    dot_ = bvec*(avec**axis)
+    dot_ = bvec.dot(avec.cross(axis))
     if dot_ < 0:
         ang = -ang
     return ang
@@ -248,21 +250,21 @@ def rotate_vector_around_an_axis(theta: float, axis: Vector, vec: Vector) -> Vec
         else:
             gamma = math.pi/2.0
         rot_z = rotate_atoms_around_z_axis(gamma)
-        vec = rot_z * vec
-        axis = rot_z * axis
+        vec = rot_z @ vec
+        axis = rot_z @ axis
     beta = 0.0
     if axis.x != 0:
         beta = -axis.x/abs(axis.x)*math.acos(
             axis.z/math.sqrt(axis.x*axis.x + axis.z*axis.z))
         rot_y = rotate_atoms_around_y_axis(beta)
-        vec = rot_y * vec
-        axis = rot_y * axis
+        vec = rot_y @ vec
+        axis = rot_y @ axis
     rot_z = rotate_atoms_around_z_axis(theta)
-    vec = rot_z * vec
+    vec = rot_z @ vec
     rot_y = rotate_atoms_around_y_axis(-beta)
-    vec = rot_y * vec
+    vec = rot_y @ vec
     rot_z = rotate_atoms_around_z_axis(-gamma)
-    vec = rot_z * vec
+    vec = rot_z @ vec
     return vec
 
 

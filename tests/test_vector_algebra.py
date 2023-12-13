@@ -72,7 +72,8 @@ def test_Vector__mul__number():
 def test_Vector__mul__Vector():
     v1 = m.Vector(1, 2, 3)
     v2 = m.Vector(4, 5, 6)
-    assert v1 * v2 == 32
+    with pytest.deprecated_call():
+        assert v1 * v2 == 32
     assert v1.dot(v2) == 32
     with pytest.raises(TypeError):
         v1 @ v2  # type: ignore
@@ -80,10 +81,12 @@ def test_Vector__mul__Vector():
 
 def test_Vector__mul__Matrix4x4():
     v1 = m.Vector(1, 2, 3)
-    assert_vector_equal(v1 * m.Matrix4x4(), m.Vector())
+    assert_vector_equal(m.Matrix4x4() @ v1, m.Vector())
     m2 = m.Matrix4x4(0, 1, 0, 0, 20, 0, 0, 0, 0, 0, 300, 0, 0, 0, 0, 1)
-    assert_vector_equal(v1 * m2, m.Vector(2, 20, 900))
-    assert_vector_equal(m2 * v1, m.Vector(2, 20, 900))
+    with pytest.deprecated_call():
+        assert_vector_equal(v1 * m2, m.Vector(2, 20, 900))
+    with pytest.deprecated_call():
+        assert_vector_equal(m2 * v1, m.Vector(2, 20, 900))
     assert_vector_equal(m2 @ v1, m.Vector(2, 20, 900))
     with pytest.raises(TypeError):
         v1 @ m2  # type: ignore
@@ -92,7 +95,8 @@ def test_Vector__mul__Matrix4x4():
 def test_Vector__cross():
     v1 = m.Vector(1, 2, 3)
     v2 = m.Vector(4, 5, 6)
-    assert_vector_equal(v1**v2, m.Vector(-3, 6, -3))  # TODO deprecate
+    with pytest.deprecated_call():
+        assert_vector_equal(v1**v2, m.Vector(-3, 6, -3))
     assert_vector_equal(v1.cross(v2), m.Vector(-3, 6, -3))
     assert_vector_equal(v2.cross(v1), m.Vector(3, -6, 3))
 

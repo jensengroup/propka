@@ -274,15 +274,15 @@ class Protonate:
                 vec2 = Vector(atom1=atom.bonded_atoms[0],
                               atom2=atom.bonded_atoms[0]
                               .bonded_atoms[other_atom_indices[0]])
-                axis = vec1**vec2
+                axis = vec1.cross(vec2)
                 # this is a trick to make sure that the order of atoms doesn't
                 # influence the final postions of added protons
                 if len(other_atom_indices) > 1:
                     vec3 = Vector(atom1=atom.bonded_atoms[0],
                                   atom2=atom.bonded_atoms[0]
                                   .bonded_atoms[other_atom_indices[1]])
-                    axis2 = vec1**vec3
-                    if axis*axis2 > 0:
+                    axis2 = vec1.cross(vec3)
+                    if axis.dot(axis2) > 0:
                         axis = axis+axis2
                     else:
                         axis = axis-axis2

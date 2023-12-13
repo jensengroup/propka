@@ -319,11 +319,11 @@ def are_atoms_planar(atoms):
         return False
     vec1 = Vector(atom1=atoms[0], atom2=atoms[1])
     vec2 = Vector(atom1=atoms[0], atom2=atoms[2])
-    norm = (vec1**vec2).rescale(1.0)
+    norm = vec1.cross(vec2).rescale(1.0)
     margin = PLANARITY_MARGIN
     for atom in atoms[3:]:
         vec = Vector(atom1=atoms[0], atom2=atom).rescale(1.0)
-        if abs(vec*norm) > margin:
+        if abs(vec.dot(norm)) > margin:
             return False
     return True
 
