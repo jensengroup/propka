@@ -357,21 +357,3 @@ def make_tidy_atom_label(name, element):
         else:  # The element should occupy the two first chars
             label = '{0:<4s}'.format(name)
     return label
-
-
-def get_sorted_configurations(configuration_keys):
-    """Extract and sort configurations.
-
-    Args:
-        configuration_keys:  list of configuration keys
-    Returns:
-        list of configurations
-    """
-    configurations = list(configuration_keys)
-    configurations.sort(key=configuration_compare)
-    return configurations
-
-
-def configuration_compare(conf):
-    """TODO - figure out what this function does."""
-    return 100*int(conf[1:-2]) + ord(conf[-1])
