@@ -9,8 +9,7 @@ Input routines.
    Methods to read PROPKA input files (:func:`read_propka` and
    :func:`get_atom_lines_from_input`) have been removed.
 """
-import typing
-from typing import Iterator, Tuple, Union
+from typing import IO, ContextManager, Dict, Iterable, Iterator, Optional, Tuple
 import contextlib
 import io
 import zipfile
@@ -19,19 +18,18 @@ from propka.lib import protein_precheck
 from propka.atom import Atom
 from propka.conformation_container import ConformationContainer
 from propka.molecular_container import MolecularContainer
+from propka.output import _PathArg, _PathLikeTypes, _TextIOSource
 from propka.parameters import Parameters
 
 
-def open_file_for_reading(
-    input_file: typing.Union[str, Path, typing.TextIO]
-) -> typing.ContextManager[typing.TextIO]:
+def open_file_for_reading(input_file: _TextIOSource) -> ContextManager[IO[str]]:
     """Open file or file-like stream for reading.
 
     Args:
         input_file: path to file or file-like object. If file-like object,
         then will attempt seek(0).
     """
-    if not isinstance(input_file, (str, Path)):
+    if not isinstance(input_file, _PathLikeTypes):
         input_file.seek(0)
         return contextlib.nullcontext(input_file)
 
@@ -48,7 +46,11 @@ def open_file_for_reading(
     return contextlib.closing(open(input_file, 'rt'))
 
 
-def read_molecule_file(filename: str, mol_container: MolecularContainer, stream=None) -> MolecularContainer:
+def read_molecule_file(
+    filename: _PathArg,
+    mol_container: MolecularContainer,
+    stream: Optional[IO[str]] = None,
+) -> MolecularContainer:
     """Read input file or stream (PDB or PROPKA) for a molecular container
 
     Args:
@@ -96,11 +98,7 @@ def read_molecule_file(filename: str, mol_container: MolecularContainer, stream=
     input_path = Path(filename)
     mol_container.name = input_path.stem
     input_file_extension = input_path.suffix
-
-    if stream is not None:
-        input_file = stream
-    else:
-        input_file = filename
+    input_file = filename if stream is None else stream
 
     if input_file_extension.lower() == '.pdb':
         # input is a pdb file. read in atoms and top up containers to make
@@ -133,7 +131,7 @@ def read_molecule_file(filename: str, mol_container: MolecularContainer, stream=
     return mol_container
 
 
-def read_parameter_file(input_file: Union[Path, str], parameters: Parameters) -> Parameters:
+def read_parameter_file(input_file: _PathArg, parameters: Parameters) -> Parameters:
     """Read a parameter file.
 
     Args:
@@ -161,8 +159,13 @@ def conformation_sorter(conf: str) -> int:
     return model*100+ord(altloc)
 
 
-def get_atom_lines_from_pdb(pdb_file, ignore_residues=[], keep_protons=False,
-                            tags=['ATOM  ', 'HETATM'], chains=None) -> Iterator[Tuple[str, Atom]]:
+def get_atom_lines_from_pdb(
+    pdb_file: _TextIOSource,
+    ignore_residues: Iterable[str] = (),
+    keep_protons: bool = False,
+    tags: Iterable[str] = ('ATOM  ', 'HETATM'),
+    chains: Optional[Iterable[str]] = None,
+) -> Iterator[Tuple[str, Atom]]:
     """Get atom lines from PDB file.
 
     Args:
@@ -228,7 +231,8 @@ def get_atom_lines_from_pdb(pdb_file, ignore_residues=[], keep_protons=False,
             terminal = None
 
 
-def read_pdb(pdb_file, parameters, molecule):
+def read_pdb(pdb_file: _TextIOSource, parameters: Parameters,
+             molecule: MolecularContainer):
     """Parse a PDB file.
 
     Args:
@@ -240,7 +244,7 @@ def read_pdb(pdb_file, parameters, molecule):
             1. list of conformations
             2. list of names
     """
-    conformations = {}
+    conformations: Dict[str, ConformationContainer] = {}
     # read in all atoms in the file
     lines = get_atom_lines_from_pdb(
         pdb_file, ignore_residues=parameters.ignore_residues,
@@ -253,4 +257,4 @@ def read_pdb(pdb_file, parameters, molecule):
         conformations[name].add_atom(atom)
     # make a sorted list of conformation names
     names = sorted(conformations.keys(), key=conformation_sorter)
-    return [conformations, names]
+    return conformations, names

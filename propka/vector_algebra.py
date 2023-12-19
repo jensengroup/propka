@@ -6,7 +6,8 @@ Vector algebra for PROPKA.
 """
 import logging
 import math
-from typing import Optional, Protocol, Union
+from typing import Optional, Protocol, overload
+import warnings
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -69,20 +70,31 @@ class Vector:
                       self.y - other.y,
                       self.z - other.z)
 
-    def __mul__(self, other: Union["Vector", "Matrix4x4", float]):
+    def dot(self, other: _XYZ) -> float:
+        return self.x * other.x + self.y * other.y + self.z * other.z
+
+    @overload
+    def __mul__(self, other: "Vector") -> float:
+        ...
+
+    @overload
+    def __mul__(self, other: "Matrix4x4") -> "Vector":
+        ...
+
+    @overload
+    def __mul__(self, other: float) -> "Vector":
+        ...
+
+    def __mul__(self, other):
         """Dot product, scalar and matrix multiplication."""
         if isinstance(other, Vector):
-            return self.x * other.x + self.y * other.y + self.z * other.z
-        elif isinstance(other, Matrix4x4):
-            return Vector(
-                xi=other.a11*self.x + other.a12*self.y + other.a13*self.z
-                + other.a14*1.0,
-                yi=other.a21*self.x + other.a22*self.y + other.a23*self.z
-                + other.a24*1.0,
-                zi=other.a31*self.x + other.a32*self.y + other.a33*self.z
-                + other.a34*1.0
-                )
-        elif type(other) in [int, float]:
+            warnings.warn("Use Vector.dot() instead of operator.mul()", DeprecationWarning, stacklevel=2)
+            return self.dot(other)
+        if isinstance(other, Matrix4x4):
+            warnings.warn("Use M @ v (operator.matmul()) instead of M * v (operator.mul())",
+                          DeprecationWarning, stacklevel=2)
+            return other @ self
+        if isinstance(other, (int, float)):
             return Vector(self.x * other, self.y * other, self.z * other)
         raise TypeError(f'{type(other)} not supported')
 
@@ -90,6 +102,10 @@ class Vector:
         return self.__mul__(other)
 
     def __pow__(self, other: _XYZ):
+        warnings.warn("Use Vector.cross() instead of operator.pow()", DeprecationWarning, stacklevel=2)
+        return self.cross(other)
+
+    def cross(self, other: _XYZ):
         """Cross product."""
         return Vector(self.y * other.z - self.z * other.y,
                       self.z * other.x - self.x * other.z,
@@ -160,6 +176,17 @@ class Matrix4x4:
         self.a43 = a43i
         self.a44 = a44i
 
+    def __matmul__(self, v: _XYZ) -> Vector:
+        """Matrix vector multiplication with homogeneous coordinates.
+
+        Assumes that the last row is (0, 0, 0, 1).
+        """
+        return Vector(
+            self.a11 * v.x + self.a12 * v.y + self.a13 * v.z + self.a14,
+            self.a21 * v.x + self.a22 * v.y + self.a23 * v.z + self.a24,
+            self.a31 * v.x + self.a32 * v.y + self.a33 * v.z + self.a34,
+        )
+
 
 def angle(avec: Vector, bvec: Vector) -> float:
     """Get the angle between two vectors.
@@ -170,7 +197,7 @@ def angle(avec: Vector, bvec: Vector) -> float:
     Returns:
         angle in radians
     """
-    dot = avec * bvec
+    dot = avec.dot(bvec)
     return math.acos(dot / (avec.length() * bvec.length()))
 
 
@@ -196,10 +223,10 @@ def signed_angle_around_axis(avec: Vector, bvec: Vector, axis: Vector) -> float:
     Returns:
         angle in radians
     """
-    norma = avec**axis
-    normb = bvec**axis
+    norma = avec.cross(axis)
+    normb = bvec.cross(axis)
     ang = angle(norma, normb)
-    dot_ = bvec*(avec**axis)
+    dot_ = bvec.dot(avec.cross(axis))
     if dot_ < 0:
         ang = -ang
     return ang
@@ -223,21 +250,21 @@ def rotate_vector_around_an_axis(theta: float, axis: Vector, vec: Vector) -> Vec
         else:
             gamma = math.pi/2.0
         rot_z = rotate_atoms_around_z_axis(gamma)
-        vec = rot_z * vec
-        axis = rot_z * axis
+        vec = rot_z @ vec
+        axis = rot_z @ axis
     beta = 0.0
     if axis.x != 0:
         beta = -axis.x/abs(axis.x)*math.acos(
             axis.z/math.sqrt(axis.x*axis.x + axis.z*axis.z))
         rot_y = rotate_atoms_around_y_axis(beta)
-        vec = rot_y * vec
-        axis = rot_y * axis
+        vec = rot_y @ vec
+        axis = rot_y @ axis
     rot_z = rotate_atoms_around_z_axis(theta)
-    vec = rot_z * vec
+    vec = rot_z @ vec
     rot_y = rotate_atoms_around_y_axis(-beta)
-    vec = rot_y * vec
+    vec = rot_y @ vec
     rot_z = rotate_atoms_around_z_axis(-gamma)
-    vec = rot_z * vec
+    vec = rot_z @ vec
     return vec
 
 

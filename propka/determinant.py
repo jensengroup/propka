@@ -15,6 +15,11 @@ Provides the :class:`Determinant` class.
 
 """
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from propka.group import Group
+
 
 class Determinant:
     """Determinant class.
@@ -25,7 +30,7 @@ class Determinant:
     TODO - figure out what this class does.
     """
 
-    def __init__(self, group, value):
+    def __init__(self, group: "Group", value: float):
         """Initialize the object.
 
         Args:
@@ -36,7 +41,7 @@ class Determinant:
         self.label = group.label
         self.value = value
 
-    def add(self, value):
+    def add(self, value: float):
         """Increment determinant value.
 
         Args:

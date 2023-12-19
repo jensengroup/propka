@@ -5,11 +5,19 @@ Set-up of a PROPKA calculation
 Implements many of the main functions used to call PROPKA.
 """
 
-import sys
 import logging
 import argparse
 from pathlib import Path
+from typing import Iterable, Iterator, List, TYPE_CHECKING, NoReturn, Optional, Tuple, TypeVar
 
+if TYPE_CHECKING:
+    from propka.atom import Atom
+
+
+T = TypeVar("T")
+Number = TypeVar("Number", int, float)
+
+_T_RESIDUE_TUPLE = Tuple[str, int, str]
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -18,6 +26,29 @@ EXPECTED_ATOM_NUMBERS = {'ALA': 5, 'ARG': 11, 'ASN': 8, 'ASP': 8, 'CYS': 6,
                          'GLY': 4, 'GLN': 9, 'GLU': 9, 'HIS': 10, 'ILE': 8,
                          'LEU': 8, 'LYS': 9, 'MET': 8, 'PHE': 11, 'PRO': 7,
                          'SER': 6, 'THR': 7, 'TRP': 14, 'TYR': 12, 'VAL': 7}
+
+
+class Options:
+    # Note: All the "NoReturn" members appear to be unused
+    alignment: NoReturn  # Optional[List[str]]
+    chains: Optional[List[str]]
+    display_coupled_residues: bool = False
+    filenames: List[str]  # List[Path]?
+    grid: Tuple[float, float, float] = (0.0, 14.0, 0.1)
+    input_pdb: str  # Path?
+    keep_protons: bool = False
+    log_level: str = 'INFO'
+    mutations: NoReturn  # Optional[List[str]]
+    mutator: NoReturn  # Optional[str]  # alignment/scwrl/jackal
+    mutator_options: NoReturn  # Optional[List[str]]
+    pH: NoReturn  # float = 7.0
+    parameters: Path
+    protonate_all: bool = False
+    reference: NoReturn  # str = 'neutral'
+    reuse_ligand_mol2_file: bool = False  # only used by unused function
+    thermophiles: NoReturn  # Optional[List[str]]
+    titrate_only: Optional[List[_T_RESIDUE_TUPLE]]
+    window: Tuple[float, float, float] = (0.0, 14.0, 1.0)
 
 
 def protein_precheck(conformations, names):
@@ -73,7 +104,7 @@ def resid_from_atom(atom):
         atom.res_num, atom.chain_id, atom.icode)
 
 
-def split_atoms_into_molecules(atoms):
+def split_atoms_into_molecules(atoms: List["Atom"]):
     """Maps atoms into molecules.
 
     Args:
@@ -81,14 +112,14 @@ def split_atoms_into_molecules(atoms):
     Returns:
         list of molecules
     """
-    molecules = []
+    molecules: List[List["Atom"]] = []
     while len(atoms) > 0:
         initial_atom = atoms.pop()
         molecules.append(make_molecule(initial_atom, atoms))
     return molecules
 
 
-def make_molecule(atom, atoms):
+def make_molecule(atom: "Atom", atoms: List["Atom"]):
     """Make a molecule from atoms.
 
     Args:
@@ -106,11 +137,11 @@ def make_molecule(atom, atoms):
     return res_atoms
 
 
-def make_grid(min_, max_, step):
+def make_grid(min_: Number, max_: Number, step: Number) -> Iterator[Number]:
     """Make a grid across the specified tange.
 
-    TODO - figure out if this duplicates existing generators like `range` or
-    numpy function.
+    Like range() for integers or numpy.arange() for floats, except that `max_`
+    is not excluded from the range.
 
     Args:
         min_:  minimum value of grid
@@ -123,7 +154,7 @@ def make_grid(min_, max_, step):
         x += step
 
 
-def generate_combinations(interactions):
+def generate_combinations(interactions: Iterable[T]) -> List[List[T]]:
     """Generate combinations of interactions.
 
     Args:
@@ -131,14 +162,14 @@ def generate_combinations(interactions):
     Returns:
         list of combinations
     """
-    res = [[]]
+    res: List[List[T]] = [[]]
     for interaction in interactions:
         res = make_combination(res, interaction)
     res.remove([])
     return res
 
 
-def make_combination(combis, interaction):
+def make_combination(combis: List[List[T]], interaction: T) -> List[List[T]]:
     """Make a specific set of combinations.
 
     Args:
@@ -154,7 +185,7 @@ def make_combination(combis, interaction):
     return res
 
 
-def parse_res_string(res_str):
+def parse_res_string(res_str: str) -> _T_RESIDUE_TUPLE:
     """Parse a residue string.
 
     Args:
@@ -181,6 +212,16 @@ def parse_res_string(res_str):
     else:
         inscode = " "
     return chain, resnum, inscode
+
+
+def parse_res_list(titrate_only: str):
+    res_list: List[_T_RESIDUE_TUPLE] = []
+    for res_str in titrate_only.split(','):
+        try:
+            res_list.append(parse_res_string(res_str))
+        except ValueError as ex:
+            raise argparse.ArgumentTypeError(f'{ex}: "{res_str:s}"')
+    return res_list
 
 
 def build_parser(parser=None):
@@ -227,6 +268,7 @@ def build_parser(parser=None):
               '" " for chains without ID [all]'))
     group.add_argument(
         "-i", "--titrate_only", dest="titrate_only",
+        type=parse_res_list,
         help=('Treat only the specified residues as titratable. Value should '
               'be a comma-separated list of "chain:resnum" values; for '
               'example: -i "A:10,A:11"'))
@@ -246,8 +288,8 @@ def build_parser(parser=None):
         "--version", action="version", version=f"%(prog)s {propka.__version__}")
     group.add_argument(
         "-p", "--parameters", dest="parameters",
-        default=str(Path(__file__).parent / "propka.cfg"),
-        help="set the parameter file [{default:s}]")
+        type=Path, default=Path(__file__).parent / "propka.cfg",
+        help="set the parameter file")
     try:
         group.add_argument(
             "--log-level",
@@ -302,7 +344,7 @@ def build_parser(parser=None):
     return parser
 
 
-def loadOptions(args=None):
+def loadOptions(args=None) -> Options:
     """
     Load the arguments parser with options. Note that verbosity is set as soon
     as this function is invoked.
@@ -315,22 +357,10 @@ def loadOptions(args=None):
     # loading the parser
     parser = build_parser()
     # parsing and returning options and arguments
-    options = parser.parse_args(args)
+    options = parser.parse_args(args, namespace=Options())
 
     # adding specified filenames to arguments
     options.filenames.append(options.input_pdb)
-    # Convert titrate_only string to a list of (chain, resnum) items:
-    if options.titrate_only is not None:
-        res_list = []
-        for res_str in options.titrate_only.split(','):
-            try:
-                chain, resnum, inscode = parse_res_string(res_str)
-            except ValueError:
-                _LOGGER.critical(
-                    'Invalid residue string: "{0:s}"'.format(res_str))
-                sys.exit(1)
-            res_list.append((chain, resnum, inscode))
-        options.titrate_only = res_list
     # Set the no-print variable
     level = getattr(logging, options.log_level)
     _LOGGER.setLevel(level)

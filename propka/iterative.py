@@ -7,7 +7,10 @@ involve :class:`propka.determinant.Determinant` instances.
 
 """
 import logging
+from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 from propka.determinant import Determinant
+from propka.group import Group
+from propka.version import Version
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -16,9 +19,11 @@ _LOGGER = logging.getLogger(__name__)
 # TODO - these are undocumented constants
 UNK_MIN_VALUE = 0.005
 
+Interaction = list
 
-def add_to_determinant_list(group1, group2, distance, iterative_interactions,
-                            version):
+
+def add_to_determinant_list(group1: Group, group2: Group, distance: float,
+                            iterative_interactions: List[Interaction], version: Version):
     """Add iterative determinantes to the list.
 
     [[R1, R2], [side-chain, coulomb], [A1, A2]], ...
@@ -48,7 +53,8 @@ def add_to_determinant_list(group1, group2, distance, iterative_interactions,
         iterative_interactions.append(interaction)
 
 
-def add_iterative_acid_pair(object1, object2, interaction):
+def add_iterative_acid_pair(object1: "Iterative", object2: "Iterative",
+                            interaction: Interaction):
     """Add the Coulomb 'iterative' interaction (an acid pair).
 
     The higher pKa is raised  with QQ+HB
@@ -90,7 +96,8 @@ def add_iterative_acid_pair(object1, object2, interaction):
         annihilation[1] = -diff
 
 
-def add_iterative_base_pair(object1, object2, interaction):
+def add_iterative_base_pair(object1: "Iterative", object2: "Iterative",
+                            interaction: Interaction):
     """Add the Coulomb 'iterative' interaction (a base pair).
 
     The lower pKa is lowered
@@ -132,7 +139,8 @@ def add_iterative_base_pair(object1, object2, interaction):
         annihilation[1] = -diff
 
 
-def add_iterative_ion_pair(object1, object2, interaction, version):
+def add_iterative_ion_pair(object1: "Iterative", object2: "Iterative",
+                           interaction: Interaction, version: Version):
     """Add the Coulomb 'iterative' interaction (an acid-base pair)
 
     the pKa of the acid is lowered & the pKa of the base is raised
@@ -194,7 +202,7 @@ def add_iterative_ion_pair(object1, object2, interaction, version):
                 object2.determinants['sidechain'].append(interaction)
 
 
-def add_determinants(iterative_interactions, version, _=None):
+def add_determinants(iterative_interactions: List[Interaction], version: Version, _=None):
     """Add determinants iteratively.
 
     The iterative pKa scheme. Later it is all added in 'calculateTotalPKA'
@@ -205,7 +213,7 @@ def add_determinants(iterative_interactions, version, _=None):
         _:  options object
     """
     # --- setup ---
-    iteratives = []
+    iteratives: List[Iterative] = []
     done_group = []
     # create iterative objects with references to their real group counterparts
     for interaction in iterative_interactions:
@@ -270,6 +278,7 @@ def add_determinants(iterative_interactions, version, _=None):
 
         # reset pka_old & storing pka_new in pka_iter
         for itres in iteratives:
+            assert itres.pka_new is not None
             itres.pka_old = itres.pka_new
             itres.pka_iter.append(itres.pka_new)
 
@@ -295,14 +304,17 @@ def add_determinants(iterative_interactions, version, _=None):
     for itres in iteratives:
         for type_ in ['sidechain', 'backbone', 'coulomb']:
             for interaction in itres.determinants[type_]:
-                value = interaction[1]
+                value: float = interaction[1]
                 if value > UNK_MIN_VALUE or value < -UNK_MIN_VALUE:
                     group = interaction[0]
                     new_det = Determinant(group, value)
                     itres.group.determinants[type_].append(new_det)
 
 
-def find_iterative(pair, iteratives):
+def find_iterative(
+    pair: Sequence[Group],
+    iteratives: Iterable["Iterative"],
+) -> Tuple["Iterative", "Iterative"]:
     """Find the 'iteratives' that correspond to the groups in 'pair'.
 
     Args:
@@ -312,11 +324,15 @@ def find_iterative(pair, iteratives):
         1. first matched iterative
         2. second matched iterative
     """
+    iterative0: Optional[Iterative] = None
+    iterative1: Optional[Iterative] = None
     for iterative in iteratives:
         if iterative.group == pair[0]:
             iterative0 = iterative
         elif iterative.group == pair[1]:
             iterative1 = iterative
+    if iterative0 is None or iterative1 is None:
+        raise LookupError("iteratives not found")
     return iterative0, iterative1
 
 
@@ -327,7 +343,7 @@ class Iterative:
     after the iterations are finished.
     """
 
-    def __init__(self, group):
+    def __init__(self, group: Group):
         """Initialize object with group.
 
         Args:
@@ -337,11 +353,15 @@ class Iterative:
         self.atom = group.atom
         self.res_name = group.residue_type
         self.q = group.charge
-        self.pka_old = None
-        self.pka_new = None
-        self.pka_iter = []
+        self.pka_old: Optional[float] = None
+        self.pka_new: Optional[float] = None
+        self.pka_iter: List[float] = []
         self.pka_noniterative = 0.00
-        self.determinants = {'sidechain': [], 'backbone': [], 'coulomb': []}
+        self.determinants: Dict[str, list] = {
+            'sidechain': [],
+            'backbone': [],
+            'coulomb': []
+        }
         self.group = group
         self.converged = True
         # Calculate the Non-Iterative part of pKa from the group object
@@ -368,8 +388,9 @@ class Iterative:
         self.pka_noniterative += coulomb
         self.pka_old = self.pka_noniterative
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         """Needed to use objects in sets."""
+        assert isinstance(other, (Iterative, Group)), type(other)
         if self.atom.type == 'atom':
             # In case of protein atoms we trust the labels
             return self.label == other.label

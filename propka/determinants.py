@@ -14,12 +14,18 @@ Functions to manipulate :class:`propka.determinant.Determinant` objects.
 
 """
 import math
+from typing import List
+
+import propka.calculations
 import propka.iterative
 import propka.lib
 import propka.vector_algebra
 from propka.calculations import squared_distance, get_smallest_distance
 from propka.energy import angle_distance_factors, hydrogen_bond_energy
 from propka.determinant import Determinant
+from propka.group import Group
+from propka.iterative import Interaction
+from propka.version import Version
 
 
 # Cutoff for angle factor
@@ -28,7 +34,7 @@ from propka.determinant import Determinant
 FANGLE_MIN = 0.001
 
 
-def set_determinants(propka_groups, version=None, options=None):
+def set_determinants(propka_groups: List[Group], version: Version, options=None):
     """Add side-chain and coulomb determinants/perturbations to all residues.
 
     NOTE - backbone determinants are set separately
@@ -38,7 +44,7 @@ def set_determinants(propka_groups, version=None, options=None):
         version:  version object
         options:  options object
     """
-    iterative_interactions = []
+    iterative_interactions: List[Interaction] = []
     # --- NonIterative section ---#
     for group1 in propka_groups:
         for group2 in propka_groups:
@@ -77,7 +83,7 @@ def add_determinants(group1, group2, distance, version):
     add_coulomb_determinants(group1, group2, distance, version)
 
 
-def add_sidechain_determinants(group1, group2, version=None):
+def add_sidechain_determinants(group1: Group, group2: Group, version: Version):
     """Add side-chain determinants and perturbations.
 
     NOTE - res_num1 > res_num2
@@ -236,6 +242,8 @@ def set_backbone_determinants(titratable_groups, backbone_groups, version):
                 get_smallest_distance(
                     backbone_interaction_atoms,
                     titratable_group_interaction_atoms))
+            assert backbone_atom is not None
+            assert titratable_atom is not None
             # get the parameters
             parameters = (
                 version.get_backbone_hydrogen_bond_parameters(

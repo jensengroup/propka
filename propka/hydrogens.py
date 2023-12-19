@@ -122,6 +122,12 @@ def add_arg_hydrogen(residue: List[Atom]) -> List[Atom]:
     Returns:
         list of hydrogen atoms
     """
+    cd_atom: Optional[Atom] = None
+    cz_atom: Optional[Atom] = None
+    ne_atom: Optional[Atom] = None
+    nh1_atom: Optional[Atom] = None
+    nh2_atom: Optional[Atom] = None
+
     for atom in residue:
         if atom.name == "CD":
             cd_atom = atom
@@ -133,6 +139,11 @@ def add_arg_hydrogen(residue: List[Atom]) -> List[Atom]:
             nh1_atom = atom
         elif atom.name == "NH2":
             nh2_atom = atom
+
+    if (cd_atom is None or cz_atom is None or ne_atom is None or nh1_atom is None
+            or nh2_atom is None):
+        raise ValueError("Unable to find all atoms")
+
     h1_atom = protonate_sp2(cd_atom, ne_atom, cz_atom)
     h1_atom.name = "HE"
     h2_atom = protonate_direction(nh1_atom, ne_atom, cz_atom)
@@ -152,6 +163,12 @@ def add_his_hydrogen(residue: List[Atom]) -> None:
     Args:
         residue:  histidine residue to protonate
     """
+    cg_atom: Optional[Atom] = None
+    nd_atom: Optional[Atom] = None
+    cd_atom: Optional[Atom] = None
+    ce_atom: Optional[Atom] = None
+    ne_atom: Optional[Atom] = None
+
     for atom in residue:
         if atom.name == "CG":
             cg_atom = atom
@@ -163,6 +180,11 @@ def add_his_hydrogen(residue: List[Atom]) -> None:
             ce_atom = atom
         elif atom.name == "NE2":
             ne_atom = atom
+
+    if (cg_atom is None or nd_atom is None or cd_atom is None or ce_atom is None
+            or ne_atom is None):
+        raise ValueError("Unable to find all atoms")
+
     hd_atom = protonate_sp2(cg_atom, nd_atom, ce_atom)
     hd_atom.name = "HND"
     he_atom = protonate_sp2(cd_atom, ne_atom, ce_atom)
@@ -177,6 +199,7 @@ def add_trp_hydrogen(residue: List[Atom]) -> None:
     """
     cd_atom = None
     ne_atom = None
+    ce_atom = None
     for atom in residue:
         if atom.name == "CD1":
             cd_atom = atom

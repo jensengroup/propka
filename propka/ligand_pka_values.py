@@ -11,11 +11,18 @@ programs are required).
 """
 import logging
 import os
+import shutil
 import subprocess
 import sys
+import warnings
+from typing import TYPE_CHECKING, NoReturn
+
 from propka.output import write_mol2_for_atoms
 from propka.lib import split_atoms_into_molecules
+from propka.parameters import Parameters
 
+if TYPE_CHECKING:
+    from propka.molecular_container import MolecularContainer
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,7 +30,7 @@ _LOGGER = logging.getLogger(__name__)
 class LigandPkaValues:
     """Ligand pKa value class."""
 
-    def __init__(self, parameters):
+    def __init__(self, parameters: Parameters):
         """Initialize object with parameters.
 
         Args:
@@ -46,20 +53,17 @@ class LigandPkaValues:
         Returns:
             location of program
         """
-        path = os.environ.get('PATH').split(os.pathsep)
-        locs = [
-            i for i in filter(lambda loc: os.access(loc, os.F_OK),
-                              map(lambda dir: os.path.join(dir, program),
-                                  path))]
-        if len(locs) == 0:
+        loc = shutil.which(program)
+        if loc is None:
             str_ = "'Error: Could not find {0:s}.".format(program)
             str_ += ' Please make sure that it is found in the path.'
             _LOGGER.info(str_)
             sys.exit(-1)
-        return locs[0]
+        return loc
 
     def get_marvin_pkas_for_pdb_file(
-            self, molecule, parameters, num_pkas=10, min_ph=-10, max_ph=20):
+            self, molecule: "MolecularContainer", parameters: NoReturn,
+            num_pkas=10, min_ph=-10.0, max_ph=20.0):
         """Use Marvin executables to get pKas for a PDB file.
 
         Args:
@@ -69,11 +73,12 @@ class LigandPkaValues:
             min_ph:  minimum pH value
             max_ph:  maximum pH value
         """
+        warnings.warn("unused and untested by propka")
         self.get_marvin_pkas_for_molecular_container(
             molecule, num_pkas=num_pkas, min_ph=min_ph, max_ph=max_ph)
 
-    def get_marvin_pkas_for_molecular_container(self, molecule, num_pkas=10,
-                                                min_ph=-10, max_ph=20):
+    def get_marvin_pkas_for_molecular_container(self, molecule: "MolecularContainer", num_pkas=10,
+                                                min_ph=-10.0, max_ph=20.0):
         """Use Marvin executables to calculate pKas for a molecular container.
 
         Args:
@@ -91,8 +96,8 @@ class LigandPkaValues:
 
     def get_marvin_pkas_for_conformation_container(self, conformation,
                                                    name='temp', reuse=False,
-                                                   num_pkas=10, min_ph=-10,
-                                                   max_ph=20):
+                                                   num_pkas=10, min_ph=-10.0,
+                                                   max_ph=20.0):
         """Use Marvin executables to calculate pKas for a conformation container.
 
         Args:
@@ -109,7 +114,7 @@ class LigandPkaValues:
             num_pkas=num_pkas, min_ph=min_ph, max_ph=max_ph)
 
     def get_marvin_pkas_for_atoms(self, atoms, name='temp', reuse=False,
-                                  num_pkas=10, min_ph=-10, max_ph=20):
+                                  num_pkas=10, min_ph=-10.0, max_ph=20.0):
         """Use Marvin executables to calculate pKas for a list of atoms.
 
         Args:
@@ -129,8 +134,8 @@ class LigandPkaValues:
                 min_ph=min_ph, max_ph=max_ph)
 
     def get_marvin_pkas_for_molecule(self, atoms, filename='__tmp_ligand.mol2',
-                                     reuse=False, num_pkas=10, min_ph=-10,
-                                     max_ph=20):
+                                     reuse=False, num_pkas=10, min_ph=-10.0,
+                                     max_ph=20.0):
         """Use Marvin executables to calculate pKas for a molecule.
 
         Args:

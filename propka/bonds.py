@@ -93,6 +93,7 @@ class BondMaker:
         Args:
             protein:  the protein to search for bonds
         """
+        raise NotImplementedError("unused")
         _LOGGER.info('++++ Side chains ++++')
         # side chains
         for chain in protein.chains:
@@ -132,6 +133,7 @@ class BondMaker:
             cys1:  one of the cysteines to check
             cys1:  one of the cysteines to check
         """
+        raise NotImplementedError("unused")
         for atom1 in cys1.atoms:
             if atom1.name == 'SG':
                 for atom2 in cys2.atoms:

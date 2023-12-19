@@ -12,10 +12,12 @@ function. If similar functionality is desired from a Python script
 """
 import logging
 import sys
+from typing import IO, Iterable, Optional
 from propka.lib import loadOptions
 from propka.input import read_parameter_file, read_molecule_file
 from propka.parameters import Parameters
 from propka.molecular_container import MolecularContainer
+from propka.output import _PathArg
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -44,7 +46,9 @@ def main(optargs=None):
         my_molecule.write_pka()
 
 
-def single(filename: str, optargs: tuple = (), stream=None,
+def single(filename: _PathArg,
+           optargs: Iterable[str] = (),
+           stream: Optional[IO[str]] = None,
            write_pka: bool = True):
     """Run a single PROPKA calculation using ``filename`` as input.
 
@@ -105,6 +109,7 @@ def single(filename: str, optargs: tuple = (), stream=None,
     .. versionchanged:: 3.4.0
        Removed ability to write out PROPKA input files.
     """
+    filename = str(filename)
     # Deal with input optarg options
     optargs = tuple(optargs)
     optargs += (filename,)

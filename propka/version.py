@@ -7,6 +7,7 @@ Contains version-specific methods and parameters.
 TODO - this module unnecessarily confuses the code.  Can we eliminate it?
 """
 import logging
+from propka.atom import Atom
 from propka.hydrogens import setup_bonding_and_protonation, setup_bonding
 from propka.hydrogens import setup_bonding_and_protonation_30_style
 from propka.energy import radial_volume_desolvation, calculate_pair_weight
@@ -97,6 +98,10 @@ class Version:
     def setup_bonding(self, molecular_container):
         """Setup bonding using assigned model."""
         return self.prepare_bonds(self.parameters, molecular_container)
+
+    def get_hydrogen_bond_parameters(self, atom1: Atom, atom2: Atom) -> tuple:
+        """Get hydrogen bond parameters for two atoms."""
+        raise NotImplementedError("abstract method")
 
 
 class VersionA(Version):

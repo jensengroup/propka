@@ -11,67 +11,128 @@ in configuration file.
 
 """
 import logging
+from dataclasses import dataclass, field
+from typing import Dict, List
+
+try:
+    # New in version 3.10, deprecated since version 3.12
+    from typing import TypeAlias
+except ImportError:
+    TypeAlias = "TypeAlias"  # type: ignore
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
-#: matrices
-MATRICES = ['interaction_matrix']
-#: pari-wise matrices
-PAIR_WISE_MATRICES = ['sidechain_cutoffs']
-#: :class:`dict` containing numbers
-NUMBER_DICTIONARIES = [
-    'VanDerWaalsVolume', 'charge', 'model_pkas', 'ions', 'valence_electrons',
-    'custom_model_pkas']
-#: :class:`dict` containing lists
-LIST_DICTIONARIES = ['backbone_NH_hydrogen_bond', 'backbone_CO_hydrogen_bond']
-#: :class:`dict` containing strings
-STRING_DICTIONARIES = ['protein_group_mapping']
-#: :class:`list` containing strings
-STRING_LISTS = [
-    'ignore_residues', 'angular_dependent_sidechain_interactions',
-    'acid_list', 'base_list', 'exclude_sidechain_interactions',
-    'backbone_reorganisation_list', 'write_out_order']
-#: distances (:class:`float`)
-DISTANCES = ['desolv_cutoff', 'buried_cutoff', 'coulomb_cutoff1',
-             'coulomb_cutoff2']
-#: other parameters
-PARAMETERS = [
-    'Nmin', 'Nmax', 'desolvationSurfaceScalingFactor', 'desolvationPrefactor',
-    'desolvationAllowance', 'coulomb_diel', 'COO_HIS_exception',
-    'OCO_HIS_exception', 'CYS_HIS_exception', 'CYS_CYS_exception',
-    'min_ligand_model_pka', 'max_ligand_model_pka',
-    'include_H_in_interactions', 'coupling_max_number_of_bonds',
-    'min_bond_distance_for_hydrogen_bonds', 'coupling_penalty',
-    'shared_determinants', 'common_charge_centre', 'hide_penalised_group',
-    'remove_penalised_group', 'max_intrinsic_pka_diff',
-    'min_interaction_energy', 'max_free_energy_diff', 'min_swap_pka_shift',
-    'min_pka', 'max_pka', 'sidechain_interaction']
-# :class:`str` parameters
-STRINGS = ['version', 'output_file_tag', 'ligand_typing', 'pH', 'reference']
+class squared_property:
+
+    def __set_name__(self, owner, name: str):
+        assert name.endswith("_squared")
+        self._name_not_squared = name[:-len("_squared")]  # removesuffix()
+
+    def __get__(self, instance, owner=None) -> float:
+        if instance is None:
+            return self  # type: ignore[return-value]
+        return getattr(instance, self._name_not_squared)**2
+
+    def __set__(self, instance, value: float):
+        setattr(instance, self._name_not_squared, value**0.5)
 
 
+_T_MATRIX: TypeAlias = "InteractionMatrix"
+_T_PAIR_WISE_MATRIX: TypeAlias = "PairwiseMatrix"
+_T_NUMBER_DICTIONARY = Dict[str, float]
+_T_LIST_DICTIONARY = Dict[str, list]
+_T_STRING_DICTIONARY = Dict[str, str]
+_T_STRING_LIST = List[str]
+_T_STRING = str
+_T_BOOL = bool
+
+
+@dataclass
 class Parameters:
     """PROPKA parameter class."""
 
-    def __init__(self):
-        """Initialize parameter class.
+    # MATRICES
+    interaction_matrix: _T_MATRIX = field(
+        default_factory=lambda: InteractionMatrix("interaction_matrix"))
 
-        Args:
-            parameter_file:  file with parameters
-        """
-        # TODO - need to define all members explicitly
-        self.model_pkas = {}
-        self.interaction_matrix = InteractionMatrix("interaction_matrix")
-        self.sidechain_cutoffs = None
-        # TODO - it would be nice to rename these; they're defined everywhere
-        self.COO_HIS_exception = None
-        self.OCO_HIS_exception = None
-        self.CYS_HIS_exception = None
-        self.CYS_CYS_exception = None
-        # These functions set up remaining data structures implicitly
-        self.set_up_data_structures()
+    # PAIR_WISE_MATRICES
+    sidechain_cutoffs: _T_PAIR_WISE_MATRIX = field(
+        default_factory=lambda: PairwiseMatrix("sidechain_cutoffs"))
+
+    # NUMBER_DICTIONARIES
+    VanDerWaalsVolume: _T_NUMBER_DICTIONARY = field(default_factory=dict)
+    charge: _T_NUMBER_DICTIONARY = field(default_factory=dict)
+    model_pkas: _T_NUMBER_DICTIONARY = field(default_factory=dict)
+    ions: _T_NUMBER_DICTIONARY = field(default_factory=dict)
+    valence_electrons: _T_NUMBER_DICTIONARY = field(default_factory=dict)
+    custom_model_pkas: _T_NUMBER_DICTIONARY = field(default_factory=dict)
+
+    # LIST_DICTIONARIES
+    backbone_NH_hydrogen_bond: _T_LIST_DICTIONARY = field(default_factory=dict)
+    backbone_CO_hydrogen_bond: _T_LIST_DICTIONARY = field(default_factory=dict)
+
+    # STRING_DICTIONARIES
+    protein_group_mapping: _T_STRING_DICTIONARY = field(default_factory=dict)
+
+    # STRING_LISTS
+    ignore_residues: _T_STRING_LIST = field(default_factory=list)
+    angular_dependent_sidechain_interactions: _T_STRING_LIST = field(default_factory=list)
+    acid_list: _T_STRING_LIST = field(default_factory=list)
+    base_list: _T_STRING_LIST = field(default_factory=list)
+    exclude_sidechain_interactions: _T_STRING_LIST = field(default_factory=list)
+    backbone_reorganisation_list: _T_STRING_LIST = field(default_factory=list)
+    write_out_order: _T_STRING_LIST = field(default_factory=list)
+
+    # DISTANCES
+    desolv_cutoff: float = 20.0
+    buried_cutoff: float = 15.0
+    coulomb_cutoff1: float = 4.0
+    coulomb_cutoff2: float = 10.0
+
+    # DISTANCES SQUARED
+    desolv_cutoff_squared = squared_property()
+    buried_cutoff_squared = squared_property()
+    coulomb_cutoff1_squared = squared_property()
+    coulomb_cutoff2_squared = squared_property()
+
+    # STRINGS
+    version: _T_STRING = "VersionA"
+    output_file_tag: _T_STRING = ""
+    ligand_typing: _T_STRING = "groups"
+    pH: _T_STRING = "variable"
+    reference: _T_STRING = "neutral"
+
+    # PARAMETERS
+    Nmin: int = 280
+    Nmax: int = 560
+    desolvationSurfaceScalingFactor: float = 0.25
+    desolvationPrefactor: float = -13.0
+    desolvationAllowance: float = 0.0
+    coulomb_diel: float = 80.0
+    # TODO - it would be nice to rename these; they're defined everywhere
+    COO_HIS_exception: float = 1.60
+    OCO_HIS_exception: float = 1.60
+    CYS_HIS_exception: float = 1.60
+    CYS_CYS_exception: float = 3.60
+    min_ligand_model_pka: float = -10.0
+    max_ligand_model_pka: float = 20.0
+    # include_H_in_interactions: NoReturn = None
+    coupling_max_number_of_bonds: int = 3
+    min_bond_distance_for_hydrogen_bonds: int = 4
+    # coupling_penalty: NoReturn = None
+    shared_determinants: _T_BOOL = False
+    common_charge_centre: _T_BOOL = False
+    # hide_penalised_group: NoReturn = None
+    remove_penalised_group: _T_BOOL = True
+    max_intrinsic_pka_diff: float = 2.0
+    min_interaction_energy: float = 0.5
+    max_free_energy_diff: float = 1.0
+    min_swap_pka_shift: float = 1.0
+    min_pka: float = 0.0
+    max_pka: float = 10.0
+    sidechain_interaction: float = 0.85
 
     def parse_line(self, line):
         """Parse parameter file line."""
@@ -84,22 +145,21 @@ class Parameters:
         if len(words) == 0:
             return
         # parse the words
-        if len(words) == 3 and words[0] in NUMBER_DICTIONARIES:
+        typeannotation = self.__annotations__.get(words[0])
+        if typeannotation is _T_NUMBER_DICTIONARY:
             self.parse_to_number_dictionary(words)
-        elif len(words) == 2 and words[0] in STRING_LISTS:
+        elif typeannotation is _T_STRING_LIST:
             self.parse_to_string_list(words)
-        elif len(words) == 2 and words[0] in DISTANCES:
-            self.parse_distance(words)
-        elif len(words) == 2 and words[0] in PARAMETERS:
-            self.parse_parameter(words)
-        elif len(words) == 2 and words[0] in STRINGS:
+        elif typeannotation is _T_STRING:
             self.parse_string(words)
-        elif len(words) > 2 and words[0] in LIST_DICTIONARIES:
+        elif typeannotation is _T_LIST_DICTIONARY:
             self.parse_to_list_dictionary(words)
-        elif words[0] in MATRICES+PAIR_WISE_MATRICES:
+        elif typeannotation is _T_MATRIX or typeannotation is _T_PAIR_WISE_MATRIX:
             self.parse_to_matrix(words)
-        elif len(words) == 3 and words[0] in STRING_DICTIONARIES:
+        elif typeannotation is _T_STRING_DICTIONARY:
             self.parse_to_string_dictionary(words)
+        else:
+            self.parse_parameter(words)
 
     def parse_to_number_dictionary(self, words):
         """Parse field to number dictionary.
@@ -107,6 +167,7 @@ class Parameters:
         Args:
             words:  strings to parse.
         """
+        assert len(words) == 3, words
         dict_ = getattr(self, words[0])
         key = words[1]
         value = words[2]
@@ -118,17 +179,19 @@ class Parameters:
         Args:
             words:  strings to parse
         """
+        assert len(words) == 3, words
         dict_ = getattr(self, words[0])
         key = words[1]
         value = words[2]
         dict_[key] = value
 
-    def parse_to_list_dictionary(self, words):
+    def parse_to_list_dictionary(self, words: List[str]):
         """Parse field to list dictionary.
 
         Args:
             words:  strings to parse.
         """
+        assert len(words) > 2, words
         dict_ = getattr(self, words[0])
         key = words[1]
         if key not in dict_:
@@ -144,6 +207,7 @@ class Parameters:
         Args:
             words:  strings to parse
         """
+        assert len(words) == 2, words
         list_ = getattr(self, words[0])
         value = words[1]
         list_.append(value)
@@ -158,24 +222,13 @@ class Parameters:
         value = tuple(words[1:])
         matrix.add(value)
 
-    def parse_distance(self, words):
-        """Parse field to distance.
-
-        Args:
-            words:  strings to parse
-        """
-        value = float(words[1])
-        setattr(self, words[0], value)
-        value_sq = value*value
-        attr = "{0:s}_squared".format(words[0])
-        setattr(self, attr, value_sq)
-
     def parse_parameter(self, words):
         """Parse field to parameters.
 
         Args:
             words:  strings to parse
         """
+        assert len(words) == 2, words
         value = float(words[1])
         setattr(self, words[0], value)
 
@@ -185,27 +238,8 @@ class Parameters:
         Args:
             words:  strings to parse
         """
+        assert len(words) == 2, words
         setattr(self, words[0], words[1])
-
-    def set_up_data_structures(self):
-        """Set up internal data structures.
-
-        TODO - it would be better to make these assignments explicit in
-        __init__.
-        """
-        for key_word in (NUMBER_DICTIONARIES + LIST_DICTIONARIES
-                         + STRING_DICTIONARIES):
-            setattr(self, key_word, {})
-        for key_word in STRING_LISTS:
-            setattr(self, key_word, [])
-        for key_word in STRINGS:
-            setattr(self, key_word, "")
-        for key_word in MATRICES:
-            matrix = InteractionMatrix(key_word)
-            setattr(self, key_word, matrix)
-        for key_word in PAIR_WISE_MATRICES:
-            matrix = PairwiseMatrix(key_word)
-            setattr(self, key_word, matrix)
 
     def print_interaction_parameters(self):
         """Print interaction parameters."""

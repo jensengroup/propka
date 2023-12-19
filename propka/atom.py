@@ -8,6 +8,7 @@ The :class:`Atom` class contains all atom information found in the PDB file.
 
 import string
 from typing import cast, List, NoReturn, Optional, TYPE_CHECKING
+import warnings
 
 from propka.lib import make_tidy_atom_label
 from . import hybrid36
@@ -42,6 +43,43 @@ class Atom:
        :meth:`make_input_line` and :meth:`get_input_parameters` have been
        removed as reading/writing PROPKA input is no longer supported.
     """
+    group: Optional["Group"] = None
+    group_type: Optional[str] = None
+    cysteine_bridge: bool = False
+    residue: NoReturn = None  # type: ignore[assignment]
+    conformation_container: Optional["ConformationContainer"] = None
+    molecular_container: Optional["MolecularContainer"] = None
+    is_protonated: bool = False
+    steric_num_lone_pairs_set: bool = False
+    terminal: Optional[str] = None
+    charge: float = 0.0
+    charge_set: bool = False
+    steric_number: int = 0
+    number_of_lone_pairs: int = 0
+    number_of_protons_to_add: int = 0
+    num_pi_elec_2_3_bonds: int = 0
+    num_pi_elec_conj_2_3_bonds: int = 0
+    groups_extracted: bool = False
+
+    # PDB attributes
+    name: str = ''
+    numb: int = 0
+    x: float = 0.0
+    y: float = 0.0
+    z: float = 0.0
+    res_num: int = 0
+    res_name: str = ''
+    chain_id: str = 'A'
+    type: str = ''
+    occ: str = '1.0'
+    beta: str = '0.0'
+    element: str = ''
+    icode: str = ''
+
+    # ligand atom types
+    sybyl_type = ''
+    sybyl_assigned = False
+    marvin_pka = False
 
     def __init__(self, line: Optional[str] = None):
         """Initialize Atom object.
@@ -50,32 +88,10 @@ class Atom:
             line:  Line from a PDB file to set properties of atom.
         """
         self.number_of_bonded_elements: NoReturn = cast(NoReturn, {})  # FIXME unused?
-        self.group: Optional[Group] = None
-        self.group_type: Optional[str] = None
-        self.cysteine_bridge: bool = False
         self.bonded_atoms: List[Atom] = []
-        self.residue = None
-        self.conformation_container: Optional[ConformationContainer] = None
-        self.molecular_container: Optional[MolecularContainer] = None
-        self.is_protonated = False
-        self.steric_num_lone_pairs_set = False
-        self.terminal: Optional[str] = None
-        self.charge = 0.0
-        self.charge_set = False
-        self.steric_number = 0
-        self.number_of_lone_pairs = 0
-        self.number_of_protons_to_add = 0
-        self.num_pi_elec_2_3_bonds = 0
-        self.num_pi_elec_conj_2_3_bonds = 0
-        self.groups_extracted = 0
         self.set_properties(line)
         fmt = "{r.name:3s}{r.res_num:>4d}{r.chain_id:>2s}"
         self.residue_label = fmt.format(r=self)
-
-        # ligand atom types
-        self.sybyl_type = ''
-        self.sybyl_assigned = False
-        self.marvin_pka = False
 
     def set_properties(self, line: Optional[str]):
         """Line from PDB file to set properties of atom.
@@ -83,20 +99,6 @@ class Atom:
         Args:
             line:  PDB file line
         """
-        self.name = ''
-        self.numb = 0
-        self.x = 0.0
-        self.y = 0.0
-        self.z = 0.0
-        self.res_num = 0
-        self.res_name = ''
-        self.chain_id = 'A'
-        self.type = ''
-        self.occ = '1.0'
-        self.beta = '0.0'
-        self.element = ''
-        self.icode = ''
-
         if line:
             self.name = line[12:16].strip()
             self.numb = int(hybrid36.decode(line[6:11]))
@@ -183,9 +185,17 @@ class Atom:
                     return True
         return False
 
-    def set_property(self, numb=None, name=None, res_name=None, chain_id=None,
-                     res_num=None, x=None, y=None, z=None, occ=None,
-                     beta=None):
+    def set_property(self,
+                     numb: Optional[int] = None,
+                     name: Optional[str] = None,
+                     res_name: Optional[str] = None,
+                     chain_id: Optional[str] = None,
+                     res_num: Optional[int] = None,
+                     x: Optional[float] = None,
+                     y: Optional[float] = None,
+                     z: Optional[float] = None,
+                     occ: Optional[str] = None,
+                     beta: Optional[str] = None):
         """Set properties of the atom object.
 
         Args:
@@ -303,6 +313,7 @@ class Atom:
         Returns:
             String with PDB line.
         """
+        warnings.warn("only used by unused function")
         if numb is None:
             numb = self.numb
         if name is None:
@@ -343,11 +354,12 @@ class Atom:
         """Return an undefined-format string version of this atom."""
         return STR_FMT.format(r=self)
 
-    def set_residue(self, residue):
+    def set_residue(self, residue: NoReturn):
         """ Makes a reference to the parent residue
 
         Args:
             residue:  the parent residue
         """
+        raise NotImplementedError("unused")
         if self.residue is None:
             self.residue = residue

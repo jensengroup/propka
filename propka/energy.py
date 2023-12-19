@@ -7,11 +7,15 @@ Energy calculations.
 """
 import math
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, Sequence
+
+from propka.atom import Atom
+from propka.parameters import Parameters
 
 if TYPE_CHECKING:
     from propka.conformation_container import ConformationContainer
     from propka.group import Group
+    from propka.version import Version
 
 from propka.calculations import squared_distance, get_smallest_distance
 
@@ -89,7 +93,7 @@ def calculate_scale_factor(parameters, weight: float) -> float:
     return scale_factor
 
 
-def calculate_weight(parameters, num_volume: int) -> float:
+def calculate_weight(parameters: Parameters, num_volume: float) -> float:
     """Calculate the atom-based desolvation weight.
 
     TODO - figure out why a similar function exists in version.py
@@ -109,7 +113,7 @@ def calculate_weight(parameters, num_volume: int) -> float:
     return weight
 
 
-def calculate_pair_weight(parameters, num_volume1: int, num_volume2: int) -> float:
+def calculate_pair_weight(parameters: Parameters, num_volume1: int, num_volume2: int) -> float:
     """Calculate the atom-pair based desolvation weight.
 
     Args:
@@ -148,7 +152,11 @@ def hydrogen_bond_energy(dist, dpka_max: float, cutoffs, f_angle=1.0) -> float:
     return abs(dpka)
 
 
-def angle_distance_factors(atom1=None, atom2=None, atom3=None, center=None):
+def angle_distance_factors(
+        atom1: Optional[Atom] = None,
+        atom2: Atom = None,  # type: ignore[assignment]
+        atom3: Atom = None,  # type: ignore[assignment]
+        center: Optional[Sequence[float]] = None):
     """Calculate distance and angle factors for three atoms for backbone
     interactions.
 
@@ -182,6 +190,7 @@ def angle_distance_factors(atom1=None, atom2=None, atom3=None, center=None):
     dy_32 = dy_32/dist_23
     dz_32 = dz_32/dist_23
     if atom1 is None:
+        assert center is not None
         dx_21 = center[0] - atom2.x
         dy_21 = center[1] - atom2.y
         dz_21 = center[2] - atom2.z
@@ -197,7 +206,7 @@ def angle_distance_factors(atom1=None, atom2=None, atom3=None, center=None):
     return dist_12, f_angle, dist_23
 
 
-def hydrogen_bond_interaction(group1, group2, version):
+def hydrogen_bond_interaction(group1: "Group", group2: "Group", version: "Version"):
     """Calculate energy for hydrogen bond interactions between two groups.
 
     Args:
@@ -213,7 +222,7 @@ def hydrogen_bond_interaction(group1, group2, version):
     [closest_atom1, dist, closest_atom2] = get_smallest_distance(
         atoms1, atoms2
     )
-    if None in [closest_atom1, closest_atom2]:
+    if closest_atom1 is None or closest_atom2 is None:
         _LOGGER.warning(
             'Side chain interaction failed for {0:s} and {1:s}'.format(
                 group1.label, group2.label))
@@ -297,7 +306,7 @@ def electrostatic_interaction(group1, group2, dist, version):
     return value
 
 
-def check_coulomb_pair(parameters, group1, group2, dist):
+def check_coulomb_pair(parameters: Parameters, group1: "Group", group2: "Group", dist: float) -> bool:
     """Checks if this Coulomb interaction should be done.
 
     NOTE - this is a propka2.0 hack

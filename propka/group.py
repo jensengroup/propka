@@ -14,6 +14,7 @@ import math
 from typing import cast, Dict, Iterable, List, NoReturn, Optional
 
 import propka.ligand
+from propka.parameters import Parameters
 import propka.protonate
 from propka.atom import Atom
 from propka.ligand_pka_values import LigandPkaValues
@@ -90,7 +91,7 @@ class Group:
         self.y = 0.0
         self.z = 0.0
         self.charge = 0
-        self.parameters = None
+        self.parameters: Optional[Parameters] = None
         self.exclude_cys_from_results = False
         self.interaction_atoms_for_acids: List[Atom] = []
         self.interaction_atoms_for_bases: List[Atom] = []
@@ -167,6 +168,7 @@ class Group:
         Args:
             others:  list of other groups
         """
+        raise NotImplementedError("unused")
         # for each determinant type
         for other in others:
             if other == self:
@@ -319,6 +321,7 @@ class Group:
 
     def setup(self):
         """Set up a group."""
+        assert self.parameters is not None
         # set the charges
         if self.type in self.parameters.charge.keys():
             self.charge = self.parameters.charge[self.type]
@@ -402,7 +405,7 @@ class Group:
                     '             {0:s}'.format(
                         str(self.interaction_atoms_for_bases[i])))
 
-    def get_interaction_atoms(self, interacting_group) -> List[Atom]:
+    def get_interaction_atoms(self, interacting_group: "Group") -> List[Atom]:
         """Get atoms involved in interaction with other group.
 
         Args:
@@ -591,7 +594,7 @@ class Group:
         ddg = ddg_neutral + ddg_low
         return ddg
 
-    def calculate_charge(self, _, ph=7.0, state='folded'):
+    def calculate_charge(self, _, ph: float = 7.0, state: str = 'folded') -> float:
         """Calculate the charge of the specified state at the specified pH.
 
         Args:
@@ -609,7 +612,7 @@ class Group:
         charge = self.charge*(conc_ratio/(1.0+conc_ratio))
         return charge
 
-    def use_in_calculations(self):
+    def use_in_calculations(self) -> bool:
         """Indicate whether group should be included in results report.
 
         If --titrate_only option is specified, only residues that are
@@ -1218,7 +1221,7 @@ class TitratableLigandGroup(Group):
         self.model_pka_set = True
 
 
-def is_group(parameters, atom: Atom) -> Optional[Group]:
+def is_group(parameters: Parameters, atom: Atom) -> Optional[Group]:
     """Identify whether the atom belongs to a group.
 
     Args:
@@ -1227,7 +1230,7 @@ def is_group(parameters, atom: Atom) -> Optional[Group]:
     Returns:
         group for atom or None
     """
-    atom.groups_extracted = 1
+    atom.groups_extracted = True
     # check if this atom belongs to a protein group
     protein_group = is_protein_group(parameters, atom)
     if protein_group:
@@ -1245,7 +1248,7 @@ def is_group(parameters, atom: Atom) -> Optional[Group]:
         ligand_group = is_ligand_group_by_groups(parameters, atom)
     else:
         raise Exception(
-            'Unknown ligand typing method \'{0.s}\''.format(
+            'Unknown ligand typing method \'{0:s}\''.format(
                 parameters.ligand_typing))
     if ligand_group:
         return ligand_group
@@ -1368,7 +1371,7 @@ def is_ligand_group_by_groups(_, atom: Atom) -> Optional[Group]:
     return None
 
 
-def is_ligand_group_by_marvin_pkas(parameters, atom: Atom) -> Optional[Group]:
+def is_ligand_group_by_marvin_pkas(parameters: Parameters, atom: Atom) -> Optional[Group]:
     """Identify whether the atom belongs to a ligand group by calculating
     'Marvin pKas'.
 
@@ -1383,6 +1386,7 @@ def is_ligand_group_by_marvin_pkas(parameters, atom: Atom) -> Optional[Group]:
     # calculate Marvin ligand pkas for this conformation container
     # if not already done
     # TODO - double-check testing coverage of these functions.
+    assert atom.molecular_container is not None
     assert atom.conformation_container is not None
     if not atom.conformation_container.marvin_pkas_calculated:
         lpka = LigandPkaValues(parameters)
@@ -1400,6 +1404,7 @@ def is_ligand_group_by_marvin_pkas(parameters, atom: Atom) -> Optional[Group]:
             if not o == atom][0]
         atom.marvin_pka = other_oxygen.marvin_pka
         return TitratableLigandGroup(atom)
+    raise NotImplementedError("hydrogen_bonds")
     if atom.element in parameters.hydrogen_bonds.elements:
         return NonTitratableLigandGroup(atom)
     return None
