@@ -118,13 +118,10 @@ class Parameters:
     CYS_CYS_exception: float = 3.60
     min_ligand_model_pka: float = -10.0
     max_ligand_model_pka: float = 20.0
-    # include_H_in_interactions: NoReturn = None
     coupling_max_number_of_bonds: int = 3
     min_bond_distance_for_hydrogen_bonds: int = 4
-    # coupling_penalty: NoReturn = None
     shared_determinants: _T_BOOL = False
     common_charge_centre: _T_BOOL = False
-    # hide_penalised_group: NoReturn = None
     remove_penalised_group: _T_BOOL = True
     max_intrinsic_pka_diff: float = 2.0
     min_interaction_energy: float = 0.5

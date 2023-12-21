@@ -6,7 +6,7 @@ Container data structure for molecular conformations.
 """
 import logging
 import functools
-from typing import Callable, Dict, Iterable, Iterator, List, NoReturn, Optional, TYPE_CHECKING, Set
+from typing import Callable, Dict, Iterable, Iterator, List, Optional, TYPE_CHECKING, Set
 
 from propka.lib import Options
 from propka.version import Version
@@ -496,18 +496,6 @@ class ConformationContainer:
         return [
             group for group in self.groups
             if group.residue_type in self.parameters.ions.keys()]
-
-    def get_group_names(self, group_list: NoReturn) -> NoReturn:  # FIXME unused?
-        """Get names of groups in list.
-
-        Args:
-            group_list:  list to check
-        Returns:
-            list of groups
-        """
-        if TYPE_CHECKING:
-            assert False
-        return [group for group in self.groups if group.type in group_list]
 
     def get_ligand_atoms(self) -> List["Atom"]:
         """Get atoms associated with ligands.

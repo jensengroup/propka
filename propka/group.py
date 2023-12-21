@@ -11,7 +11,7 @@ Routines and classes for storing groups important to PROPKA calculations.
 """
 import logging
 import math
-from typing import cast, Dict, Iterable, List, NoReturn, Optional
+from typing import Dict, List, Optional
 
 import propka.ligand
 from propka.parameters import Parameters
@@ -119,8 +119,6 @@ class Group:
             fmt = "{type:<3s}{name:>4s}{chain:>2s}"
             self.label = fmt.format(
                 type=self.residue_type, name=atom.name, chain=atom.chain_id)
-        # container for squared distances
-        self.squared_distances: NoReturn = cast(NoReturn, {})  # FIXME unused?
 
     def couple_covalently(self, other: "Group") -> None:
         """Couple this group with another group.
@@ -161,46 +159,6 @@ class Group:
             list of covalently coupled groups.
         """
         return self.non_covalently_coupled_groups
-
-    def share_determinants(self, others: Iterable["Group"]) -> None:
-        """Share determinants between this group and others.
-
-        Args:
-            others:  list of other groups
-        """
-        raise NotImplementedError("unused")
-        # for each determinant type
-        for other in others:
-            if other == self:
-                the_other = other
-                continue
-            for type_ in ['sidechain', 'backbone', 'coulomb']:
-                for det in other.determinants[type_]:
-                    self.share_determinant(det, type_)
-        # recalculate pka values
-        self.calculate_total_pka()
-        the_other.calculate_total_pka()
-
-    def share_determinant(self, new_determinant: Determinant, type_: str) -> None:
-        """Add determinant to this group's list of determinants.
-
-        Args:
-            new_determinant:  determinant to add
-            type_:  type of determinant
-        """
-        added = False
-        # first check if we already have a determinant with this label
-        for own_determinant in self.determinants[type_]:
-            if own_determinant.group == new_determinant.group:
-                # if so, find the average value
-                avr = 0.5*(own_determinant.value + new_determinant.value)
-                own_determinant.value = avr
-                new_determinant.value = avr
-                added = True
-        # otherwise we just add the determinant to our list
-        if not added:
-            self.determinants[type_].append(
-                Determinant(new_determinant.group, new_determinant.value))
 
     def __eq__(self, other):
         """Needed for creating sets of groups."""

@@ -2,6 +2,17 @@
 Changelog
 *********
 
+Upcoming release (TBD)
+======================
+
+Changes
+-------
+
+* Removed the following unused command line options: ``-t``, ``--thermophile``,
+  ``-a``, ``--alignment``, ``-m``, ``--mutation``, ``--mutator``,
+  ``--mutator-option``
+* Removed several unused API functions
+
 Current
 =======
 

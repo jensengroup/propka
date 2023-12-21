@@ -7,8 +7,7 @@ The :class:`Atom` class contains all atom information found in the PDB file.
 """
 
 import string
-from typing import cast, List, NoReturn, Optional, TYPE_CHECKING
-import warnings
+from typing import List, Optional, TYPE_CHECKING
 
 from propka.lib import make_tidy_atom_label
 from . import hybrid36
@@ -46,7 +45,6 @@ class Atom:
     group: Optional["Group"] = None
     group_type: Optional[str] = None
     cysteine_bridge: bool = False
-    residue: NoReturn = None  # type: ignore[assignment]
     conformation_container: Optional["ConformationContainer"] = None
     molecular_container: Optional["MolecularContainer"] = None
     is_protonated: bool = False
@@ -87,7 +85,6 @@ class Atom:
         Args:
             line:  Line from a PDB file to set properties of atom.
         """
-        self.number_of_bonded_elements: NoReturn = cast(NoReturn, {})  # FIXME unused?
         self.bonded_atoms: List[Atom] = []
         self.set_properties(line)
         fmt = "{r.name:3s}{r.res_num:>4d}{r.chain_id:>2s}"
@@ -302,45 +299,6 @@ class Atom:
             atom_label=make_tidy_atom_label(self.name, self.element))
         return str_
 
-    def make_pdb_line2(self, numb=None, name=None, res_name=None, chain_id=None,
-                       res_num=None, x=None, y=None, z=None, occ=None,
-                       beta=None):
-        """Create a PDB line.
-
-        TODO - this could/should be a @property method/attribute
-        TODO - figure out difference between make_pdb_line, and make_pdb_line2
-
-        Returns:
-            String with PDB line.
-        """
-        warnings.warn("only used by unused function")
-        if numb is None:
-            numb = self.numb
-        if name is None:
-            name = self.name
-        if res_name is None:
-            res_name = self.res_name
-        if chain_id is None:
-            chain_id = self.chain_id
-        if res_num is None:
-            res_num = self.res_num
-        if x is None:
-            x = self.x
-        if y is None:
-            y = self.y
-        if z is None:
-            z = self.z
-        if occ is None:
-            occ = self.occ
-        if beta is None:
-            beta = self.beta
-        str_ = PDB_LINE_FMT2.format(
-            numb=numb, res_name=res_name, chain_id=chain_id, res_num=res_num,
-            x=x, y=y, z=z, occ=occ, beta=beta,
-            atom_label=make_tidy_atom_label(name, self.element)
-        )
-        return str_
-
     def get_tidy_label(self):
         """Returns a 'tidier' atom label for printing the new pdbfile
 
@@ -353,13 +311,3 @@ class Atom:
     def __str__(self):
         """Return an undefined-format string version of this atom."""
         return STR_FMT.format(r=self)
-
-    def set_residue(self, residue: NoReturn):
-        """ Makes a reference to the parent residue
-
-        Args:
-            residue:  the parent residue
-        """
-        raise NotImplementedError("unused")
-        if self.residue is None:
-            self.residue = residue
