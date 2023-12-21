@@ -195,7 +195,7 @@ class MolecularContainer:
             stability_range = (min(stable_values), max(stable_values))
         return profile, opt, range_80pct, stability_range
 
-    def get_charge_profile(self, conformation: str = 'AVR', grid=[0., 14., .1]):
+    def get_charge_profile(self, conformation: str = 'AVR', grid=(0., 14., .1)):
         """Get charge profile for conformation as function of pH.
 
         Args:
@@ -212,13 +212,13 @@ class MolecularContainer:
             charge_profile.append([ph, q_unfolded, q_folded])
         return charge_profile
 
-    def get_pi(self, conformation: str = 'AVR', grid=[0., 14., 1], *,
+    def get_pi(self, conformation: str = 'AVR', grid=(0., 14.), *,
                precision: float = 1e-4) -> Tuple[float, float]:
         """Get the isoelectric points for folded and unfolded states.
 
         Args:
             conformation:  conformation to test
-            grid:  grid of pH values [min, max, step]
+            grid:  pH window [min, max]
             precision:  Compute pI up to this precision
         Returns:
             1. Folded state PI

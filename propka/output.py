@@ -14,7 +14,7 @@ from datetime import date
 from decimal import Decimal
 from os import PathLike
 from pathlib import Path
-from typing import IO, AnyStr, List, Optional, Union, TYPE_CHECKING
+from typing import IO, AnyStr, List, Optional, Tuple, Union, TYPE_CHECKING
 import warnings
 
 from .parameters import Parameters
@@ -75,22 +75,19 @@ def write_pdb_for_conformation(conformation: "ConformationContainer",
 def write_pka(protein: "MolecularContainer",
               parameters: Parameters,
               filename: Optional[_PathArg] = None,
-              conformation='1A',
-              reference="neutral", _="folding", verbose=False,
-              __=None):
+              conformation: str = '1A',
+              reference: str = "neutral",
+              *,
+              verbose: bool = True):
     """Write the pKa-file based on the given protein.
 
     Args:
         protein:  protein object
         filename:  output file name
-        conformation:  TODO - figure this out
+        conformation: specific conformation
         reference:  reference state
-        _:  "folding" or other
         verbose:  Boolean flag for verbosity
-        __:  options object
     """
-    # TODO - the code immediately overrides the verbose argument; why?
-    verbose = True
     if filename is None:
         filename = "{0:s}.pka".format(protein.name)
     if verbose:
@@ -196,8 +193,11 @@ def get_summary_section(protein: "MolecularContainer", conformation: str,
 
 def get_folding_profile_section(
         protein: "MolecularContainer",
-        conformation='AVR', direction="folding", reference="neutral",
-        window=[0., 14., 1.0], _=False, __=None):
+        conformation: str = 'AVR',
+        direction: str = "folding",
+        reference: str = "neutral",
+        window: Tuple[float, float, float] = (0., 14., 1.),
+):
     """Returns string with the folding profile section of the results.
 
     Args:
@@ -206,8 +206,6 @@ def get_folding_profile_section(
         direction:  'folding' or other
         reference:  reference state
         window:  pH window [min, max, step]
-        _:  Boolean for verbose output
-        __:  options object
     Returns:
         string
     """
@@ -253,7 +251,8 @@ def get_folding_profile_section(
     return str_
 
 
-def get_charge_profile_section(protein, conformation='AVR', _=None):
+def get_charge_profile_section(protein: "MolecularContainer",
+                               conformation: str = 'AVR'):
     """Returns string with the charge profile section of the results.
 
     Args:

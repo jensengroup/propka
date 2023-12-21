@@ -8,10 +8,11 @@ Implements many of the main functions used to call PROPKA.
 import logging
 import argparse
 from pathlib import Path
-from typing import Iterable, Iterator, List, TYPE_CHECKING, NoReturn, Optional, Tuple, TypeVar
+from typing import Dict, Iterable, Iterator, List, TYPE_CHECKING, NoReturn, Optional, Tuple, TypeVar
 
 if TYPE_CHECKING:
     from propka.atom import Atom
+    from propka.conformation_container import ConformationContainer
 
 
 T = TypeVar("T")
@@ -46,7 +47,8 @@ class Options:
     window: Tuple[float, float, float] = (0.0, 14.0, 1.0)
 
 
-def protein_precheck(conformations, names):
+def protein_precheck(conformations: Dict[str, "ConformationContainer"],
+                     names: Iterable[str]):
     """Check protein for correct number of atoms, etc.
 
     Args:
@@ -55,7 +57,7 @@ def protein_precheck(conformations, names):
     for name in names:
         atoms = conformations[name].atoms
         # Group the atoms by their residue:
-        atoms_by_residue = {}
+        atoms_by_residue: Dict[str, List[Atom]] = {}
         for atom in atoms:
             if atom.element != 'H':
                 res_id = resid_from_atom(atom)
