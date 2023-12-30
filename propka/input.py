@@ -41,7 +41,7 @@ def open_file_for_reading(input_file: _TextIOSource) -> ContextManager[IO[str]]:
                 print(f"Parent {p} is not ZIP file.")
                 continue
             zf = zipfile.ZipFile(p)
-            path_string = "/".join(input_file.relative_to(p).parts)
+            path_string = Path.as_posix(input_file.relative_to(p))
             stream = zf.open(path_string)
             return io.TextIOWrapper(stream)
 
