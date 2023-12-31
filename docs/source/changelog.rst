@@ -2,6 +2,23 @@
 Changelog
 *********
 
+3.5.1 (2023-12-31)
+==================
+
+Changes
+-------
+
+* Add more static typing and associated tests (`#177 <https://github.com/jensengroup/propka/pull/177>`_ and `#172 <https://github.com/jensengroup/propka/pull/172>`_)
+
+* Refactor deprecated ``pkg_resources`` usage (`#176 <https://github.com/jensengroup/propka/pull/176>`_)
+
+* Increase number of valence electrons for ligand atoms (`#169 <https://github.com/jensengroup/propka/pull/169>`_ and `#170 <https://github.com/jensengroup/propka/pull/170>_`)
+
+Fixes
+-----
+
+* Fix topping up from all conformations, not just first (`#167 <https://github.com/jensengroup/propka/pull/167>`_)
+
 3.5.0 (2023-02-13)
 ==================
 
