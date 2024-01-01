@@ -12,7 +12,7 @@ Changes
 
 * Refactor deprecated ``pkg_resources`` usage (`#176 <https://github.com/jensengroup/propka/pull/176>`_)
 
-* Increase number of valence electrons for ligand atoms (`#169 <https://github.com/jensengroup/propka/pull/169>`_ and `#170 <https://github.com/jensengroup/propka/pull/170>_`)
+* Increase number of valence electrons for ligand atoms (`#169 <https://github.com/jensengroup/propka/pull/169>`_ and `#170 <https://github.com/jensengroup/propka/pull/170>`_)
 
 Fixes
 -----
