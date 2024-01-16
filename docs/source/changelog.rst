@@ -2,6 +2,14 @@
 Changelog
 *********
 
+Current
+=======
+
+Fixes
+-----
+
+* Address Sphinx search issue (`#184 <https://github.com/jensengroup/propka/issues/184>`_)
+
 3.5.1 (2023-12-31)
 ==================
 
