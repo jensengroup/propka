@@ -15,15 +15,16 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        os: ["ubuntu-latest", "windows-latest"]
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
@@ -31,7 +32,7 @@ jobs:
         python -m pip install --upgrade pip setuptools wheel
         python -m pip install flake8 pytest
         python -m pip install coverage
-        if [ -f requirements.txt ]; then python -m pip install -r requirements.txt; fi
+        python -m pip install -r requirements.txt
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
@@ -46,13 +47,14 @@ jobs:
         coverage html
     - name: Upload coverage to https://codecov.io/gh/jensengroup/propka
       run: bash <(curl -s https://codecov.io/bash)
+      if: ${{ ! startsWith(matrix.os, 'windows') }}
     - name: Store coverage text results
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: coverage-text
         path: coverage.txt
     - name: Store coverage HTML results
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: coverage-html
         path: htmlcov/*
@@ -60,8 +62,8 @@ jobs:
   static_type_check:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
       with:
         python-version: "3.12"
     - run: python -m pip install mypy types-setuptools
