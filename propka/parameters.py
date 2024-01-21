@@ -12,7 +12,7 @@ in configuration file.
 """
 import logging
 from dataclasses import dataclass, field
-from typing import Dict, List
+from typing import Callable, Dict, List, Sequence, Tuple, TypeVar, Union
 
 try:
     # New in version 3.10, deprecated since version 3.12
@@ -38,6 +38,8 @@ class squared_property:
     def __set__(self, instance, value: float):
         setattr(instance, self._name_not_squared, value**0.5)
 
+
+T = TypeVar("T")
 
 _T_MATRIX: TypeAlias = "InteractionMatrix"
 _T_PAIR_WISE_MATRIX: TypeAlias = "PairwiseMatrix"
@@ -155,8 +157,10 @@ class Parameters:
             self.parse_to_matrix(words)
         elif typeannotation is _T_STRING_DICTIONARY:
             self.parse_to_string_dictionary(words)
+        elif typeannotation is int or typeannotation is _T_BOOL:
+            self.parse_parameter(words, int)
         else:
-            self.parse_parameter(words)
+            self.parse_parameter(words, float)
 
     def parse_to_number_dictionary(self, words):
         """Parse field to number dictionary.
@@ -219,14 +223,14 @@ class Parameters:
         value = tuple(words[1:])
         matrix.add(value)
 
-    def parse_parameter(self, words):
+    def parse_parameter(self, words, typefunc: Callable[[str], T]):
         """Parse field to parameters.
 
         Args:
             words:  strings to parse
         """
         assert len(words) == 2, words
-        value = float(words[1])
+        value = typefunc(words[1])
         setattr(self, words[0], value)
 
     def parse_string(self, words):
@@ -448,37 +452,40 @@ O2
 class InteractionMatrix:
     """Interaction matrix class."""
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         """Initialize with name of matrix.
 
         Args:
             name:  name of interaction matrix
         """
         self.name = name
-        self.value = None
-        self.ordered_keys = []
-        self.dictionary = {}
+        self.ordered_keys: List[str] = []
+        self.dictionary: Dict[str, Dict[str, Union[str, float]]] = {}
 
-    def add(self, words):
+    def add(self, words: Sequence[str]):
         """Add values to matrix.
 
         Args:
             words:  values to add
         """
+        len_expected = len(self.ordered_keys) + 2
+        if len(words) != len_expected:
+            raise ValueError(f"Expected {len_expected} arguments, got {words!r}")
         new_group = words[0]
         self.ordered_keys.append(new_group)
         if new_group not in self.dictionary.keys():
             self.dictionary[new_group] = {}
         for i, group in enumerate(self.ordered_keys):
             if len(words) > i+1:
+                value: Union[str, float]
                 try:
-                    self.value = float(words[i+1])
+                    value = float(words[i+1])
                 except ValueError:
-                    self.value = words[i+1]
-                self.dictionary[group][new_group] = self.value
-                self.dictionary[new_group][group] = self.value
+                    value = words[i+1]
+                self.dictionary[group][new_group] = value
+                self.dictionary[new_group][group] = value
 
-    def get_value(self, item1, item2):
+    def get_value(self, item1: str, item2: str) -> Union[str, float, None]:
         """Get specific matrix value.
 
         Args:
@@ -492,7 +499,7 @@ class InteractionMatrix:
         except KeyError:
             return None
 
-    def __getitem__(self, group):
+    def __getitem__(self, group: str):
         """Get specific group from matrix.
 
         Args:
@@ -528,17 +535,17 @@ class InteractionMatrix:
 class PairwiseMatrix:
     """Pairwise interaction matrix class."""
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         """Initialize pairwise matrix.
 
         Args:
             name:  name of pairwise interaction
         """
         self.name = name
-        self.dictionary = {}
-        self.default = [0.0, 0.0]
+        self.dictionary: Dict[str, Dict[str, Tuple[float, float]]] = {}
+        self.default = (0.0, 0.0)
 
-    def add(self, words):
+    def add(self, words: Sequence[str]):
         """Add information to the matrix.
 
         TODO - this function unnecessarily bundles arguments into a tuple
@@ -548,16 +555,17 @@ class PairwiseMatrix:
         """
         # assign the default value
         if len(words) == 3 and words[0] == 'default':
-            self.default = [float(words[1]), float(words[2])]
+            self.default = (float(words[1]), float(words[2]))
             return
         # assign non-default values
+        assert len(words) == 4
         group1 = words[0]
         group2 = words[1]
-        value = [float(words[2]), float(words[3])]
+        value = (float(words[2]), float(words[3]))
         self.insert(group1, group2, value)
         self.insert(group2, group1, value)
 
-    def insert(self, key1, key2, value):
+    def insert(self, key1: str, key2: str, value: Tuple[float, float]):
         """Insert value into matrix.
 
         Args:
@@ -575,7 +583,7 @@ class PairwiseMatrix:
             self.dictionary[key1] = {}
         self.dictionary[key1][key2] = value
 
-    def get_value(self, item1, item2):
+    def get_value(self, item1: str, item2: str) -> Tuple[float, float]:
         """Get specified value from matrix.
 
         Args:
@@ -589,7 +597,7 @@ class PairwiseMatrix:
         except KeyError:
             return self.default
 
-    def __getitem__(self, group):
+    def __getitem__(self, group: str):
         """Get item from matrix corresponding to specific group.
 
         Args:
