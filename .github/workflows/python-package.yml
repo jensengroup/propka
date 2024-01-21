@@ -15,9 +15,10 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        os: ["ubuntu-latest", "windows-latest"]
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
 
     steps:
@@ -31,7 +32,7 @@ jobs:
         python -m pip install --upgrade pip setuptools wheel
         python -m pip install flake8 pytest
         python -m pip install coverage
-        if [ -f requirements.txt ]; then python -m pip install -r requirements.txt; fi
+        python -m pip install -r requirements.txt
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
@@ -46,6 +47,7 @@ jobs:
         coverage html
     - name: Upload coverage to https://codecov.io/gh/jensengroup/propka
       run: bash <(curl -s https://codecov.io/bash)
+      if: ${{ ! startsWith(matrix.os, 'windows') }}
     - name: Store coverage text results
       uses: actions/upload-artifact@v3
       with:
