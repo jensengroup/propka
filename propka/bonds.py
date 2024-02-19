@@ -87,63 +87,6 @@ class BondMaker:
         self.backbone_atoms = list(self.intra_residue_backbone_bonds.keys())
         self.terminal_oxygen_names = ['OXT', 'O\'\'']
 
-    def find_bonds_for_protein(self, protein):
-        """Bonds proteins based on the way atoms normally bond.
-
-        Args:
-            protein:  the protein to search for bonds
-        """
-        raise NotImplementedError("unused")
-        _LOGGER.info('++++ Side chains ++++')
-        # side chains
-        for chain in protein.chains:
-            for residue in chain.residues:
-                if residue.res_name.replace(' ', '') not in ['N+', 'C-']:
-                    self.find_bonds_for_side_chain(residue.atoms)
-        _LOGGER.info('++++ Backbones ++++')
-        # backbone
-        last_residues = []
-        for chain in protein.chains:
-            for i in range(1, len(chain.residues)):
-                if (chain.residues[i-1].res_name.replace(' ', '')
-                        not in ['N+', 'C-']):
-                    if (chain.residues[i].res_name.replace(' ', '')
-                            not in ['N+', 'C-']):
-                        self.connect_backbone(chain.residues[i-1],
-                                              chain.residues[i])
-                        last_residues.append(chain.residues[i])
-        _LOGGER.info('++++ terminal oxygen ++++')
-        # terminal OXT
-        for last_residue in last_residues:
-            self.find_bonds_for_terminal_oxygen(last_residue)
-        _LOGGER.info('++++ cysteines ++++')
-        # Cysteines
-        for chain in protein.chains:
-            for i in range(0, len(chain.residues)):
-                if chain.residues[i].res_name == 'CYS':
-                    for j in range(0, len(chain.residues)):
-                        if chain.residues[j].res_name == 'CYS' and j != i:
-                            self.check_for_cysteine_bonds(chain.residues[i],
-                                                          chain.residues[j])
-
-    def check_for_cysteine_bonds(self, cys1, cys2):
-        """Looks for potential bonds between two cysteines.
-
-        Args:
-            cys1:  one of the cysteines to check
-            cys1:  one of the cysteines to check
-        """
-        raise NotImplementedError("unused")
-        for atom1 in cys1.atoms:
-            if atom1.name == 'SG':
-                for atom2 in cys2.atoms:
-                    if atom2.name == 'SG':
-                        dist = propka.calculations.squared_distance(atom1,
-                                                                    atom2)
-                        # TODO - is SS_dist_squared an attribute of this class?
-                        if dist < self.SS_dist_squared:
-                            self.make_bond(atom1, atom2)
-
     def find_bonds_for_terminal_oxygen(self, residue):
         """Look for bonds for terminal oxygen.
 
@@ -423,34 +366,3 @@ class BondMaker:
             atom2.bonded_atoms.append(atom1)
         if atom2 not in atom1.bonded_atoms:
             atom1.bonded_atoms.append(atom2)
-
-    def generate_protein_bond_dictionary(self, atoms):
-        """Generate dictionary of protein bonds.
-
-        Args:
-            atoms:  list of atoms for bonding
-        """
-        for atom in atoms:
-            for bonded_atom in atom.bonded_atoms:
-                resi_i = atom.res_name
-                name_i = atom.name
-                resi_j = bonded_atom.res_name
-                name_j = bonded_atom.name
-                if name_i not in (
-                        self.backbone_atoms
-                        or name_j not in self.backbone_atoms):
-                    if name_i not in (
-                            self.terminal_oxygen_names
-                            and name_j not in self.terminal_oxygen_names):
-                        if resi_i not in list(self.protein_bonds.keys()):
-                            self.protein_bonds[resi_i] = {}
-                        if name_i not in self.protein_bonds[resi_i]:
-                            self.protein_bonds[resi_i][name_i] = []
-                        if name_j not in self.protein_bonds[resi_i][name_i]:
-                            self.protein_bonds[resi_i][name_i].append(name_j)
-                        if resi_j not in list(self.protein_bonds.keys()):
-                            self.protein_bonds[resi_j] = {}
-                        if name_j not in self.protein_bonds[resi_j]:
-                            self.protein_bonds[resi_j][name_j] = []
-                        if name_i not in self.protein_bonds[resi_j][name_j]:
-                            self.protein_bonds[resi_j][name_j].append(name_i)

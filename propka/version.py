@@ -7,6 +7,7 @@ Contains version-specific methods and parameters.
 TODO - this module unnecessarily confuses the code.  Can we eliminate it?
 """
 import logging
+from typing import Sequence, Tuple
 from propka.atom import Atom
 from propka.hydrogens import setup_bonding_and_protonation, setup_bonding
 from propka.hydrogens import setup_bonding_and_protonation_30_style
@@ -15,6 +16,7 @@ from propka.energy import hydrogen_bond_energy, hydrogen_bond_interaction
 from propka.energy import electrostatic_interaction, check_coulomb_pair
 from propka.energy import coulomb_energy, check_exceptions
 from propka.energy import backbone_reorganization
+from propka.parameters import Parameters
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -22,7 +24,7 @@ _LOGGER = logging.getLogger(__name__)
 
 class Version:
     """Store version-specific methods and parameters."""
-    def __init__(self, parameters):
+    def __init__(self, parameters: Parameters):
         self.parameters = parameters
         self.desolvation_model = self.empty_function
         self.weight_pair_method = self.empty_function
@@ -99,7 +101,7 @@ class Version:
         """Setup bonding using assigned model."""
         return self.prepare_bonds(self.parameters, molecular_container)
 
-    def get_hydrogen_bond_parameters(self, atom1: Atom, atom2: Atom) -> tuple:
+    def get_hydrogen_bond_parameters(self, atom1: Atom, atom2: Atom) -> Tuple[float, Sequence[float]]:
         """Get hydrogen bond parameters for two atoms."""
         raise NotImplementedError("abstract method")
 
@@ -136,7 +138,7 @@ class VersionA(Version):
         dpka_max = self.parameters.sidechain_interaction
         cutoff = self.parameters.sidechain_cutoffs.get_value(
             atom1.group_type, atom2.group_type)
-        return [dpka_max, cutoff]
+        return dpka_max, cutoff
 
     def get_backbone_hydrogen_bond_parameters(self, backbone_atom, atom):
         """Get hydrogen bond parameters between backbone atom and other atom.
@@ -311,4 +313,4 @@ class Propka30(Version):
             atom1.group_type, atom2.group_type)
         cutoff = self.parameters.sidechain_cutoffs.get_value(
             atom1.group_type, atom2.group_type)
-        return [dpka_max, cutoff]
+        return dpka_max, cutoff

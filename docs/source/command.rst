@@ -10,9 +10,9 @@ PROPKA predicts the pKa values of ionizable groups in proteins and
 protein-ligand complexes based in the 3D structure. The
 :program:`propka3` command has the following options::
 	   
-  propka3 [-h] [-f FILENAMES] [-r REFERENCE] [-c CHAINS] [-i TITRATE_ONLY] [-t THERMOPHILES] [-a ALIGNMENT] [-m MUTATIONS]
+  propka3 [-h] [-f FILENAMES] [-r REFERENCE] [-c CHAINS] [-i TITRATE_ONLY]
          [-v VERSION_LABEL] [-p PARAMETERS] [--log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [-o PH] [-w WINDOW WINDOW WINDOW]
-         [-g GRID GRID GRID] [--mutator MUTATOR] [--mutator-option MUTATOR_OPTIONS] [-d] [-l] [-k] [-q] [--protonate-all]
+         [-g GRID GRID GRID] [-d] [-l] [-k] [-q] [--protonate-all]
          input_pdb
 
 
@@ -47,21 +47,6 @@ protein-ligand complexes based in the 3D structure. The
 	     should be a comma-separated list of "chain:resnum"
 	     values; for  example: ``-i "A:10,A:11"`` (default: None)
 	     
-.. option::  -t THERMOPHILES, --thermophile THERMOPHILES
-	     
-             defining a thermophile filename; usually used in
-	     'alignment-mutations' (default: None)
-	     
-.. option::  -a ALIGNMENT, --alignment ALIGNMENT
-	     
-             alignment file connecting <filename> and <thermophile>
-	     [<thermophile>.pir] (default: None)
-	     
-.. option::  -m MUTATIONS, --mutation MUTATIONS
-	     
-              specifying mutation labels which is used to modify
-	      <filename> according to, e.g. N25R/N181D (default: None)
-			
 .. option::  --version
 	     
 	      show program's version number and exit
@@ -90,16 +75,6 @@ protein-ligand complexes based in the 3D structure. The
             setting the pH-grid to calculate e.g. stability related
 	    properties (default: (0.0, 14.0, 0.1))
 	    
-.. option::  --mutator MUTATOR
-
-	     setting approach for mutating <filename>
-	     [alignment/scwrl/jackal] (default: None)
-	     
-.. option::  --mutator-option MUTATOR_OPTIONS
-	     
-             setting property for mutator [e.g. type="side-chain"]
-	     (default: None)
-	     
 .. option::  -d, --display-coupled-residues
 	     
              Displays alternative pKa values due to coupling of

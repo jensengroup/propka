@@ -8,10 +8,11 @@ Implements many of the main functions used to call PROPKA.
 import logging
 import argparse
 from pathlib import Path
-from typing import Iterable, Iterator, List, TYPE_CHECKING, NoReturn, Optional, Tuple, TypeVar
+from typing import Dict, Iterable, Iterator, List, TYPE_CHECKING, NoReturn, Optional, Tuple, TypeVar
 
 if TYPE_CHECKING:
     from propka.atom import Atom
+    from propka.conformation_container import ConformationContainer
 
 
 T = TypeVar("T")
@@ -30,7 +31,6 @@ EXPECTED_ATOM_NUMBERS = {'ALA': 5, 'ARG': 11, 'ASN': 8, 'ASP': 8, 'CYS': 6,
 
 class Options:
     # Note: All the "NoReturn" members appear to be unused
-    alignment: NoReturn  # Optional[List[str]]
     chains: Optional[List[str]]
     display_coupled_residues: bool = False
     filenames: List[str]  # List[Path]?
@@ -38,20 +38,17 @@ class Options:
     input_pdb: str  # Path?
     keep_protons: bool = False
     log_level: str = 'INFO'
-    mutations: NoReturn  # Optional[List[str]]
-    mutator: NoReturn  # Optional[str]  # alignment/scwrl/jackal
-    mutator_options: NoReturn  # Optional[List[str]]
     pH: NoReturn  # float = 7.0
     parameters: Path
     protonate_all: bool = False
     reference: NoReturn  # str = 'neutral'
     reuse_ligand_mol2_file: bool = False  # only used by unused function
-    thermophiles: NoReturn  # Optional[List[str]]
     titrate_only: Optional[List[_T_RESIDUE_TUPLE]]
     window: Tuple[float, float, float] = (0.0, 14.0, 1.0)
 
 
-def protein_precheck(conformations, names):
+def protein_precheck(conformations: Dict[str, "ConformationContainer"],
+                     names: Iterable[str]):
     """Check protein for correct number of atoms, etc.
 
     Args:
@@ -60,7 +57,7 @@ def protein_precheck(conformations, names):
     for name in names:
         atoms = conformations[name].atoms
         # Group the atoms by their residue:
-        atoms_by_residue = {}
+        atoms_by_residue: Dict[str, List[Atom]] = {}
         for atom in atoms:
             if atom.element != 'H':
                 res_id = resid_from_atom(atom)
@@ -273,18 +270,6 @@ def build_parser(parser=None):
               'be a comma-separated list of "chain:resnum" values; for '
               'example: -i "A:10,A:11"'))
     group.add_argument(
-        "-t", "--thermophile", action="append", dest="thermophiles",
-        help=("defining a thermophile filename; usually used in "
-              "'alignment-mutations'"))
-    group.add_argument(
-        "-a", "--alignment", action="append", dest="alignment",
-        help=("alignment file connecting <filename> and <thermophile> "
-              "[<thermophile>.pir]"))
-    group.add_argument(
-        "-m", "--mutation", action="append", dest="mutations",
-        help=("specifying mutation labels which is used to modify "
-              "<filename> according to, e.g. N25R/N181D"))
-    group.add_argument(
         "--version", action="version", version=f"%(prog)s {propka.__version__}")
     group.add_argument(
         "-p", "--parameters", dest="parameters",
@@ -311,16 +296,6 @@ def build_parser(parser=None):
         default=(0.0, 14.0, 0.1),
         help=("setting the pH-grid to calculate e.g. stability "
               "related properties [0.0, 14.0, 0.1]"))
-    group.add_argument(
-        "--mutator", dest="mutator",
-        help=(
-            "setting approach for mutating <filename> "
-            "[alignment/scwrl/jackal]"
-        )
-    )
-    group.add_argument(
-        "--mutator-option", dest="mutator_options", action="append",
-        help="setting property for mutator [e.g. type=\"side-chain\"]")
     group.add_argument(
         "-d", "--display-coupled-residues", dest="display_coupled_residues",
         action="store_true",

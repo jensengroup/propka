@@ -14,7 +14,7 @@ from datetime import date
 from decimal import Decimal
 from os import PathLike
 from pathlib import Path
-from typing import IO, AnyStr, List, NoReturn, Optional, Union, TYPE_CHECKING
+from typing import IO, AnyStr, List, Optional, Tuple, Union, TYPE_CHECKING
 import warnings
 
 from .parameters import Parameters
@@ -52,66 +52,12 @@ def open_file_for_writing(input_file: _TextIOSource) -> IO[str]:
     return input_file
 
 
-def write_file(filename, lines):
-    """Writes a new file.
-
-    Args:
-        filename:  name of file
-        lines:  lines to write to file
-    """
-    warnings.warn("unused and untested by propka")
-    file_ = open_file_for_writing(filename)
-    for line in lines:
-        file_.write("{0:s}\n".format(line))
-    file_.close()
-
-
 def print_header():
     """Print header section of output."""
     str_ = "{0:s}\n".format(get_propka_header())
     str_ += "{0:s}\n".format(get_references_header())
     str_ += "{0:s}\n".format(get_warning_header())
     _LOGGER.info("\n%s", str_)
-
-
-def write_pdb_for_protein(
-        protein, pdbfile=None, filename=None, include_hydrogens=False, _=None):
-    """Write a residue to the new PDB file.
-
-    Args:
-        protein:  protein object
-        pdbfile:  PDB file
-        filename:  file to write to
-        include_hydrogens:  Boolean indicating whether to include hydrogens
-        options:  options object
-    """
-    raise NotImplementedError("unused")
-    if pdbfile is None:
-        # opening file if not given
-        if filename is None:
-            filename = "{0:s}.pdb".format(protein.name)
-        # TODO - this would be better as a context manager
-        pdbfile = open(filename, 'w')
-        _LOGGER.info("writing pdbfile {0:s}".format(filename))
-        close_file = True
-    else:
-        # don't close the file, it was opened in a different place
-        close_file = False
-    numb = 0
-    for chain in protein.chains:
-        for residue in chain.residues:
-            if residue.res_name not in ["N+ ", "C- "]:
-                for atom in residue.atoms:
-                    if (not include_hydrogens) and atom.name[0] == "H":
-                        # don't print
-                        pass
-                    else:
-                        numb += 1
-                        line = atom.make_pdb_line2(numb=numb)
-                        line += "\n"
-                        pdbfile.write(line)
-    if close_file:
-        pdbfile.close()
 
 
 def write_pdb_for_conformation(conformation: "ConformationContainer",
@@ -129,22 +75,19 @@ def write_pdb_for_conformation(conformation: "ConformationContainer",
 def write_pka(protein: "MolecularContainer",
               parameters: Parameters,
               filename: Optional[_PathArg] = None,
-              conformation='1A',
-              reference="neutral", _="folding", verbose=False,
-              __=None):
+              conformation: str = '1A',
+              reference: str = "neutral",
+              *,
+              verbose: bool = True):
     """Write the pKa-file based on the given protein.
 
     Args:
         protein:  protein object
         filename:  output file name
-        conformation:  TODO - figure this out
+        conformation: specific conformation
         reference:  reference state
-        _:  "folding" or other
         verbose:  Boolean flag for verbosity
-        __:  options object
     """
-    # TODO - the code immediately overrides the verbose argument; why?
-    verbose = True
     if filename is None:
         filename = "{0:s}.pka".format(protein.name)
     if verbose:
@@ -166,39 +109,6 @@ def write_pka(protein: "MolecularContainer",
     str_ += get_charge_profile_section(protein, conformation=conformation)
     # now, writing the pka text to file
     Path(filename).write_text(str_, encoding="utf-8")
-
-
-def print_tm_profile(protein: NoReturn, reference="neutral", window=[0., 14., 1.],
-                     __=[0., 0.], tms=None, ref=None, _=False,
-                     options=None):
-    """Print Tm profile.
-
-    I think Tm refers to the denaturation temperature.
-
-    Args:
-        protein:  protein object
-        reference:  reference state
-        window:  pH window [min, max, step]
-        __:  temperature range [min, max]
-        tms:  TODO - figure this out
-        ref:  TODO - figure this out (probably reference state?)
-        _:  Boolean for verbosity
-        options:  options object
-    """
-    raise NotImplementedError("unused")
-    profile = protein.getTmProfile(
-        reference=reference, grid=[0., 14., 0.1], tms=tms, ref=ref,
-        options=options)
-    if profile is None:
-        str_ = "Could not determine Tm-profile\n"
-    else:
-        str_ = " suggested Tm-profile for {0:s}\n".format(protein.name)
-        for (ph, tm_) in profile:
-            if (ph >= window[0] and ph <= window[1]
-                    and (ph % window[2] < 0.01
-                         or ph % window[2] > 0.99*window[2])):
-                str_ += "{0:>6.2f}{1:>10.2f}\n".format(ph, tm_)
-        _LOGGER.info(str_)
 
 
 def print_result(protein: "MolecularContainer", conformation: str, parameters: Parameters):
@@ -283,8 +193,11 @@ def get_summary_section(protein: "MolecularContainer", conformation: str,
 
 def get_folding_profile_section(
         protein: "MolecularContainer",
-        conformation='AVR', direction="folding", reference="neutral",
-        window=[0., 14., 1.0], _=False, __=None):
+        conformation: str = 'AVR',
+        direction: str = "folding",
+        reference: str = "neutral",
+        window: Tuple[float, float, float] = (0., 14., 1.),
+):
     """Returns string with the folding profile section of the results.
 
     Args:
@@ -293,8 +206,6 @@ def get_folding_profile_section(
         direction:  'folding' or other
         reference:  reference state
         window:  pH window [min, max, step]
-        _:  Boolean for verbose output
-        __:  options object
     Returns:
         string
     """
@@ -340,7 +251,8 @@ def get_folding_profile_section(
     return str_
 
 
-def get_charge_profile_section(protein, conformation='AVR', _=None):
+def get_charge_profile_section(protein: "MolecularContainer",
+                               conformation: str = 'AVR'):
     """Returns string with the charge profile section of the results.
 
     Args:
@@ -369,34 +281,6 @@ def get_charge_profile_section(protein, conformation='AVR', _=None):
             f"(unfolded)\n"
         )
     return str_
-
-
-def write_jackal_scap_file(mutation_data=None, filename="1xxx_scap.list",
-                           _=None):
-    """Write a scap file for, i.e., generating a mutated protein
-
-    TODO - figure out what this is
-    """
-    raise NotImplementedError("unused")
-    with open(filename, 'w') as file_:
-        for chain_id, _, res_num, code2 in mutation_data:
-            str_ = "{chain:s}, {num:d}, {code:s}\n".format(
-                chain=chain_id, num=res_num, code=code2)
-            file_.write(str_)
-
-
-def write_scwrl_sequence_file(sequence, filename="x-ray.seq", _=None):
-    """Write a scwrl sequence file for, e.g.,  generating a mutated protein
-
-    TODO - figure out what this is
-    """
-    warnings.warn("unused and untested by propka")
-    with open(filename, 'w') as file_:
-        start = 0
-        while len(sequence[start:]) > 60:
-            file_.write("{0:s}s\n".format(sequence[start:start+60]))
-            start += 60
-        file_.write("{0:s}\n".format(sequence[start:]))
 
 
 def get_propka_header():
