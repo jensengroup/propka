@@ -51,12 +51,12 @@ jobs:
     - name: Store coverage text results
       uses: actions/upload-artifact@v6
       with:
-        name: coverage-text
+        name: coverage-text-${{ matrix.python-version }}
         path: coverage.txt
     - name: Store coverage HTML results
       uses: actions/upload-artifact@v6
       with:
-        name: coverage-html
+        name: coverage-html-${{ matrix.python-version }}
         path: htmlcov/*
 
   static_type_check:
