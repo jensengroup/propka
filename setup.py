@@ -46,8 +46,6 @@ See http://propka.org/ for the PROPKA web server.
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: Microsoft :: Windows',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
@@ -58,7 +56,7 @@ See http://propka.org/ for the PROPKA web server.
     package_data={'propka': ['*.dat', '*.cfg', '*.json']},
     entry_points={'console_scripts': ['propka3 = propka.run:main', ]},
     zip_safe=True,
-    python_requires='>=3.8',
+    python_requires='>=3.10',
     tests_require=["numpy", "pytest"],
     test_suite="tests",
     )
