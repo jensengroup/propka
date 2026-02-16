@@ -144,7 +144,7 @@ class Parameters:
         if len(words) == 0:
             return
         # parse the words
-        typeannotation = self.__annotations__.get(words[0])
+        typeannotation = type(self).__annotations__.get(words[0])
         if typeannotation is _T_NUMBER_DICTIONARY:
             self.parse_to_number_dictionary(words)
         elif typeannotation is _T_STRING_LIST:
