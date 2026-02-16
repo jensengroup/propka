@@ -40,10 +40,24 @@ def open_file_for_reading(input_file: _TextIOSource) -> ContextManager[IO[str]]:
             if not zipfile.is_zipfile(p):
                 print(f"Parent {p} is not ZIP file.")
                 continue
-            zf = zipfile.ZipFile(p)
-            path_string = Path.as_posix(input_file.relative_to(p))
-            stream = zf.open(path_string)
-            return io.TextIOWrapper(stream)
+            # Create a custom context manager that closes both
+            # the ZIP file and the stream when the context is exited.
+            @contextlib.contextmanager
+            def zip_file_reader():
+                zf = zipfile.ZipFile(p)
+                try:
+                    path_string = Path.as_posix(input_file.relative_to(p))
+                    stream = zf.open(path_string)
+                    wrapped = io.TextIOWrapper(stream)
+                    try:
+                        yield wrapped
+                    finally:
+                        wrapped.close()
+                        stream.close()
+                finally:
+                    zf.close()
+
+            return zip_file_reader()
 
     return contextlib.closing(open(input_file, 'rt'))
 
