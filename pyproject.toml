@@ -1,0 +1,93 @@
+[project]
+name = "propka"
+description = "Heuristic pKa calculations with ligands"
+authors = [{ name = "Jan H. Jensen", email = "jhjensen@chem.ku.dk" }]
+maintainers = [{ name = "Nathan Baker", email = "nathanandrewbaker@gmail.com" }]
+license = { text = "LGPL v2.1" }
+readme = "LONG_DESCRIPTION.md"
+requires-python = ">=3.10"
+keywords = ["science", "chemistry", "bioinformatics", "pKa", "proteins"]
+classifiers = [
+    "Development Status :: 6 - Mature",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU Lesser General Public License v2 (LGPLv2)",
+    "Operating System :: POSIX",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Chemistry",
+]
+dynamic = ["version"]
+dependencies = ["numpy"]
+
+[project.urls]
+Homepage = "http://propka.org"
+Repository = "https://github.com/jensengroup/propka"
+Documentation = "https://propka.readthedocs.io"
+
+[project.scripts]
+propka3 = "propka.run:main"
+
+[project.optional-dependencies]
+test = ["pytest", "numpy"]
+docs = ["sphinx>=3.1", "sphinx_rtd_theme", "sphinx_sitemap"]
+dev = [
+    "pytest",
+    "numpy",
+    "sphinx>=3.1",
+    "sphinx_rtd_theme",
+    "sphinx_sitemap",
+    "mypy",
+    "coverage",
+    "yapf",
+]
+
+[build-system]
+requires = ["setuptools>=61.0", "versioneer[toml]==0.29"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+zip-safe = true
+
+
+[tool.setuptools.packages.find]
+exclude = ["scripts*", "tests*"]
+
+[tool.setuptools.package-data]
+propka = ["*.dat", "*.cfg", "*.json", "py.typed"]
+
+[tool.versioneer]
+VCS = "git"
+style = "pep440"
+versionfile_source = "propka/_version.py"
+versionfile_build = "propka/_version.py"
+tag_prefix = "v"
+parentdir_prefix = "propka-"
+
+[tool.coverage.run]
+source = ["propka"]
+omit = [
+    # exclude versioneer generated file
+    "propka/_version.py",
+    # do not cover tests (already covered with source = propka)
+    "tests/*",
+]
+
+[tool.coverage.report]
+exclude_lines = ["pragma: no cover"]
+
+[tool.yapf]
+column_limit = 88
+based_on_style = "pep8"
+allow_split_before_dict_value = false
+
+[tool.mypy]
+files = ["propka", "tests"]
+exclude = ["_version\\.py$"]
+explicit_package_bases = true
+ignore_missing_imports = true

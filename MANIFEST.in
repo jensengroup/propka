@@ -1,5 +1,5 @@
-include README.md INSTALL 
-include setup.py setup.cfg
+include README.md LONG_DESCRIPTION.md INSTALL
+include setup.py
 include propka.cfg
 
 include versioneer.py
@@ -7,3 +7,6 @@ include propka/_version.py
 
 # Python type annotation declarations, see PEP-561
 include propka/py.typed
+
+prune docs
+prune tests
