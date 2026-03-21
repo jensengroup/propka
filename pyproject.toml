@@ -3,7 +3,7 @@ name = "propka"
 description = "Heuristic pKa calculations with ligands"
 authors = [{ name = "Jan H. Jensen", email = "jhjensen@chem.ku.dk" }]
 maintainers = [{ name = "Nathan Baker", email = "nathanandrewbaker@gmail.com" }]
-license = { text = "LGPL v2.1" }
+license = "LGPL-2.1"
 readme = "LONG_DESCRIPTION.md"
 requires-python = ">=3.10"
 keywords = ["science", "chemistry", "bioinformatics", "pKa", "proteins"]
@@ -11,7 +11,6 @@ classifiers = [
     "Development Status :: 6 - Mature",
     "Environment :: Console",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: GNU Lesser General Public License v2 (LGPLv2)",
     "Operating System :: POSIX",
     "Operating System :: MacOS :: MacOS X",
     "Operating System :: Microsoft :: Windows",
@@ -23,7 +22,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Chemistry",
 ]
 dynamic = ["version"]
-dependencies = ["numpy"]
+dependencies = []
 
 [project.urls]
 Homepage = "http://propka.org"
@@ -34,7 +33,7 @@ Documentation = "https://propka.readthedocs.io"
 propka3 = "propka.run:main"
 
 [project.optional-dependencies]
-test = ["pytest", "numpy"]
+test = ["pytest"]
 docs = ["sphinx>=3.1", "sphinx_rtd_theme", "sphinx_sitemap"]
 dev = [
     "pytest",
@@ -48,12 +47,11 @@ dev = [
 ]
 
 [build-system]
-requires = ["setuptools>=61.0", "versioneer[toml]==0.29"]
+requires = ["setuptools>=61.0", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 zip-safe = true
-
 
 [tool.setuptools.packages.find]
 exclude = ["scripts*", "tests*"]
@@ -61,19 +59,11 @@ exclude = ["scripts*", "tests*"]
 [tool.setuptools.package-data]
 propka = ["*.dat", "*.cfg", "*.json", "py.typed"]
 
-[tool.versioneer]
-VCS = "git"
-style = "pep440"
-versionfile_source = "propka/_version.py"
-versionfile_build = "propka/_version.py"
-tag_prefix = "v"
-parentdir_prefix = "propka-"
+[tool.setuptools_scm]
 
 [tool.coverage.run]
 source = ["propka"]
 omit = [
-    # exclude versioneer generated file
-    "propka/_version.py",
     # do not cover tests (already covered with source = propka)
     "tests/*",
 ]
@@ -88,6 +78,5 @@ allow_split_before_dict_value = false
 
 [tool.mypy]
 files = ["propka", "tests"]
-exclude = ["_version\\.py$"]
 explicit_package_bases = true
 ignore_missing_imports = true

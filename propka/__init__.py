@@ -19,5 +19,9 @@ __all__ = ["atom", "bonds", "calculations", "conformation_container",
            "ligand", "molecular_container", "output", "parameters",
            "protonate", "run", "vector_algebra", "version"]
 
-from . import _version
-__version__ = _version.get_versions()['version']
+from importlib.metadata import version as _metadata_version, PackageNotFoundError
+
+try:
+    __version__ = _metadata_version("propka")
+except PackageNotFoundError:
+    __version__ = "0+untagged"
