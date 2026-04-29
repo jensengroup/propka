@@ -7,7 +7,7 @@ The :class:`Atom` class contains all atom information found in the PDB file.
 """
 
 import string
-from typing import List, Optional, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING, Tuple
 
 from propka.lib import make_tidy_atom_label
 from . import hybrid36
@@ -18,20 +18,16 @@ if TYPE_CHECKING:
     from propka.conformation_container import ConformationContainer
 
 # Format strings that get used in multiple places (or are very complex)
-PDB_LINE_FMT1 = (
-    "{type:6s}{r.numb:>5d} {atom_label} {r.res_name}{r.chain_id:>2s}"
-    "{r.res_num:>4d}{r.x:>12.3f}{r.y:>8.3f}{r.z:>8.3f}{r.occ:>6s}"
-    "{r.beta:>6s}\n")
-MOL2_LINE_FMT = (
-    "{id:<4d} {atom_label:4s} "
-    "{r.x:>10.4f} {r.y:>10.4f} {r.z:>10.4f} "
-    "{r.sybyl_type:>6s} {r.res_num:>6d} {r.res_name:>10s}     0.0000\n")
-PDB_LINE_FMT2 = (
-    "ATOM {numb:>6d} {atom_label} {res_name}{chain_id:>2s}{res_num:>4d}"
-    "{x:>12.3f}{y:>8.3f}{z:>8.3f}{occ:>6.2f}{beta:>6.2f}\n")
-STR_FMT = (
-    "{r.numb:>5d}-{r.name:>4s} {r.res_num:>5d}-{r.res_name:>3s} "
-    "({r.chain_id:1s}) [{r.x:>8.3f} {r.y:>8.3f} {r.z:>8.3f}] {r.element:s}")
+PDB_LINE_FMT1 = ("{type:6s}{r.numb:>5d} {atom_label} {r.res_name}{r.chain_id:>2s}"
+                 "{r.res_num:>4d}{r.x:>12.3f}{r.y:>8.3f}{r.z:>8.3f}{r.occ:>6s}"
+                 "{r.beta:>6s}\n")
+MOL2_LINE_FMT = ("{id:<4d} {atom_label:4s} "
+                 "{r.x:>10.4f} {r.y:>10.4f} {r.z:>10.4f} "
+                 "{r.sybyl_type:>6s} {r.res_num:>6d} {r.res_name:>10s}     0.0000\n")
+PDB_LINE_FMT2 = ("ATOM {numb:>6d} {atom_label} {res_name}{chain_id:>2s}{res_num:>4d}"
+                 "{x:>12.3f}{y:>8.3f}{z:>8.3f}{occ:>6.2f}{beta:>6.2f}\n")
+STR_FMT = ("{r.numb:>5d}-{r.name:>4s} {r.res_num:>5d}-{r.res_name:>3s} "
+           "({r.chain_id:1s}) [{r.x:>8.3f} {r.y:>8.3f} {r.z:>8.3f}] {r.element:s}")
 
 
 class Atom:
@@ -87,8 +83,25 @@ class Atom:
         """
         self.bonded_atoms: List[Atom] = []
         self.set_properties(line)
+        self.update_residue_label()
+
+    @property
+    def residue_key(self) -> Tuple[str, int, str]:
+        """Return the residue identity used for internal matching."""
+        return self.chain_id, self.res_num, self.icode or ' '
+
+    @property
+    def atom_key(self) -> Tuple[str, int, str, str]:
+        """Return the atom identity used for internal matching."""
+        return self.chain_id, self.res_num, self.icode or ' ', self.name
+
+    def update_residue_label(self):
+        """Update the display label used in reports and legacy matching."""
         fmt = "{r.name:3s}{r.res_num:>4d}{r.chain_id:>2s}"
         self.residue_label = fmt.format(r=self)
+        icode = self.icode.strip()
+        if icode:
+            self.residue_label += icode
 
     def set_properties(self, line: Optional[str]):
         """Line from PDB file to set properties of atom.
@@ -121,8 +134,8 @@ class Atom:
             if len(self.name) == 4:
                 self.element = self.element[0]
             if len(self.element) == 2:
-                self.element = '{0:1s}{1:1s}'.format(
-                    self.element[0], self.element[1].lower())
+                self.element = '{0:1s}{1:1s}'.format(self.element[0],
+                                                     self.element[1].lower())
 
     def set_group_type(self, type_: str):
         """Set group type of atom.
@@ -177,8 +190,7 @@ class Atom:
             if ba == other_atom:
                 return True
             if max_bonds > cur_bond:
-                if ba.is_atom_within_bond_distance(other_atom, max_bonds,
-                                                   cur_bond+1):
+                if ba.is_atom_within_bond_distance(other_atom, max_bonds, cur_bond + 1):
                     return True
         return False
 
@@ -188,6 +200,7 @@ class Atom:
                      res_name: Optional[str] = None,
                      chain_id: Optional[str] = None,
                      res_num: Optional[int] = None,
+                     icode: Optional[str] = None,
                      x: Optional[float] = None,
                      y: Optional[float] = None,
                      z: Optional[float] = None,
@@ -201,6 +214,7 @@ class Atom:
             res_name:  residue name
             chain_id:  chain ID
             res_num:  residue number
+            icode:  insertion code
             x:  atom x-coordinate
             y:  atom y-coordinate
             z:  atom z-coordinate
@@ -217,6 +231,8 @@ class Atom:
             self.chain_id = chain_id
         if res_num is not None:
             self.res_num = res_num
+        if icode is not None:
+            self.icode = icode
         if x is not None:
             self.x = x
         if y is not None:
@@ -227,6 +243,7 @@ class Atom:
             self.occ = occ
         if beta is not None:
             self.beta = beta
+        self.update_residue_label()
 
     def make_copy(self):
         """Make a copy of this atom.
@@ -279,9 +296,10 @@ class Atom:
         Returns:
             String with PDB line.
         """
-        str_ = PDB_LINE_FMT1.format(
-            type=self.type.upper(), r=self,
-            atom_label=make_tidy_atom_label(self.name, self.element))
+        str_ = PDB_LINE_FMT1.format(type=self.type.upper(),
+                                    r=self,
+                                    atom_label=make_tidy_atom_label(
+                                        self.name, self.element))
         return str_
 
     def make_mol2_line(self, id_):
@@ -294,9 +312,10 @@ class Atom:
         Returns:
             String with MOL2 line.
         """
-        str_ = MOL2_LINE_FMT.format(
-            id=id_, r=self,
-            atom_label=make_tidy_atom_label(self.name, self.element))
+        str_ = MOL2_LINE_FMT.format(id=id_,
+                                    r=self,
+                                    atom_label=make_tidy_atom_label(
+                                        self.name, self.element))
         return str_
 
     def get_tidy_label(self):

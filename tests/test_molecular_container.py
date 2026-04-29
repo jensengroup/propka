@@ -1,5 +1,7 @@
 from propka.input import read_parameter_file, read_molecule_file
 from propka.lib import loadOptions
+from propka.atom import Atom
+from propka.conformation_container import ConformationContainer
 from propka.molecular_container import MolecularContainer
 from propka.parameters import Parameters
 from pathlib import Path
@@ -16,6 +18,62 @@ def load_molecule(code):
     molecule = MolecularContainer(parameters, args)
     molecule = read_molecule_file(str(pdb_path), molecule)
     return molecule
+
+
+def make_atom(name, chain_id, res_num, icode=" ", res_name="GLY"):
+    atom = Atom()
+    atom.set_property(
+        numb=1,
+        name=name,
+        res_name=res_name,
+        chain_id=chain_id,
+        res_num=res_num,
+        icode=icode,
+        x=0.0,
+        y=0.0,
+        z=0.0,
+        occ="1.0",
+        beta="0.0",
+    )
+    atom.element = name[0]
+    atom.type = "atom"
+    return atom
+
+
+def test_ConformationContainer_sort_atoms_multi_character_chain():
+    conf = ConformationContainer("test", Parameters(), None)
+    atoms = [
+        make_atom("CA", "B", 1),
+        make_atom("CA", "AA", 1, "B"),
+        make_atom("CA", "AA", 1, "A"),
+        make_atom("CA", "AA", 2),
+    ]
+    conf.atoms = atoms
+
+    conf.sort_atoms()
+
+    assert [atom.residue_key for atom in conf.atoms] == [
+        ("AA", 1, "A"),
+        ("AA", 1, "B"),
+        ("AA", 2, " "),
+        ("B", 1, " "),
+    ]
+
+
+def test_ConformationContainer_top_up_keeps_insertion_codes_separate():
+    conf = ConformationContainer("test", Parameters(), None)
+    conf.add_atom(make_atom("CA", "AA", 10, "A", "GLY"))
+
+    ref_atoms = [
+        make_atom("CA", "AA", 10, "A", "GLY"),
+        make_atom("CA", "AA", 10, "B", "SER"),
+    ]
+    conf.top_up_from_atoms(ref_atoms)
+
+    assert [(atom.residue_key, atom.res_name) for atom in conf.atoms] == [
+        (("AA", 10, "A"), "GLY"),
+        (("AA", 10, "B"), "SER"),
+    ]
 
 
 def test_MolecularContainer_get_pi():
