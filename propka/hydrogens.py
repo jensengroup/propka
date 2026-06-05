@@ -51,8 +51,7 @@ def setup_bonding(molecular_container: "MolecularContainer") -> BondMaker:
     return my_bond_maker
 
 
-def setup_bonding_and_protonation_30_style(
-        molecular_container: "MolecularContainer") -> BondMaker:
+def setup_bonding_and_protonation_30_style(molecular_container: "MolecularContainer") -> BondMaker:
     """Set up bonding for a molecular container.
 
     Args:
@@ -86,7 +85,8 @@ def protonate_30_style(molecular_container: "MolecularContainer") -> None:
                 curres = atom.residue_key
                 if len(residue) > 0:
                     # backbone
-                    [o_atom, c_atom] = add_backbone_hydrogen(residue, o_atom, c_atom)
+                    [o_atom, c_atom] = add_backbone_hydrogen(
+                        residue, o_atom, c_atom)
                     # arginine
                     if residue[0].res_name == 'ARG':
                         add_arg_hydrogen(residue)
@@ -244,9 +244,9 @@ def add_amd_hydrogen(residue: List[Atom]) -> None:
     h2_atom.name = "HN2"
 
 
-def add_backbone_hydrogen(
-        residue: List[Atom], o_atom: Optional[Atom],
-        c_atom: Optional[Atom]) -> Tuple[Optional[Atom], Optional[Atom]]:
+def add_backbone_hydrogen(residue: List[Atom],
+                          o_atom: Optional[Atom],
+                          c_atom: Optional[Atom]) -> Tuple[Optional[Atom], Optional[Atom]]:
     """Adds hydrogen backbone atoms to residues according to the old way.
 
     dR is wrong for the N-terminus (i.e. first residue) but it doesn't affect
@@ -295,10 +295,10 @@ def protonate_direction(x1_atom: Atom, x2_atom: Atom, x3_atom: Atom) -> Atom:
     dx = (x3_atom.x - x2_atom.x)
     dy = (x3_atom.y - x2_atom.y)
     dz = (x3_atom.z - x2_atom.z)
-    length = math.sqrt(dx * dx + dy * dy + dz * dz)
-    x = x1_atom.x + dx / length
-    y = x1_atom.y + dy / length
-    z = x1_atom.z + dz / length
+    length = math.sqrt(dx*dx + dy*dy + dz*dz)
+    x = x1_atom.x + dx/length
+    y = x1_atom.y + dy/length
+    z = x1_atom.z + dz/length
     h_atom = make_new_h(x1_atom, x, y, z)
     h_atom.name = "H"
     return h_atom
@@ -318,13 +318,13 @@ def protonate_average_direction(x1_atom: Atom, x2_atom: Atom, x3_atom: Atom) -> 
     Returns:
         new hydrogen atom
     """
-    dx = (x3_atom.x + x1_atom.x) * 0.5 - x2_atom.x
-    dy = (x3_atom.y + x1_atom.y) * 0.5 - x2_atom.y
-    dz = (x3_atom.z + x1_atom.z) * 0.5 - x2_atom.z
-    length = math.sqrt(dx * dx + dy * dy + dz * dz)
-    x = x1_atom.x + dx / length
-    y = x1_atom.y + dy / length
-    z = x1_atom.z + dz / length
+    dx = (x3_atom.x + x1_atom.x)*0.5 - x2_atom.x
+    dy = (x3_atom.y + x1_atom.y)*0.5 - x2_atom.y
+    dz = (x3_atom.z + x1_atom.z)*0.5 - x2_atom.z
+    length = math.sqrt(dx*dx + dy*dy + dz*dz)
+    x = x1_atom.x + dx/length
+    y = x1_atom.y + dy/length
+    z = x1_atom.z + dz/length
     h_atom = make_new_h(x1_atom, x, y, z)
     h_atom.name = "H"
     return h_atom
@@ -340,13 +340,13 @@ def protonate_sp2(x1_atom: Atom, x2_atom: Atom, x3_atom: Atom) -> Atom:
     Returns:
         new hydrogen atom
     """
-    dx = (x1_atom.x + x3_atom.x) * 0.5 - x2_atom.x
-    dy = (x1_atom.y + x3_atom.y) * 0.5 - x2_atom.y
-    dz = (x1_atom.z + x3_atom.z) * 0.5 - x2_atom.z
-    length = math.sqrt(dx * dx + dy * dy + dz * dz)
-    x = x2_atom.x - dx / length
-    y = x2_atom.y - dy / length
-    z = x2_atom.z - dz / length
+    dx = (x1_atom.x + x3_atom.x)*0.5 - x2_atom.x
+    dy = (x1_atom.y + x3_atom.y)*0.5 - x2_atom.y
+    dz = (x1_atom.z + x3_atom.z)*0.5 - x2_atom.z
+    length = math.sqrt(dx*dx + dy*dy + dz*dz)
+    x = x2_atom.x - dx/length
+    y = x2_atom.y - dy/length
+    z = x2_atom.z - dz/length
     h_atom = make_new_h(x2_atom, x, y, z)
     h_atom.name = "H"
     return h_atom
@@ -364,17 +364,11 @@ def make_new_h(atom: Atom, x: float, y: float, z: float) -> Atom:
         new hydrogen atom
     """
     new_h = Atom()
-    new_h.set_property(numb=None,
-                       name='H{0:s}'.format(atom.name[1:]),
-                       res_name=atom.res_name,
-                       chain_id=atom.chain_id,
-                       res_num=atom.res_num,
-                       icode=atom.icode,
-                       x=x,
-                       y=y,
-                       z=z,
-                       occ=None,
-                       beta=None)
+    new_h.set_property(
+        numb=None, name='H{0:s}'.format(atom.name[1:]),
+        res_name=atom.res_name, chain_id=atom.chain_id,
+        res_num=atom.res_num, icode=atom.icode, x=x, y=y, z=z, occ=None,
+        beta=None)
     new_h.element = 'H'
     new_h.bonded_atoms = [atom]
     new_h.charge = 0

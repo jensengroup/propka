@@ -120,45 +120,54 @@ def read_molecule_file(
     if input_file_extension.lower() == '.pdb':
         # input is a pdb file. read in atoms and top up containers to make
         # sure that all atoms are present in all conformations
-        conformations, conformation_names = read_pdb(input_file,
-                                                     mol_container.version.parameters,
-                                                     mol_container)
+        conformations, conformation_names = read_pdb(
+            input_file, mol_container.version.parameters, mol_container)
+        if len(conformations) == 0:
+            str_ = ('Error: The pdb file does not seem to contain any '
+                    'molecular conformations')
+            raise ValueError(str_)
+        mol_container.conformations = conformations
+        mol_container.conformation_names = conformation_names
+        mol_container.top_up_conformations()
+        # make a structure precheck
+        protein_precheck(
+            mol_container.conformations, mol_container.conformation_names)
+        # set up atom bonding and protonation
+        mol_container.version.setup_bonding_and_protonation(mol_container)
+        # Extract groups
+        mol_container.extract_groups()
+        # sort atoms
+        for name in mol_container.conformation_names:
+            mol_container.conformations[name].sort_atoms()
+        # find coupled groups
+        mol_container.find_covalently_coupled_groups()
     elif input_file_extension.lower() in ('.cif', '.mmcif'):
-        conformations, conformation_names = read_mmcif(input_file,
-                                                       mol_container.version.parameters,
-                                                       mol_container)
+        conformations, conformation_names = read_mmcif(
+            input_file, mol_container.version.parameters, mol_container)
+        if len(conformations) == 0:
+            str_ = ('Error: The input file does not seem to contain any '
+                    'molecular conformations')
+            raise ValueError(str_)
+        mol_container.conformations = conformations
+        mol_container.conformation_names = conformation_names
+        mol_container.top_up_conformations()
+        # make a structure precheck
+        protein_precheck(
+            mol_container.conformations, mol_container.conformation_names)
+        # set up atom bonding and protonation
+        mol_container.version.setup_bonding_and_protonation(mol_container)
+        # Extract groups
+        mol_container.extract_groups()
+        # sort atoms
+        for name in mol_container.conformation_names:
+            mol_container.conformations[name].sort_atoms()
+        # find coupled groups
+        mol_container.find_covalently_coupled_groups()
     else:
         str_ = "Unknown input file type {0!s} for file {1!s}".format(
             input_file_extension, input_path)
         raise ValueError(str_)
-    input_type = 'pdb file' if input_file_extension.lower() == '.pdb' else 'input file'
-    setup_molecule(mol_container, conformations, conformation_names, input_type)
     return mol_container
-
-
-def setup_molecule(mol_container,
-                   conformations,
-                   conformation_names,
-                   input_type='input file'):
-    """Set up a molecular container after coordinate parsing."""
-    if len(conformations) == 0:
-        str_ = ('Error: The {0:s} does not seem to contain any '
-                'molecular conformations'.format(input_type))
-        raise ValueError(str_)
-    mol_container.conformations = conformations
-    mol_container.conformation_names = conformation_names
-    mol_container.top_up_conformations()
-    # make a structure precheck
-    protein_precheck(mol_container.conformations, mol_container.conformation_names)
-    # set up atom bonding and protonation
-    mol_container.version.setup_bonding_and_protonation(mol_container)
-    # Extract groups
-    mol_container.extract_groups()
-    # sort atoms
-    for name in mol_container.conformation_names:
-        mol_container.conformations[name].sort_atoms()
-    # find coupled groups
-    mol_container.find_covalently_coupled_groups()
 
 
 def read_parameter_file(input_file: _PathArg, parameters: Parameters) -> Parameters:
@@ -186,14 +195,14 @@ def conformation_sorter(conf: str) -> int:
     """TODO - figure out what this function does."""
     model = int(conf[:-1])
     altloc = conf[-1:]
-    return model * 100 + ord(altloc)
+    return model*100+ord(altloc)
 
 
 def _normalize_altloc(altloc: str) -> str:
     if gemmi.cif.is_null(altloc) or altloc == ' ':
         return 'A'
     if altloc in '123456789':
-        return chr(ord(altloc) + 16)
+        return chr(ord(altloc)+16)
     return altloc[0]
 
 
@@ -235,23 +244,22 @@ def _make_mmcif_atom(columns, row: int) -> Atom:
     atom = Atom()
     atom_id = _get_mmcif_value(columns, row, ['id'], '0')
     res_num = _get_mmcif_value(columns, row, ['auth_seq_id', 'label_seq_id'], '0')
-    atom.set_property(numb=int(atom_id),
-                      name=_get_mmcif_value(columns, row,
-                                            ['auth_atom_id', 'label_atom_id']),
-                      res_name='{0:<3s}'.format(
-                          _get_mmcif_value(columns, row,
-                                           ['auth_comp_id', 'label_comp_id'])),
-                      chain_id=_get_mmcif_value(columns, row,
-                                                ['auth_asym_id', 'label_asym_id'], '_'),
-                      res_num=int(res_num),
-                      icode=_normalize_mmcif_value(
-                          _get_mmcif_value(columns, row, ['pdbx_PDB_ins_code'], ' '),
-                          ' '),
-                      x=float(_get_mmcif_value(columns, row, ['Cartn_x'], '0')),
-                      y=float(_get_mmcif_value(columns, row, ['Cartn_y'], '0')),
-                      z=float(_get_mmcif_value(columns, row, ['Cartn_z'], '0')),
-                      occ=_get_mmcif_value(columns, row, ['occupancy'], '1.0'),
-                      beta=_get_mmcif_value(columns, row, ['B_iso_or_equiv'], '0.0'))
+    atom.set_property(
+        numb=int(atom_id),
+        name=_get_mmcif_value(columns, row, ['auth_atom_id', 'label_atom_id']),
+        res_name='{0:<3s}'.format(
+            _get_mmcif_value(columns, row, ['auth_comp_id', 'label_comp_id'])),
+        chain_id=_get_mmcif_value(
+            columns, row, ['auth_asym_id', 'label_asym_id'], '_'),
+        res_num=int(res_num),
+        icode=_normalize_mmcif_value(
+            _get_mmcif_value(columns, row, ['pdbx_PDB_ins_code'], ' '),
+            ' '),
+        x=float(_get_mmcif_value(columns, row, ['Cartn_x'], '0')),
+        y=float(_get_mmcif_value(columns, row, ['Cartn_y'], '0')),
+        z=float(_get_mmcif_value(columns, row, ['Cartn_z'], '0')),
+        occ=_get_mmcif_value(columns, row, ['occupancy'], '1.0'),
+        beta=_get_mmcif_value(columns, row, ['B_iso_or_equiv'], '0.0'))
     atom.type = _get_mmcif_value(columns, row, ['group_PDB']).lower()
     if atom.res_name in ['DA ', 'DC ', 'DG ', 'DT ']:
         atom.type = 'hetatm'
@@ -291,10 +299,10 @@ def get_atom_lines_from_pdb(
             nterm_residue = 'next_residue'
         if tag in tags:
             alt_conf_tag = line[16]
-            residue_name = line[12:16]
-            residue_number = line[22:26]
+            residue_name = line[12: 16]
+            residue_number = line[22: 26]
             # check if we want this residue
-            if line[17:20] in ignore_residues:
+            if line[17: 20] in ignore_residues:
                 continue
             if chains and line[21] not in chains:
                 continue
@@ -309,15 +317,16 @@ def get_atom_lines_from_pdb(
             # Identify the configuration
             # convert digits to letters
             if alt_conf_tag in '123456789':
-                alt_conf_tag = chr(ord(alt_conf_tag) + 16)
+                alt_conf_tag = chr(ord(alt_conf_tag)+16)
             if alt_conf_tag == ' ':
                 alt_conf_tag = 'A'
             conformation = '{0:d}{1:s}'.format(model, alt_conf_tag)
             # set the terminal
-            if tag == 'ATOM  ':
-                if (residue_name.strip() == 'N' and nterm_residue == residue_number):
+            if  tag == 'ATOM  ':
+                if (residue_name.strip() == 'N'
+                        and nterm_residue == residue_number):
                     terminal = 'N+'
-                if residue_name.strip() in ['OXT', 'O\'\'']:
+                if  residue_name.strip() in ['OXT', 'O\'\'']:
                     terminal = 'C-'
                     nterm_residue = 'next_residue'
                     old_residue = residue_number
@@ -345,15 +354,14 @@ def read_pdb(pdb_file: _TextIOSource, parameters: Parameters,
     """
     conformations: Dict[str, ConformationContainer] = {}
     # read in all atoms in the file
-    lines = get_atom_lines_from_pdb(pdb_file,
-                                    ignore_residues=parameters.ignore_residues,
-                                    keep_protons=molecule.options.keep_protons,
-                                    chains=molecule.options.chains)
+    lines = get_atom_lines_from_pdb(
+        pdb_file, ignore_residues=parameters.ignore_residues,
+        keep_protons=molecule.options.keep_protons,
+        chains=molecule.options.chains)
     for (name, atom) in lines:
         if name not in conformations.keys():
-            conformations[name] = ConformationContainer(name=name,
-                                                        parameters=parameters,
-                                                        molecular_container=molecule)
+            conformations[name] = ConformationContainer(
+                name=name, parameters=parameters, molecular_container=molecule)
         conformations[name].add_atom(atom)
     # make a sorted list of conformation names
     names = sorted(conformations.keys(), key=conformation_sorter)
@@ -373,9 +381,10 @@ def read_mmcif(cif_file: _TextIOSource, parameters: Parameters,
 
     column_names = [
         'group_PDB', 'id', 'type_symbol', 'auth_atom_id', 'label_atom_id',
-        'auth_comp_id', 'label_comp_id', 'auth_asym_id', 'label_asym_id', 'auth_seq_id',
-        'label_seq_id', 'pdbx_PDB_ins_code', 'label_alt_id', 'pdbx_PDB_model_num',
-        'Cartn_x', 'Cartn_y', 'Cartn_z', 'occupancy', 'B_iso_or_equiv'
+        'auth_comp_id', 'label_comp_id', 'auth_asym_id', 'label_asym_id',
+        'auth_seq_id', 'label_seq_id', 'pdbx_PDB_ins_code', 'label_alt_id',
+        'pdbx_PDB_model_num', 'Cartn_x', 'Cartn_y', 'Cartn_z', 'occupancy',
+        'B_iso_or_equiv'
     ]
     columns = {name: _get_mmcif_column(table, name) for name in column_names}
 
@@ -409,7 +418,8 @@ def read_mmcif(cif_file: _TextIOSource, parameters: Parameters,
 
         if conformation not in conformations:
             conformations[conformation] = ConformationContainer(
-                name=conformation, parameters=parameters, molecular_container=molecule)
+                name=conformation, parameters=parameters,
+                molecular_container=molecule)
         conformations[conformation].add_atom(atom)
 
     names = sorted(conformations.keys(), key=conformation_sorter)

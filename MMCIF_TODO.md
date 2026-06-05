@@ -129,3 +129,57 @@ through the existing PROPKA pipeline.
       helpers support long chain IDs.
 - [ ] Add changelog entry describing native mmCIF support and remaining PDB-like
       output limitations.
+
+## Review follow-up backlog
+
+- [ ] Fix PDB N-terminus detection for insertion-code residues.
+      - Current PDB parser still tracks the N-terminal residue with only
+        `line[22:26]`; it does not include `line[26]`.
+      - Risk: residues such as `A:1` and `A:1A` can both mark their `N` atom as
+        `N+`, changing protonation, group type assignment, and pKa results.
+      - Hotspot: `propka/input.py::get_atom_lines_from_pdb()`.
+- [ ] Add an end-to-end mmCIF process-flow regression.
+      - Current tests cover `read_mmcif()` field parsing, but not the full
+        `read_molecule_file()` -> `setup_molecule()` -> top-up -> bonding and
+        protonation -> group extraction -> pKa flow.
+      - Target: one small PDB/mmCIF equivalent fixture with matching chains,
+        groups, key labels, and selected pKa values.
+- [ ] Add auth/label fallback edge-case tests for mmCIF.
+      - Cover `auth_asym_id='?'`, `auth_seq_id='?'`, label-only chains,
+        non-polymer rows with null `label_seq_id`, and chain filtering against
+        the chosen chain namespace.
+      - Current implementation is auth-first and label-fallback; that is a
+        reasonable default, but the user-visible chain filter must be
+        documented and tested.
+- [ ] Decide how to represent mmCIF terminal semantics without PDB `TER`.
+      - Current mmCIF parser marks only the first `ATOM` residue per
+        `(model, altloc, chain)` as `N+` and uses `OXT`/`O''` for `C-`.
+      - Risk: discontinuous polymer segments sharing one chain id may miss
+        additional N-termini that PDB `TER` would have exposed.
+- [ ] Explain or isolate the `3SGB.dat` golden-result drift.
+      - Expected cause is insertion-code-aware residue identity, but this should
+        be documented or covered by a focused test so unrelated PDB regressions
+        are not hidden by broad golden updates.
+- [ ] Audit PDB output helpers after adding internal mmCIF identity.
+      - `Atom.make_pdb_line()` currently drops insertion code and still uses
+        fixed PDB-style atom serial, chain, and residue-number formatting.
+      - This may be acceptable if output remains legacy PDB-like, but it must be
+        documented as an output limitation separate from native mmCIF input.
+
+## Upstream existing issue: `ConformationContainer.get_chain()`
+
+- [ ] Deep-dive and either fix or deprecate `get_chain()`.
+      - Location: `propka/conformation_container.py::get_chain()`.
+      - Current implementation returns
+        `[atom for atom in self.atoms if atom.chain_id != chain]`.
+      - The docstring says "Get atoms associated with a specific chain", so the
+        predicate appears reversed; expected behavior is likely
+        `atom.chain_id == chain`.
+      - Confirmed with `git show HEAD~2:propka/conformation_container.py` that
+        this predates the two mmCIF commits and is not newly introduced.
+      - Confirmed with `rg` that no current code path calls `get_chain()`;
+        output code filters chains directly with `g.atom.chain_id == chain`.
+      - Risk level today: low runtime risk because it is unused, but high API
+        surprise if downstream or future code calls it by name.
+      - Before changing, add a focused unit test with two chains to lock the
+        intended behavior.

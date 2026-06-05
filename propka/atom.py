@@ -18,16 +18,20 @@ if TYPE_CHECKING:
     from propka.conformation_container import ConformationContainer
 
 # Format strings that get used in multiple places (or are very complex)
-PDB_LINE_FMT1 = ("{type:6s}{r.numb:>5d} {atom_label} {r.res_name}{r.chain_id:>2s}"
-                 "{r.res_num:>4d}{r.x:>12.3f}{r.y:>8.3f}{r.z:>8.3f}{r.occ:>6s}"
-                 "{r.beta:>6s}\n")
-MOL2_LINE_FMT = ("{id:<4d} {atom_label:4s} "
-                 "{r.x:>10.4f} {r.y:>10.4f} {r.z:>10.4f} "
-                 "{r.sybyl_type:>6s} {r.res_num:>6d} {r.res_name:>10s}     0.0000\n")
-PDB_LINE_FMT2 = ("ATOM {numb:>6d} {atom_label} {res_name}{chain_id:>2s}{res_num:>4d}"
-                 "{x:>12.3f}{y:>8.3f}{z:>8.3f}{occ:>6.2f}{beta:>6.2f}\n")
-STR_FMT = ("{r.numb:>5d}-{r.name:>4s} {r.res_num:>5d}-{r.res_name:>3s} "
-           "({r.chain_id:1s}) [{r.x:>8.3f} {r.y:>8.3f} {r.z:>8.3f}] {r.element:s}")
+PDB_LINE_FMT1 = (
+    "{type:6s}{r.numb:>5d} {atom_label} {r.res_name}{r.chain_id:>2s}"
+    "{r.res_num:>4d}{r.x:>12.3f}{r.y:>8.3f}{r.z:>8.3f}{r.occ:>6s}"
+    "{r.beta:>6s}\n")
+MOL2_LINE_FMT = (
+    "{id:<4d} {atom_label:4s} "
+    "{r.x:>10.4f} {r.y:>10.4f} {r.z:>10.4f} "
+    "{r.sybyl_type:>6s} {r.res_num:>6d} {r.res_name:>10s}     0.0000\n")
+PDB_LINE_FMT2 = (
+    "ATOM {numb:>6d} {atom_label} {res_name}{chain_id:>2s}{res_num:>4d}"
+    "{x:>12.3f}{y:>8.3f}{z:>8.3f}{occ:>6.2f}{beta:>6.2f}\n")
+STR_FMT = (
+    "{r.numb:>5d}-{r.name:>4s} {r.res_num:>5d}-{r.res_name:>3s} "
+    "({r.chain_id:1s}) [{r.x:>8.3f} {r.y:>8.3f} {r.z:>8.3f}] {r.element:s}")
 
 
 class Atom:
@@ -134,8 +138,8 @@ class Atom:
             if len(self.name) == 4:
                 self.element = self.element[0]
             if len(self.element) == 2:
-                self.element = '{0:1s}{1:1s}'.format(self.element[0],
-                                                     self.element[1].lower())
+                self.element = '{0:1s}{1:1s}'.format(
+                    self.element[0], self.element[1].lower())
 
     def set_group_type(self, type_: str):
         """Set group type of atom.
@@ -190,7 +194,8 @@ class Atom:
             if ba == other_atom:
                 return True
             if max_bonds > cur_bond:
-                if ba.is_atom_within_bond_distance(other_atom, max_bonds, cur_bond + 1):
+                if ba.is_atom_within_bond_distance(other_atom, max_bonds,
+                                                   cur_bond+1):
                     return True
         return False
 
@@ -296,10 +301,9 @@ class Atom:
         Returns:
             String with PDB line.
         """
-        str_ = PDB_LINE_FMT1.format(type=self.type.upper(),
-                                    r=self,
-                                    atom_label=make_tidy_atom_label(
-                                        self.name, self.element))
+        str_ = PDB_LINE_FMT1.format(
+            type=self.type.upper(), r=self,
+            atom_label=make_tidy_atom_label(self.name, self.element))
         return str_
 
     def make_mol2_line(self, id_):
@@ -312,10 +316,9 @@ class Atom:
         Returns:
             String with MOL2 line.
         """
-        str_ = MOL2_LINE_FMT.format(id=id_,
-                                    r=self,
-                                    atom_label=make_tidy_atom_label(
-                                        self.name, self.element))
+        str_ = MOL2_LINE_FMT.format(
+            id=id_, r=self,
+            atom_label=make_tidy_atom_label(self.name, self.element))
         return str_
 
     def get_tidy_label(self):

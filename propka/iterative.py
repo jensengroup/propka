@@ -12,7 +12,9 @@ from propka.determinant import Determinant
 from propka.group import Group
 from propka.version import Version
 
+
 _LOGGER = logging.getLogger(__name__)
+
 
 # TODO - these are undocumented constants
 UNK_MIN_VALUE = 0.005
@@ -21,8 +23,7 @@ Interaction = list
 
 
 def add_to_determinant_list(group1: Group, group2: Group, distance: float,
-                            iterative_interactions: List[Interaction],
-                            version: Version):
+                            iterative_interactions: List[Interaction], version: Version):
     """Add iterative determinantes to the list.
 
     [[R1, R2], [side-chain, coulomb], [A1, A2]], ...
@@ -68,7 +69,7 @@ def add_iterative_acid_pair(object1: "Iterative", object2: "Iterative",
     annihilation = interaction[2]
     hbond_value = values[0]
     coulomb_value = values[1]
-    diff = coulomb_value + 2 * hbond_value
+    diff = coulomb_value + 2*hbond_value
     comp1 = object1.pka_old + annihilation[0] + diff
     comp2 = object2.pka_old + annihilation[1] + diff
     annihilation[0] = 0.0
@@ -110,7 +111,7 @@ def add_iterative_base_pair(object1: "Iterative", object2: "Iterative",
     annihilation = interaction[2]
     hbond_value = values[0]
     coulomb_value = values[1]
-    diff = coulomb_value + 2 * hbond_value
+    diff = coulomb_value + 2*hbond_value
     diff = -diff
     comp1 = object1.pka_old + annihilation[0] + diff
     comp2 = object2.pka_old + annihilation[1] + diff
@@ -156,12 +157,14 @@ def add_iterative_ion_pair(object1: "Iterative", object2: "Iterative",
     coulomb_value = values[1]
     q1 = object1.q
     q2 = object2.q
-    comp1 = object1.pka_old + annihilation[0] + q1 * coulomb_value
-    comp2 = object2.pka_old + annihilation[1] + q2 * coulomb_value
-    if (object1.res_name not in version.parameters.exclude_sidechain_interactions):
-        comp1 += q1 * hbond_value
-    if (object2.res_name not in version.parameters.exclude_sidechain_interactions):
-        comp2 += q2 * hbond_value
+    comp1 = object1.pka_old + annihilation[0] + q1*coulomb_value
+    comp2 = object2.pka_old + annihilation[1] + q2*coulomb_value
+    if (object1.res_name
+            not in version.parameters.exclude_sidechain_interactions):
+        comp1 += q1*hbond_value
+    if (object2.res_name
+            not in version.parameters.exclude_sidechain_interactions):
+        comp2 += q2*hbond_value
     if q1 == -1.0 and comp1 < comp2:
         # pKa(acid) < pKa(base)
         add_term = True
@@ -176,26 +179,26 @@ def add_iterative_ion_pair(object1: "Iterative", object2: "Iterative",
         # Coulomb
         if coulomb_value > UNK_MIN_VALUE:
             # residue1
-            interaction = [object2, q1 * coulomb_value]
-            annihilation[0] += -q1 * coulomb_value
+            interaction = [object2, q1*coulomb_value]
+            annihilation[0] += -q1*coulomb_value
             object1.determinants['coulomb'].append(interaction)
             # residue2
-            interaction = [object1, q2 * coulomb_value]
-            annihilation[1] += -q2 * coulomb_value
+            interaction = [object1, q2*coulomb_value]
+            annihilation[1] += -q2*coulomb_value
             object2.determinants['coulomb'].append(interaction)
         # Side-chain
         if hbond_value > UNK_MIN_VALUE:
             # residue1
             if (object1.res_name
                     not in version.parameters.exclude_sidechain_interactions):
-                interaction = [object2, q1 * hbond_value]
-                annihilation[0] += -q1 * hbond_value
+                interaction = [object2, q1*hbond_value]
+                annihilation[0] += -q1*hbond_value
                 object1.determinants['sidechain'].append(interaction)
             # residue2
             if (object2.res_name
                     not in version.parameters.exclude_sidechain_interactions):
-                interaction = [object1, q2 * hbond_value]
-                annihilation[1] += -q2 * hbond_value
+                interaction = [object1, q2*hbond_value]
+                annihilation[1] += -q2*hbond_value
                 object2.determinants['sidechain'].append(interaction)
 
 
@@ -224,8 +227,12 @@ def add_determinants(iterative_interactions: List[Interaction], version: Version
                 iteratives.append(new_iterative)
                 done_group.append(group)
     # Initialize iterative scheme
-    _LOGGER.debug("\n   --- pKa iterations ({0:d} groups, {1:d} interactions) "
-                  "---".format(len(iteratives), len(iterative_interactions)))
+    _LOGGER.debug(
+        "\n   --- pKa iterations ({0:d} groups, {1:d} interactions) "
+        "---".format(
+            len(iteratives), len(iterative_interactions)
+            )
+    )
     converged = False
     iteration = 0
     # set non-iterative pka values as first step
@@ -236,7 +243,8 @@ def add_determinants(iterative_interactions: List[Interaction], version: Version
         # initialize pka_new
         iteration += 1
         for itres in iteratives:
-            itres.determinants = {'sidechain': [], 'backbone': [], 'coulomb': []}
+            itres.determinants = {'sidechain': [], 'backbone': [],
+                                  'coulomb': []}
             itres.pka_new = itres.pka_noniterative
         # Adding interactions to temporary determinant container
         for interaction in iterative_interactions:
@@ -275,12 +283,14 @@ def add_determinants(iterative_interactions: List[Interaction], version: Version
             itres.pka_iter.append(itres.pka_new)
 
         if iteration == 10:
-            _LOGGER.info("did not converge in {0:d} iterations".format(iteration))
+            _LOGGER.info(
+                "did not converge in {0:d} iterations".format(iteration)
+            )
             break
     # printing pKa iterations
     # formerly was conditioned on if options.verbosity >= 2 - now unnecessary
     str_ = '            '
-    for index in range(iteration + 1):
+    for index in range(iteration+1):
         str_ += "{0:>8d}".format(index)
     _LOGGER.debug(str_)
     for itres in iteratives:
@@ -387,8 +397,9 @@ class Iterative:
                     and self.atom.residue_key == other.atom.residue_key)
         else:
             # For heterogene atoms we also need to check the residue number
-            return (self.label == other.label
-                    and self.atom.residue_key == other.atom.residue_key)
+            return (
+                self.label == other.label
+                and self.atom.residue_key == other.atom.residue_key)
 
     def __hash__(self):
         """Needed to use objects in sets."""
