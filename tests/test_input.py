@@ -2,10 +2,14 @@ import propka.input as m
 import pytest
 import zipfile
 from io import StringIO
+from pathlib import Path
 
 from propka.lib import loadOptions
 from propka.molecular_container import MolecularContainer
 from propka.parameters import Parameters
+
+
+PDB_DIR = Path(__file__).parent / "pdb"
 
 
 def test_open_file_for_reading(tmp_path):
@@ -127,3 +131,19 @@ ATOM 1 N N . GLY A 1 ? 1.0 2.0 3.0 1.0 10.0 bad
 
     with pytest.raises(ValueError, match="pdbx_PDB_model_num"):
         m.read_mmcif(cif, parameters, molecule)
+
+
+def test_pdb_noicode_fixture_removes_insertion_codes():
+    #Verify no icode relevant logic
+    original_atoms = [
+        atom for _, atom in m.get_atom_lines_from_pdb(PDB_DIR / "3SGB.pdb",
+                                                      keep_protons=True)
+    ]
+    noicode_atoms = [
+        atom for _, atom in m.get_atom_lines_from_pdb(PDB_DIR / "3SGB_noicode.pdb",
+                                                      keep_protons=True)
+    ]
+
+    assert len(noicode_atoms) == len(original_atoms)
+    assert any(atom.icode.strip() for atom in original_atoms)
+    assert not any(atom.icode.strip() for atom in noicode_atoms)
