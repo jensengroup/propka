@@ -6,7 +6,7 @@ Container data structure for molecular conformations.
 """
 import logging
 import functools
-from typing import Callable, Dict, Iterable, Iterator, List, Optional, TYPE_CHECKING, Set
+from typing import Callable, Dict, Iterable, Iterator, List, Optional, TYPE_CHECKING, Set, Tuple
 
 from propka.lib import Options
 from propka.version import Version
@@ -28,16 +28,6 @@ from propka.parameters import Parameters
 _LOGGER = logging.getLogger(__name__)
 
 CallableGroupToGroups = Callable[[Group], List[Group]]
-
-
-#: A large number that gets multipled with the integer obtained from applying
-#: :func:`ord` to the atom chain ID.  Used in calculating atom keys for
-#: sorting.
-UNICODE_MULTIPLIER = 1e7
-
-#: A number that gets mutiplied with an atom's residue number.  Used in
-#: calculating keys for atom sorting.
-RESIDUE_MULTIPLIER = 1000
 
 
 class ConformationContainer:
@@ -574,15 +564,16 @@ class ConformationContainer:
         Args:
             other_atoms: Reference atoms
         """
-        my_residue_labels = {a.residue_label for a in self.atoms}
-        res_names = {(a.chain_id, a.res_num): a.res_name for a in self.atoms}
+        my_atom_keys = {a.atom_key for a in self.atoms}
+        res_names = {a.residue_key: a.res_name for a in self.atoms}
         for atom in other_atoms:
-            if atom.residue_label not in my_residue_labels:
-                if res_names.setdefault((atom.chain_id, atom.res_num),
+            if atom.atom_key not in my_atom_keys:
+                if res_names.setdefault(atom.residue_key,
                                         atom.res_name) != atom.res_name:
                     # don't merge different residue types, e.g. alt-loc mutant
                     continue
                 self.copy_atom(atom)
+                my_atom_keys.add(atom.atom_key)
 
     def find_group(self, group):
         """Find a group in the container.
@@ -593,7 +584,7 @@ class ConformationContainer:
             False (if group not found) or group
         """
         for group_ in self.groups:
-            if group_.atom.residue_label == group.atom.residue_label:
+            if group_.atom.atom_key == group.atom.atom_key:
                 if group_.type == group.type:
                     return group_
         return False
@@ -617,15 +608,15 @@ class ConformationContainer:
         return len(self.atoms)
 
     def sort_atoms(self):
-        """Sort atoms by `self.sort_atoms_key()` and renumber."""
+        """Sort atoms by `self.get_sort_atoms_key()` and renumber."""
         # sort the atoms ...
-        self.atoms.sort(key=self.sort_atoms_key)
+        self.atoms.sort(key=self.get_sort_atoms_key)
         # ... and re-number them
         for i in range(len(self.atoms)):
             self.atoms[i].numb = i+1
 
     @staticmethod
-    def sort_atoms_key(atom: "Atom") -> float:
+    def get_sort_atoms_key(atom: "Atom") -> Tuple[str, int, str, str]:
         """Generate key for atom sorting.
 
         Args:
@@ -633,8 +624,12 @@ class ConformationContainer:
         Returns:
             key for atom
         """
-        key = ord(atom.chain_id) * UNICODE_MULTIPLIER
-        key += atom.res_num * RESIDUE_MULTIPLIER
+        # Use tuple sorting instead of ord(chain_id)-based numeric packing:
+        # mmCIF chain IDs can contain multiple characters, and insertion codes
+        # are part of residue identity.
+        # Python compares tuples item by item, for example:
+        # ("AA", 10, " ", "A") < ("AA", 10, "B", "A") < ("AB", 1, " ", "A").
+        element_order = ''
         if len(atom.name) > len(atom.element):
-            key += ord(atom.name[len(atom.element)])
-        return key
+            element_order = atom.name[len(atom.element)]
+        return atom.chain_id, atom.res_num, atom.icode or ' ', element_order

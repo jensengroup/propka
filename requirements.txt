@@ -1,3 +1,4 @@
+gemmi
 pytest
 numpy
 sphinx>=3.1

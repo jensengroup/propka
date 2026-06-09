@@ -76,13 +76,13 @@ def protonate_30_style(molecular_container: "MolecularContainer") -> None:
     for name in molecular_container.conformation_names:
         _LOGGER.info('Now protonating %s', name)
         # split atom into residues
-        curres = -1000000
+        curres = None
         residue: List[Atom] = []
         o_atom: Optional[Atom] = None
         c_atom: Optional[Atom] = None
         for atom in molecular_container.conformations[name].atoms:
-            if atom.res_num != curres:
-                curres = atom.res_num
+            if atom.residue_key != curres:
+                curres = atom.residue_key
                 if len(residue) > 0:
                     # backbone
                     [o_atom, c_atom] = add_backbone_hydrogen(
@@ -367,7 +367,7 @@ def make_new_h(atom: Atom, x: float, y: float, z: float) -> Atom:
     new_h.set_property(
         numb=None, name='H{0:s}'.format(atom.name[1:]),
         res_name=atom.res_name, chain_id=atom.chain_id,
-        res_num=atom.res_num, x=x, y=y, z=z, occ=None, beta=None)
+        res_num=atom.res_num, icode=atom.icode, x=x, y=y, z=z, occ=None, beta=None)
     new_h.element = 'H'
     new_h.bonded_atoms = [atom]
     new_h.charge = 0

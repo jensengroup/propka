@@ -359,6 +359,7 @@ class Protonate:
             res_name=atom.res_name,
             chain_id=atom.chain_id,
             res_num=atom.res_num,
+            icode=atom.icode,
             x=round(position.x, 3),  # round of to three decimal points to
                                      # avoid round-off differences in input
                                      # file
@@ -378,16 +379,14 @@ class Protonate:
         atom.number_of_protons_to_add -= 1
         atom.conformation_container.add_atom(new_h)
         # update names of all protons on this atom
-        new_h.residue_label = "{0:<3s}{1:>4d}{2:>2s}".format(
-            new_h.name, new_h.res_num, new_h.chain_id)
+        new_h.update_residue_label()
         no_protons = atom.count_bonded_elements('H')
         if no_protons > 1:
             i = 1
             for proton in atom.get_bonded_elements('H'):
                 proton.name = 'H{0:s}{1:d}'.format(
                     atom.name[1:], i)
-                proton.residue_label = "{0:<3s}{1:>4d}{2:>2s}".format(
-                    proton.name, proton.res_num, proton.chain_id)
+                proton.update_residue_label()
                 i += 1
         _LOGGER.debug('added %s %s %s', new_h, 'to', atom)
 

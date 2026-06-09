@@ -22,7 +22,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Chemistry",
 ]
 dynamic = ["version"]
-dependencies = []
+dependencies = ["gemmi"]
 
 [project.urls]
 Homepage = "http://propka.org"

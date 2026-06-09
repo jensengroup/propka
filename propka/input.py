@@ -14,6 +14,7 @@ import contextlib
 import io
 import zipfile
 from pathlib import Path
+import gemmi
 from propka.lib import protein_precheck
 from propka.atom import Atom
 from propka.conformation_container import ConformationContainer
@@ -140,6 +141,28 @@ def read_molecule_file(
             mol_container.conformations[name].sort_atoms()
         # find coupled groups
         mol_container.find_covalently_coupled_groups()
+    elif input_file_extension.lower() in ('.cif', '.mmcif'):
+        conformations, conformation_names = read_mmcif(
+            input_file, mol_container.version.parameters, mol_container)
+        if len(conformations) == 0:
+            str_ = ('Error: The input file does not seem to contain any '
+                    'molecular conformations')
+            raise ValueError(str_)
+        mol_container.conformations = conformations
+        mol_container.conformation_names = conformation_names
+        mol_container.top_up_conformations()
+        # make a structure precheck
+        protein_precheck(
+            mol_container.conformations, mol_container.conformation_names)
+        # set up atom bonding and protonation
+        mol_container.version.setup_bonding_and_protonation(mol_container)
+        # Extract groups
+        mol_container.extract_groups()
+        # sort atoms
+        for name in mol_container.conformation_names:
+            mol_container.conformations[name].sort_atoms()
+        # find coupled groups
+        mol_container.find_covalently_coupled_groups()
     else:
         str_ = "Unknown input file type {0!s} for file {1!s}".format(
             input_file_extension, input_path)
@@ -173,6 +196,125 @@ def conformation_sorter(conf: str) -> int:
     model = int(conf[:-1])
     altloc = conf[-1:]
     return model*100+ord(altloc)
+
+
+def _normalize_altloc(altloc: str) -> str:
+    if gemmi.cif.is_null(altloc) or altloc == ' ':
+        return 'A'
+    if altloc in '123456789':
+        return chr(ord(altloc)+16) #Project the number to character, e.g. 1 -> A
+    if len(altloc) == 1 and altloc.isalpha():
+        return altloc #Normal case
+    raise ValueError(
+        f"Critical Error: Detected invalid or corrupted altloc label '{altloc}'. "
+        f"Expected a single character or digit, but got length {len(altloc)}."
+        f"This could because unstandardized encoding of altloc, only single num/char encoding method accepted"
+        f"Execution terminated to prevent spatial coordinate feature corruption."
+    )
+
+
+def _normalize_element(element: str) -> str:
+    #Normalize element char like c -> C, cl -> CL, ZN -> Zn
+    element = element.strip()
+    if not element:
+        return ''
+    return '{0:1s}{1:s}'.format(element[0].upper(), element[1:].lower())
+
+
+def _get_mmcif_column(table, name: str):
+    try:
+        column = table.find_column(name)
+    except RuntimeError:
+        return None
+    if len(column) == 0:
+        return None
+    return column
+
+
+def _get_mmcif_value(columns, row: int, names, default: str = '') -> str:
+    for name in names:
+        column = columns.get(name)
+        if column is None:
+            continue
+        value = column[row]
+        if not gemmi.cif.is_null(value):
+            return gemmi.cif.as_string(value)
+    return default
+
+
+def _get_required_mmcif_value(columns, row: int, names) -> str:
+    value = _get_mmcif_value(columns, row, names, '')
+    if value == '':
+        fields = ', '.join('_atom_site.{0:s}'.format(name) for name in names)
+        raise ValueError(
+            'Missing required mmCIF atom_site value at row {0:d}: {1:s}'.format(
+                row + 1, fields))
+    return value
+
+
+def _get_required_mmcif_int(columns, row: int, names) -> int:
+    value = _get_required_mmcif_value(columns, row, names)
+    try:
+        return int(value)
+    except ValueError as err:
+        fields = ', '.join('_atom_site.{0:s}'.format(name) for name in names)
+        raise ValueError(
+            'Invalid integer mmCIF atom_site value at row {0:d}: {1:s}={2!r}'.format(
+                row + 1, fields, value)) from err
+
+
+def _get_required_mmcif_float(columns, row: int, names) -> float:
+    value = _get_required_mmcif_value(columns, row, names)
+    try:
+        return float(value)
+    except ValueError as err:
+        fields = ', '.join('_atom_site.{0:s}'.format(name) for name in names)
+        raise ValueError(
+            'Invalid float mmCIF atom_site value at row {0:d}: {1:s}={2!r}'.format(
+                row + 1, fields, value)) from err
+
+
+def _get_optional_mmcif_int(columns, row: int, names, default: int) -> int:
+    value = _get_mmcif_value(columns, row, names, '')
+    if value == '':
+        return default
+    try:
+        return int(value)
+    except ValueError as err:
+        fields = ', '.join('_atom_site.{0:s}'.format(name) for name in names)
+        raise ValueError(
+            'Invalid integer mmCIF atom_site value at row {0:d}: {1:s}={2!r}'.format(
+                row + 1, fields, value)) from err
+
+
+def _make_mmcif_atom(columns, row: int) -> Atom:
+    atom = Atom()
+    atom_id = _get_required_mmcif_int(columns, row, ['id'])
+    res_num = _get_required_mmcif_int(
+        columns, row, ['auth_seq_id', 'label_seq_id'])
+    atom.set_property(
+        numb=atom_id,
+        name=_get_required_mmcif_value(
+            columns, row, ['auth_atom_id', 'label_atom_id']),
+        res_name='{0:<3s}'.format(
+            _get_required_mmcif_value(
+                columns, row, ['auth_comp_id', 'label_comp_id'])),
+        chain_id=_get_required_mmcif_value(
+            columns, row, ['auth_asym_id', 'label_asym_id']),
+        res_num=res_num,
+        icode=_get_mmcif_value(columns, row, ['pdbx_PDB_ins_code'], ' '),
+        x=_get_required_mmcif_float(columns, row, ['Cartn_x']),
+        y=_get_required_mmcif_float(columns, row, ['Cartn_y']),
+        z=_get_required_mmcif_float(columns, row, ['Cartn_z']),
+        occ=_get_mmcif_value(columns, row, ['occupancy'], '1.0'),
+        beta=_get_mmcif_value(columns, row, ['B_iso_or_equiv'], '0.0'))
+    atom.type = _get_required_mmcif_value(
+        columns, row, ['group_PDB']).lower()
+    if atom.res_name in ['DA ', 'DC ', 'DG ', 'DT ']:
+        atom.type = 'hetatm'
+    atom.element = _normalize_element(
+        _get_required_mmcif_value(columns, row, ['type_symbol']))
+    return atom
 
 
 def get_atom_lines_from_pdb(
@@ -272,5 +414,64 @@ def read_pdb(pdb_file: _TextIOSource, parameters: Parameters,
                 name=name, parameters=parameters, molecular_container=molecule)
         conformations[name].add_atom(atom)
     # make a sorted list of conformation names
+    names = sorted(conformations.keys(), key=conformation_sorter)
+    return conformations, names
+
+
+def read_mmcif(cif_file: _TextIOSource, parameters: Parameters,
+               molecule: MolecularContainer):
+    """Parse an mmCIF file using gemmi."""
+    conformations: Dict[str, ConformationContainer] = {}
+    with open_file_for_reading(cif_file) as handle:
+        document = gemmi.cif.read_string(handle.read())
+    block = document.sole_block()
+    table = block.find_mmcif_category('_atom_site.')
+    if len(table) == 0:
+        return conformations, []
+
+    column_names = [
+        'group_PDB', 'id', 'type_symbol', 'auth_atom_id', 'label_atom_id',
+        'auth_comp_id', 'label_comp_id', 'auth_asym_id', 'label_asym_id',
+        'auth_seq_id', 'label_seq_id', 'pdbx_PDB_ins_code', 'label_alt_id',
+        'pdbx_PDB_model_num', 'Cartn_x', 'Cartn_y', 'Cartn_z', 'occupancy',
+        'B_iso_or_equiv'
+    ]
+    columns = {name: _get_mmcif_column(table, name) for name in column_names}
+
+    first_residue = {}
+    for row in range(len(table)):
+        record_type = _get_required_mmcif_value(columns, row, ['group_PDB'])
+        if record_type not in ('ATOM', 'HETATM'):
+            continue
+
+        atom = _make_mmcif_atom(columns, row)
+        if atom.res_name.strip() in parameters.ignore_residues:
+            continue
+        if molecule.options.chains and atom.chain_id not in molecule.options.chains:
+            continue
+        if atom.element == 'H' and not molecule.options.keep_protons:
+            continue
+
+        alt_conf_tag = _normalize_altloc(
+            _get_mmcif_value(columns, row, ['label_alt_id'], 'A'))
+        model = _get_optional_mmcif_int(
+            columns, row, ['pdbx_PDB_model_num'], 1)
+        conformation = '{0:d}{1:s}'.format(model, alt_conf_tag)
+
+        if record_type == 'ATOM':
+            chain_key = (model, alt_conf_tag, atom.chain_id)
+            if chain_key not in first_residue:
+                first_residue[chain_key] = atom.residue_key
+            if atom.name == 'N' and first_residue[chain_key] == atom.residue_key:
+                atom.terminal = 'N+'
+            if atom.name in ['OXT', 'O\'\'']:
+                atom.terminal = 'C-'
+
+        if conformation not in conformations:
+            conformations[conformation] = ConformationContainer(
+                name=conformation, parameters=parameters,
+                molecular_container=molecule)
+        conformations[conformation].add_atom(atom)
+
     names = sorted(conformations.keys(), key=conformation_sorter)
     return conformations, names
