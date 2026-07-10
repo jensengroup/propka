@@ -51,8 +51,7 @@ def radial_volume_desolvation(parameters, group: "Group") -> None:
     min_dist_4th = MIN_DISTANCE_4TH
     for atom in all_atoms:
         # ignore atoms in the same residue
-        if (atom.res_num == group.atom.res_num
-                and atom.chain_id == group.atom.chain_id):
+        if atom.residue_key == group.atom.residue_key:
             continue
         sq_dist = squared_distance(group, atom)
         # desolvation

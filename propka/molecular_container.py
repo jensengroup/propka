@@ -61,7 +61,7 @@ class MolecularContainer:
     def top_up_conformations(self) -> None:
         """Makes sure that all atoms are present in all conformations."""
         ref_atoms = {
-            atom.residue_label: atom
+            atom.atom_key: atom
             for name in reversed(self.conformation_names)
             for atom in self.conformations[name].atoms
         }

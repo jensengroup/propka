@@ -7,7 +7,7 @@ The :class:`Atom` class contains all atom information found in the PDB file.
 """
 
 import string
-from typing import List, Optional, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING, Tuple
 
 from propka.lib import make_tidy_atom_label
 from . import hybrid36
@@ -87,8 +87,27 @@ class Atom:
         """
         self.bonded_atoms: List[Atom] = []
         self.set_properties(line)
+        self.update_residue_label()
+
+    @property
+    def residue_key(self) -> Tuple[str, int, str]:
+        """Return the residue identity used for internal matching."""
+        return self.chain_id, self.res_num, self.icode or ' '
+
+    @property
+    def atom_key(self) -> Tuple[str, int, str, str]:
+        """Return the atom identity used for internal matching."""
+        return self.chain_id, self.res_num, self.icode or ' ', self.name
+
+    def update_residue_label(self) -> None:
+        """Update the display label used in reports and legacy matching."""
         fmt = "{r.name:3s}{r.res_num:>4d}{r.chain_id:>2s}"
         self.residue_label = fmt.format(r=self)
+        icode = self.icode.strip()
+        if icode:
+            # Separate insertion code from multi-character chain IDs in display
+            # labels: chain "XX" + icode "A" -> "...XX:A", not "...XXA".
+            self.residue_label += ":{0:s}".format(icode)
 
     def set_properties(self, line: Optional[str]):
         """Line from PDB file to set properties of atom.
@@ -188,6 +207,7 @@ class Atom:
                      res_name: Optional[str] = None,
                      chain_id: Optional[str] = None,
                      res_num: Optional[int] = None,
+                     icode: Optional[str] = None,
                      x: Optional[float] = None,
                      y: Optional[float] = None,
                      z: Optional[float] = None,
@@ -201,6 +221,7 @@ class Atom:
             res_name:  residue name
             chain_id:  chain ID
             res_num:  residue number
+            icode:  insertion code
             x:  atom x-coordinate
             y:  atom y-coordinate
             z:  atom z-coordinate
@@ -217,6 +238,8 @@ class Atom:
             self.chain_id = chain_id
         if res_num is not None:
             self.res_num = res_num
+        if icode is not None:
+            self.icode = icode
         if x is not None:
             self.x = x
         if y is not None:
@@ -227,6 +250,7 @@ class Atom:
             self.occ = occ
         if beta is not None:
             self.beta = beta
+        self.update_residue_label()
 
     def make_copy(self):
         """Make a copy of this atom.

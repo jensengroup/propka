@@ -119,6 +119,11 @@ class Group:
             fmt = "{type:<3s}{name:>4s}{chain:>2s}"
             self.label = fmt.format(
                 type=self.residue_type, name=atom.name, chain=atom.chain_id)
+        icode = atom.icode.strip()
+        if icode:
+            # Keep insertion code visually separate from mmCIF chain IDs:
+            # chain "XX" + icode "A" -> "...XX:A"; chain "XXA" stays "...XXA".
+            self.label += ":{0:s}".format(icode)
 
     def couple_covalently(self, other: "Group") -> None:
         """Couple this group with another group.
@@ -162,14 +167,10 @@ class Group:
 
     def __eq__(self, other):
         """Needed for creating sets of groups."""
-        if self.atom.type == 'atom':
-            # In case of protein atoms we trust the labels
-            return self.label == other.label
-        else:
-            # For heterogene atoms we also need to check the residue number
-            return (
-                (self.label == other.label)
-                and (self.atom.res_num == other.atom.res_num))
+        # The label preserves the legacy group identity, while residue_key adds
+        # chain/residue/insertion-code identity for mmCIF and PDB insertion codes.
+        return (self.label == other.label
+                and self.atom.residue_key == other.atom.residue_key)
 
     def __hash__(self):
         """Needed for creating sets of groups."""
