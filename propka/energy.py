@@ -52,7 +52,8 @@ def radial_volume_desolvation(parameters, group: "Group") -> None:
     for atom in all_atoms:
         # ignore atoms in the same residue
         if (atom.res_num == group.atom.res_num
-                and atom.chain_id == group.atom.chain_id):
+                and atom.chain_id == group.atom.chain_id
+                and (atom.icode or ' ') == (group.atom.icode or ' ')):
             continue
         sq_dist = squared_distance(group, atom)
         # desolvation

@@ -391,14 +391,10 @@ class Iterative:
     def __eq__(self, other) -> bool:
         """Needed to use objects in sets."""
         assert isinstance(other, (Iterative, Group)), type(other)
-        if self.atom.type == 'atom':
-            # In case of protein atoms we trust the labels
-            return self.label == other.label
-        else:
-            # For heterogene atoms we also need to check the residue number
-            return (
-                self.label == other.label
-                and self.atom.res_num == other.atom.res_num)
+        # The label preserves the legacy group identity, while residue_key adds
+        # chain/residue/insertion-code identity for mmCIF and PDB insertion codes.
+        return (self.label == other.label
+                and self.atom.residue_key == other.atom.residue_key)
 
     def __hash__(self):
         """Needed to use objects in sets."""
